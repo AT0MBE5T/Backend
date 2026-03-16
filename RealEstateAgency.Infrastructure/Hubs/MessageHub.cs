@@ -89,25 +89,6 @@ public class MessageHub: Hub<IChatClient>
         await _cache.SetStringAsync(Context.ConnectionId, stringConnection);
     }
     
-    // public async Task SendMessage(Guid chatId, string message)
-    // {
-    //     var userId = Context.User.GetUserId();
-    //     
-    //     var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
-    //     if (connectionJson is null) return;
-    //     var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-    //     
-    //     if (connection is null) return;
-    //     
-    //     var success = await _chatService.AddMessage(userId, chatId, message);
-    //
-    //     if (success)
-    //     {
-    //         await Clients.Group(chatId.ToString()).ReceiveMessage(userId, connection.UserName, message);
-    //         await Clients.Group(userId.ToString()).UpdateChatList(chatId, userId, connection.UserName, message);
-    //     }
-    // }
-    
     public async Task SendMessage(Guid chatId, string message)
     {
         var userId = Context.User.GetUserId();
