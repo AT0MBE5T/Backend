@@ -150,10 +150,10 @@ app.MapHub<MessageHub>("/messageHub");
 
 app.UseCors(x =>
 {
-    x.WithHeaders().AllowAnyHeader();
-    x.WithOrigins("https://diplompwa.netlify.app/");
-    x.WithMethods().AllowAnyMethod();
-    x.AllowCredentials();
+    x.WithOrigins("https://diplompwa.netlify.app")
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
 });
 
 app.Run();
