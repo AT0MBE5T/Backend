@@ -1,0 +1,6 @@
+@RealEstateAgency.API_HostAddress = http://localhost:5118
+@RealEstateAgency = variable value
+
+Accept: application/json
+
+###

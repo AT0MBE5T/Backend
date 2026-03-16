@@ -1,0 +1,19 @@
+﻿services:
+  chathub.redis:
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  realestateagency.api:
+    image: realestateagency.api
+    build:
+      context: .
+      dockerfile: RealEstateAgency.API/Dockerfile
+
+  realestateagency.api-1:
+    image: realestateagency.api-1
+    build:
+      context: .
+      dockerfile: RealEstateAgency.API/Dockerfile
+
