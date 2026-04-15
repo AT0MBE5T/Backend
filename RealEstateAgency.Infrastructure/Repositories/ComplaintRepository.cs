@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Repositories;
+using RealEstateAgency.Core.DTO;
 using RealEstateAgency.Core.Models;
 using RealEstateAgency.Infrastructure.Context;
 
@@ -15,17 +16,75 @@ public class ComplaintRepository(IDbContextFactory<RealEstateContext> dbContextF
         return res;
     }
     
-    public async Task<List<Complaint>> GetAllComplaintsAsync()
+    public async Task<Complaint?> GetByIdAsync(Guid complaintId)
     {
         await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var res = await ctx.Complaints.ToListAsync();
+        var res = await ctx.Complaints.FirstOrDefaultAsync(x => x.Id == complaintId);
         return res;
     }
     
-    public async Task<List<Complaint>> GetAllOpenedComplaintsAsync()
+    public async Task<List<ComplaintGrid>> GetComplaintsByUserId(Guid userId)
     {
         await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var res = await ctx.Complaints.Where(x => x.ProcessedAt == null).ToListAsync();
+        var res = await ctx.Complaints
+            .Where(x  => x.UserId == userId)
+            .Select(x => new ComplaintGrid
+            {
+                Id = x.Id,
+                AnnouncementId = x.AnnouncementId,
+                AnnouncementName = x.AnnouncementNavigation.StatementNavigation.Title,
+                TypeName = x.ComplaintTypeNavigation.Name,
+                UserName = x.UserNavigation.UserName,
+                AdminName = x.AdminNavigation.UserName,
+                AdminNote = x.AdminNote,
+                CreatedAt = x.CreatedAt,
+                ProcessedAt = x.ProcessedAt,
+                StatusName = x.ComplaintStatusNavigation.Name,
+                UserNote = x.UserNote,
+            }).ToListAsync();
+        return res;
+    }
+    
+    public async Task<List<ComplaintGrid>> GetAllComplaintsAsync()
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        var res = await ctx.Complaints
+            .Select(x => new ComplaintGrid
+            {
+                Id = x.Id,
+                AnnouncementId = x.AnnouncementId,
+                AnnouncementName = x.AnnouncementNavigation.StatementNavigation.Title,
+                TypeName = x.ComplaintTypeNavigation.Name,
+                UserName = x.UserNavigation.UserName,
+                AdminName = x.AdminNavigation.UserName,
+                AdminNote = x.AdminNote,
+                CreatedAt = x.CreatedAt,
+                ProcessedAt = x.ProcessedAt,
+                StatusName = x.ComplaintStatusNavigation.Name,
+                UserNote = x.UserNote,
+            }).ToListAsync();
+        return res;
+    }
+    
+    public async Task<List<ComplaintGrid>> GetAllOpenedComplaintsAsync()
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        var res = await ctx.Complaints
+            .Where(x => x.ProcessedAt == null)
+            .Select(x => new ComplaintGrid
+            {
+                Id = x.Id,
+                AnnouncementId = x.AnnouncementId,
+                AnnouncementName = x.AnnouncementNavigation.StatementNavigation.Title,
+                TypeName = x.ComplaintTypeNavigation.Name,
+                UserName = x.UserNavigation.UserName,
+                AdminName = x.AdminNavigation.UserName,
+                AdminNote = x.AdminNote,
+                CreatedAt = x.CreatedAt,
+                ProcessedAt = x.ProcessedAt,
+                StatusName = x.ComplaintStatusNavigation.Name,
+                UserNote = x.UserNote,
+            }).ToListAsync();
         return res;
     }
     
@@ -37,7 +96,7 @@ public class ComplaintRepository(IDbContextFactory<RealEstateContext> dbContextF
         return res.Entity.Id;
     }
     
-    public async Task<bool> UpdateAsync(ComplaintDto complaint)
+    public async Task<bool> UpdateAsync(Complaint complaint)
     {
         try
         {

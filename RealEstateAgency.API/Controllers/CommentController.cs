@@ -25,6 +25,13 @@ public class CommentController(ICommentsService commentsService, IAccountService
         
         return Ok(result);
     }
+    
+    [HttpGet("get-comments-grid")]
+    public async Task<IActionResult> GetCommentsGrid()
+    {
+        var result = await commentsService.GetCommentsGrid();
+        return Ok(result);
+    }
 
     [HttpPost("add-comment")]
     public async Task<IActionResult> AddComment([FromBody] CommentDto commentDto)

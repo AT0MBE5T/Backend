@@ -25,6 +25,7 @@ public class FavoriteRepository(IDbContextFactory<RealEstateContext> dbContextFa
             .Where(x => x.f.UserId == userId);
         
         var pagesCnt = Math.Ceiling((double)query.Count() / pageSize);
+        var totalItems = await query.CountAsync();
         
         var data = await query
             .Skip((pageNumber - 1) * pageSize)
@@ -42,13 +43,14 @@ public class FavoriteRepository(IDbContextFactory<RealEstateContext> dbContextFa
                 IsVerified = x.a.VerificationNavigation != null,
                 IsFavorite = ctx.Favorites
                     .Any(f => f.AnnouncementId == x.a.Id && f.UserId == userId),
-                ViewsCnt = ctx.Views.Count(v => v.AnnouncementId == x.a.Id)
+                ViewsCnt = ctx.Views.Count(v => v.AnnouncementId == x.a.Id),
+                ClosedAt = x.a.ClosedAt
             }).ToListAsync();
         return new AnnouncementsShortAndPages
         {
             Data = data,
             PagesCnt = (int)pagesCnt,
-            PageSize = pageSize
+            TotalItems = totalItems
         };
     }
     
@@ -116,6 +118,7 @@ public class FavoriteRepository(IDbContextFactory<RealEstateContext> dbContextFa
         }
         
         var pagesCnt = Math.Ceiling((double)query.Count() / pageSize);
+        var totalItems = await query.CountAsync();
         
         var data = await query
             .Skip((pageNumber - 1) * pageSize)
@@ -133,14 +136,15 @@ public class FavoriteRepository(IDbContextFactory<RealEstateContext> dbContextFa
                 IsVerified = x.VerificationNavigation != null,
                 IsFavorite = ctx.Favorites
                     .Any(f => f.AnnouncementId == x.Id && f.UserId == userId),
-                ViewsCnt = ctx.Views.Count(v => v.AnnouncementId == x.Id)
+                ViewsCnt = ctx.Views.Count(v => v.AnnouncementId == x.Id),
+                ClosedAt = x.ClosedAt
             }).ToListAsync();
     
         return new AnnouncementsShortAndPages
         {
             Data = data,
             PagesCnt = (int)pagesCnt,
-            PageSize = pageSize
+            TotalItems = totalItems
         };
     }
     

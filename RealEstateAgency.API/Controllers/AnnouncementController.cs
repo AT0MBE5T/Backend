@@ -23,16 +23,6 @@ public class AnnouncementController(
     IHubContext<MessageHub> hubContext,
     ApiMapper mapper): ControllerBase
 {
-
-    [HttpGet("get-pages")]
-    public async Task<IActionResult> GetPages()
-    {
-        var pages = await announcementService.GetPages();
-        return pages > 0 
-            ? Ok(pages) 
-            : NoContent();
-    }
-
     [HttpGet("get-announcement-full-by-id/{announcementId:guid}")]
     public async Task<IActionResult> GetAnnouncementFullById(Guid announcementId)
     {
@@ -46,6 +36,13 @@ public class AnnouncementController(
         }
         
         return Ok(announcementFull);
+    }
+    
+    [HttpGet("get-announcements-grid")]
+    public async Task<IActionResult> GetAnnouncementsGrid()
+    {
+        var result = await announcementService.GetAnnouncementsGrid();
+        return Ok(result);
     }
     
     [HttpPost("get-announcement-for-edit")]
@@ -198,6 +195,11 @@ public class AnnouncementController(
     [HttpPost("delete-announcement-by-id")]
     public async Task<IActionResult> DeleteAnnouncement([FromBody] Guid announcementId)
     {
+        var isPaid = await paymentService.IsExistByAnnouncementIdAsync(announcementId);
+
+        if (isPaid)
+            return BadRequest("Announcement already paid");
+        
         var user = await userManager.GetUserAsync(User);
         if (user == null)
         {
@@ -227,9 +229,14 @@ public class AnnouncementController(
         return Ok(response);
     }
 
-    [HttpPost("buy-property-by-announcement-id")]
+    [HttpPost("close-announcement")]
     public async Task<IActionResult> BuyPropertyByAnnouncement([FromBody] BuyRequest request)
     {
+        var isExist = await paymentService.IsExistByAnnouncementIdAsync(request.AnnouncementId);
+
+        if (isExist)
+            return BadRequest("Payment is exist");
+        
         var paymentDto = mapper.BuyRequestToPaymentDto(request);
         var paymentId = await paymentService.InsertPayment(paymentDto);
         
@@ -238,11 +245,13 @@ public class AnnouncementController(
             : Ok(paymentId);
     }
     
-    [HttpGet("get-bought-by-user-id/{page:int}")]
-    public async Task<IActionResult> GetBoughtAnnouncementsByUserId(int page)
+    [HttpGet("get-bought")]
+    public async Task<IActionResult> GetBoughtAnnouncements(
+        [FromQuery] int page, 
+        [FromQuery] int pageSize)
     {
         var userId = User.GetUserId();
-        var announcements = await announcementService.GetBoughtAnnouncementsByUserId(userId, page);
+        var announcements = await announcementService.GetBoughtAnnouncementsByUserId(userId, page, pageSize);
         var res = mapper.ListAnnouncementsShortAndPagesToListAnnouncementResponse(announcements.Data);
         var response = mapper.ToAnnouncementsResponseAndPages(
             announcements,
@@ -252,11 +261,17 @@ public class AnnouncementController(
         return Ok(response);
     }
     
-    [HttpGet("get-sold-by-user-id/{page:int}")]
-    public async Task<IActionResult> GetSoldAnnouncementsByUserId(int page)
+    [HttpGet("get-bought-by-user-id")]
+    public async Task<IActionResult> GetBoughtAnnouncementsByUserId(
+        [FromQuery] Guid userId,
+        [FromQuery] int page, 
+        [FromQuery] int pageSize)
     {
-        var userId = User.GetUserId();
-        var announcements = await announcementService.GetSoldAnnouncementsByUserId(userId, page);
+        var isAdmin = User.IsInRole("Admin");
+        if (page < 1 || !isAdmin)
+            return BadRequest();
+            
+        var announcements = await announcementService.GetBoughtAnnouncementsByUserId(userId, page, pageSize);
         var res = mapper.ListAnnouncementsShortAndPagesToListAnnouncementResponse(announcements.Data);
         var response = mapper.ToAnnouncementsResponseAndPages(
             announcements,
@@ -266,11 +281,73 @@ public class AnnouncementController(
         return Ok(response);
     }
     
-    [HttpGet("get-placed-by-user-id/{page:int}")]
-    public async Task<IActionResult> GetPlacedAnnouncementsByUserId(int page)
+    [HttpGet("get-sold")]
+    public async Task<IActionResult> GetSoldAnnouncements(
+        [FromQuery] int page, 
+        [FromQuery] int pageSize)
     {
         var userId = User.GetUserId();
-        var announcements = await announcementService.GetPlacedAnnouncementsByUserId(userId, page);
+        var announcements = await announcementService.GetSoldAnnouncementsByUserId(userId, page, pageSize);
+        var res = mapper.ListAnnouncementsShortAndPagesToListAnnouncementResponse(announcements.Data);
+        var response = mapper.ToAnnouncementsResponseAndPages(
+            announcements,
+            res
+        );
+        
+        return Ok(response);
+    }
+    
+    [HttpGet("get-sold-by-user-id")]
+    public async Task<IActionResult> GetSoldAnnouncementsByUserId(
+        [FromQuery] Guid userId,
+        [FromQuery] int page, 
+        [FromQuery] int pageSize)
+    {
+        var isAdmin = User.IsInRole("Admin");
+        if (page < 1 || !isAdmin)
+            return BadRequest();
+        
+        var announcements = await announcementService.GetSoldAnnouncementsByUserId(userId, page, pageSize);
+        var res = mapper.ListAnnouncementsShortAndPagesToListAnnouncementResponse(announcements.Data);
+        var response = mapper.ToAnnouncementsResponseAndPages(
+            announcements,
+            res
+        );
+        
+        return Ok(response);
+    }
+    
+    [HttpGet("get-placed")]
+    public async Task<IActionResult> GetPlacedAnnouncements(
+        [FromQuery] int page, 
+        [FromQuery] int pageSize)
+    {
+        var userId = User.GetUserId();
+        
+        if (page < 1)
+            return BadRequest();
+        
+        var announcements = await announcementService.GetPlacedAnnouncementsByUserId(userId, page, pageSize);
+        var res = mapper.ListAnnouncementsShortAndPagesToListAnnouncementResponse(announcements.Data);
+        var response = mapper.ToAnnouncementsResponseAndPages(
+            announcements,
+            res
+        );
+        
+        return Ok(response);
+    }
+    
+    [HttpGet("get-placed-by-user-id")]
+    public async Task<IActionResult> GetPlacedAnnouncementsByUserId(
+        [FromQuery] Guid userId,
+        [FromQuery] int page, 
+        [FromQuery] int pageSize)
+    {
+        var userRoles = User.IsInRole("Admin");
+        if (page < 1 || !userRoles)
+            return BadRequest();
+        
+        var announcements = await announcementService.GetPlacedAnnouncementsByUserId(userId, page, pageSize);
         var res = mapper.ListAnnouncementsShortAndPagesToListAnnouncementResponse(announcements.Data);
         var response = mapper.ToAnnouncementsResponseAndPages(
             announcements,
@@ -283,6 +360,11 @@ public class AnnouncementController(
     [HttpPost("switch-verification")]
     public async Task<IActionResult> SwitchVerify([FromBody] Guid announcementId)
     {
+        var isPaid = await paymentService.IsExistByAnnouncementIdAsync(announcementId);
+        
+        if(isPaid)
+            return BadRequest("Payment is exist");
+        
         var user = await userManager.GetUserAsync(User);
         if (user == null)
         {

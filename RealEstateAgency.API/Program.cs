@@ -14,8 +14,16 @@ using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Infrastructure.Hubs;
 
-CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+// CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+// CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
+var culture = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+
+culture.DateTimeFormat.ShortDatePattern = "dd.MM.yyyy";
+culture.DateTimeFormat.LongDatePattern = "dd.MM.yyyy HH:mm:ss";
+
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,6 +99,9 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IFavoriteRepository, FavoriteRepository>();
 builder.Services.AddScoped<IViewRepository, ViewRepository>();
 builder.Services.AddScoped<IComplaintRepository, ComplaintRepository>();
+builder.Services.AddScoped<IAnalyticRepository, AnalyticRepository>();
+
+builder.Services.AddScoped<IUserPushSubscriptionRepository, UserPushSubscriptionRepository>();
 
 // Services
 builder.Services.AddScoped<IJwtService, JwtService>();
@@ -112,6 +123,10 @@ builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<IViewService, ViewService>();
 builder.Services.AddScoped<IComplaintService, ComplaintService>();
+builder.Services.AddScoped<IAnalyticService, AnalyticService>();
+
+builder.Services.AddScoped<WebPushService>();
+builder.Services.AddScoped<IUserPushSubscriptionService, UserPushSubscriptionService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -140,20 +155,20 @@ app.MapControllers();
 
 app.MapHub<MessageHub>("/messageHub");
 
-// app.UseCors(x =>
-// {
-//     x.WithHeaders().AllowAnyHeader();
-//     x.WithOrigins("http://localhost:5173");
-//     x.WithMethods().AllowAnyMethod();
-//     x.AllowCredentials();
-// });
-
 app.UseCors(x =>
 {
-    x.WithOrigins("https://diplompwa.netlify.app")
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials();
+    x.WithHeaders().AllowAnyHeader();
+    x.WithOrigins("http://localhost:5173");
+    x.WithMethods().AllowAnyMethod();
+    x.AllowCredentials();
 });
+
+// app.UseCors(x =>
+// {
+//     x.WithOrigins("https://diplompwa.netlify.app")
+//         .AllowAnyMethod()
+//         .AllowAnyHeader()
+//         .AllowCredentials();
+// });
 
 app.Run();

@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using RealEstateAgency.Application.Interfaces.Repositories;
+using RealEstateAgency.Core.DTO;
 using RealEstateAgency.Core.Models;
 using RealEstateAgency.Infrastructure.Context;
 
@@ -62,6 +64,78 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
             .CountAsync();
         
         return query;
+    }
+    
+    public async Task<int> GetViewsDate(Guid userId, DateTime dateTime)
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
+        var start = dateTime.ToUniversalTime().AddDays(1).Date;
+        var end = start.AddDays(1);
+        
+        var query = await ctx.Views
+            .Where(x =>
+                x.UserId == userId
+                && x.CreatedAt >= start
+                && x.CreatedAt < end)
+            .CountAsync();
+        
+        return query;
+    }
+    
+    public async Task<int> GetViewsDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
+        var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
+        var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
+        
+        var query = await ctx.Views
+            .Where(x =>
+                x.UserId == userId
+                && x.CreatedAt >= start
+                && x.CreatedAt < end)
+            .CountAsync();
+        
+        return query;
+    }
+    
+    public async Task<string> GetFavoriteCategoryDate(Guid userId, DateTime dateTime)
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
+        var start = dateTime.ToUniversalTime().AddDays(1).Date;
+        var end = start.AddDays(1);
+        
+        var query = await ctx.Views
+            .Where(x => x.UserId == userId 
+                        && x.CreatedAt >= start 
+                        && x.CreatedAt < end)
+            .GroupBy(x => x.AnnouncementNavigation.StatementNavigation.PropertyNavigation.PropertyTypeNavigation.Name)
+            .OrderByDescending(g => g.Count())
+            .Select(g => g.Key)
+            .FirstOrDefaultAsync();
+        
+        return query ?? "Unknown";
+    }
+    
+    public async Task<string> GetFavoriteCategoryDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
+        var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
+        var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
+        
+        var query = await ctx.Views
+            .Where(x => x.UserId == userId 
+                        && x.CreatedAt >= start 
+                        && x.CreatedAt < end)
+            .GroupBy(x => x.AnnouncementNavigation.StatementNavigation.PropertyNavigation.PropertyTypeNavigation.Name)
+            .OrderByDescending(g => g.Count())
+            .Select(g => g.Key)
+            .FirstOrDefaultAsync();
+        
+        return query ?? "Unknown";
     }
     
     public async Task<int> GetSoldPropertyCntByUserId(Guid userId)
@@ -449,6 +523,56 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
             .Select(x => x.Id)
             .FirstOrDefaultAsync();
         
+        return res;
+    }
+    
+    public async Task<List<UserGrid>> GetAllAsync()
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+
+        var res = await ctx.Users
+            .Select(u => new UserGrid
+            {
+                Id = u.Id,
+                Name = u.Name,
+                Surname = u.Surname,
+                Email = u.Email ?? string.Empty,
+                PhoneNumber = u.PhoneNumber ?? string.Empty,
+                Login = u.UserName ?? string.Empty,
+                Age = u.Age,
+                CreatedAt = u.CreatedAt,
+                LockoutEnd = u.LockoutEnd,
+
+                RoleId = ctx.UserRoles
+                    .Where(ur => ur.UserId == u.Id)
+                    .Select(ur => ur.RoleId)
+                    .FirstOrDefault(),
+
+                RoleName = ctx.UserRoles
+                    .Where(ur => ur.UserId == u.Id)
+                    .Join(ctx.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
+                    .FirstOrDefault() ?? "No Role",
+
+                TotalOffersPlacedCnt = ctx.Announcements
+                    .Count(a => a.StatementNavigation.UserId == u.Id),
+
+                OffersClosedCnt = ctx.Announcements
+                    .Count(a => a.StatementNavigation.UserId == u.Id && 
+                                (a.ClosedAt != null || a.PaymentNavigation != null)),
+
+                TotalRevenue = ctx.Announcements
+                    .Where(a => a.StatementNavigation.UserId == u.Id && a.PaymentNavigation != null)
+                    .Sum(a => (decimal?)a.StatementNavigation.Price) ?? 0m,
+
+                OffersBoughtCnt = ctx.Announcements
+                    .Count(a => a.PaymentNavigation.CustomerId == u.Id),
+
+                TotalSpent = ctx.Announcements
+                    .Where(a => a.PaymentNavigation.CustomerId == u.Id)
+                    .Sum(a => (decimal?)a.StatementNavigation.Price) ?? 0m
+            })
+            .ToListAsync();
+
         return res;
     }
 }

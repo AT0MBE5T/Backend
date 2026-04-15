@@ -21,12 +21,14 @@ public class PropertyTypeService(IPropertyTypeRepository repository, Application
         var totalPlacedAnnouncements = await repository.GetTotalPlacedAnnouncementsDate(propertyTypeId, date);
         var totalDeals = await repository.GetTotalDealsDate(propertyTypeId, date);
         var totalIncome = await repository.GetTotalIncomeDate(propertyTypeId, date);
+        var views = await repository.GetViewsByPropertyIdDate(propertyTypeId, date);
 
         return new PropertyTypeTotalsDto
         {
             TotalPlacedAnnouncements = totalPlacedAnnouncements,
             TotalDeals = totalDeals,
-            TotalIncome = totalIncome
+            TotalIncome = totalIncome,
+            Views = views
         };
     }
     
@@ -35,12 +37,14 @@ public class PropertyTypeService(IPropertyTypeRepository repository, Application
         var totalPlacedAnnouncements = await repository.GetTotalPlacedAnnouncementsDateSpan(propertyTypeId, dateFrom, dateTo);
         var totalDeals = await repository.GetTotalDealsDateSpan(propertyTypeId, dateFrom, dateTo);
         var totalIncome = await repository.GetTotalIncomeDateSpan(propertyTypeId, dateFrom, dateTo);
+        var views = await repository.GetViewsByPropertyIdDateSpan(propertyTypeId, dateFrom, dateTo);
 
         return new PropertyTypeTotalsDto
         {
             TotalPlacedAnnouncements = totalPlacedAnnouncements,
             TotalDeals = totalDeals,
-            TotalIncome = totalIncome
+            TotalIncome = totalIncome,
+            Views = views
         };
     }
     

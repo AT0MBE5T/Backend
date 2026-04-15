@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstateAgency.Application.Interfaces.Repositories;
+using RealEstateAgency.Core.DTO;
 using RealEstateAgency.Core.Models;
 using RealEstateAgency.Infrastructure.Context;
 
@@ -39,6 +40,22 @@ public class CommentsRepository(IDbContextFactory<RealEstateContext> dbContextFa
             .Where(x => x.Id == id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
+    }
+    
+    public async Task<List<CommentGrid>> GetCommentsGridAsync()
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        var result = await ctx.Comments.Select(x => new CommentGrid
+        {
+            Id = x.Id,
+            Author = x.UserNavigation.UserName,
+            StatementTitle = x.AnnouncementNavigation.StatementNavigation.Title,
+            Text = x.Text,
+            CreatedAt = x.CreatedAt,
+            AnnouncementId = x.AnnouncementId
+        }).ToListAsync();
+
+        return result;
     }
     
     public async Task<Guid> InsertAsync(Comment comment)

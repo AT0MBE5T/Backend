@@ -15,4 +15,5 @@ public class AnnouncementResponse
     public bool IsVerified { get; set; }
     public bool IsFavorite { get; set; }
     public int ViewsCnt { get; set; }
+    public DateTime? ClosedAt { get; set; }
 }

@@ -11,4 +11,5 @@ public class UserDto
     public string PhoneNumber { get; set; } = string.Empty;
     public required string AvatarUrl { get; set; }
     public required string PublicId { get; set; }
+    public List<string> Roles { get; set; } = [];
 }

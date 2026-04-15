@@ -24,6 +24,13 @@ public class AccountController(UserManager<User> userManager,
     SignInManager<User> signInManager,
     IImageService imageService): ControllerBase
 {
+    [AllowAnonymous]
+    [HttpGet("ping")]
+    public IActionResult Ping()
+    {
+        return Ok("Pong");
+    }
+
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
     {
@@ -89,8 +96,8 @@ public class AccountController(UserManager<User> userManager,
         return Ok(res.Errors);
     }
     
-    [HttpGet("get-user-dto-by-id")]
-    public async Task<IActionResult> GetUserDtoById()
+    [HttpGet("get-user-dto")]
+    public async Task<IActionResult> GetUserDto()
     {
         var userId = User.GetUserId();
         var user = await accountService.GetUserDtoById(userId);
@@ -103,13 +110,54 @@ public class AccountController(UserManager<User> userManager,
         return Ok(user);
     }
     
-    [HttpGet("get-stats-by-user-id")]
+    [HttpGet("get-user-dto-by-id/{userId:guid}")]
+    public async Task<IActionResult> GetUserDtoById(Guid userId)
+    {
+        var user = await accountService.GetUserDtoById(userId);
+
+        if (user == null)
+        {
+            return NotFound();
+        }
+        
+        return Ok(user);
+    }
+    
+    [HttpGet("get-stats")]
     public async Task<IActionResult> GetPersonalStatsByUserId()
     {
         var userId = User.GetUserId();
-        var stats = await accountService.GetPersonalStatsByUserId(userId);
+        var stats = await accountService.GetReportByUserId(userId);
         return Ok(stats);
     }
+    
+    [HttpGet("get-all")]
+    public async Task<IActionResult> GetAll()
+    {
+        var users = await accountService.GetAll();
+        return Ok(users);
+    }
+    
+    [HttpPost("set-role")]
+    public async Task<IActionResult> SetRole([FromBody] RoleRequest request)
+    {
+        await accountService.SetRole(request.UserId, request.RoleName);
+        return Ok();
+    }
+    
+    [HttpPost("set-ban")]
+    public async Task<IActionResult> SetBan([FromBody] BanRequest request)
+    {
+        await accountService.SetBan(request.UserId, request.BanTime);
+        return Ok();
+    }
+    
+        [HttpPost("delete")]
+        public async Task<IActionResult> SetBan([FromBody] Guid userId)
+        {
+            await accountService.Delete(userId);
+            return Ok();
+        }
     
     [AllowAnonymous]
     [HttpPost("register")]

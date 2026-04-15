@@ -18,4 +18,6 @@ public interface IPropertyTypeRepository
     Task<PropertyTypeTopRealtorCoreDto?> GetTopRealtorDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo);
     Task<PropertyTypeTopClientCoreDto?> GetTopClientDate(Guid propertyTypeId, DateTime date);
     Task<PropertyTypeTopClientCoreDto?> GetTopClientDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo);
+    Task<int> GetViewsByPropertyIdDate(Guid propertyTypeId, DateTime date);
+    Task<int> GetViewsByPropertyIdDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo);
 }

@@ -65,6 +65,44 @@ public class PropertyTypeRepository(IDbContextFactory<RealEstateContext> dbConte
             .Select(x => x.AnnouncementNavigation!.StatementNavigation!.Price)
             .SumAsync();
     }
+    
+    public async Task<int> GetViewsByPropertyIdDate(Guid propertyTypeId, DateTime date)
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
+        var start = date.ToUniversalTime().AddDays(1).Date;
+        var end = start.AddDays(1);
+        
+        var result = await ctx.Views
+            .Where(x => x.CreatedAt >= start
+                        && x.CreatedAt < end
+                        && x.AnnouncementNavigation
+                            .StatementNavigation
+                            .PropertyNavigation
+                            .PropertyTypeId == propertyTypeId)
+            .CountAsync();
+
+        return result;
+    }
+    
+    public async Task<int> GetViewsByPropertyIdDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo)
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
+        var start = dateFrom.ToUniversalTime().Date.AddDays(1);
+        var end = dateTo.ToUniversalTime().Date.AddDays(2);
+        
+        var result = await ctx.Views
+            .Where(x => x.CreatedAt >= start
+                        && x.CreatedAt < end
+                        && x.AnnouncementNavigation
+                            .StatementNavigation
+                            .PropertyNavigation
+                            .PropertyTypeId == propertyTypeId)
+            .CountAsync();
+
+        return result;
+    }
 
     public async Task<int> GetTotalPlacedAnnouncementsDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo)
     {

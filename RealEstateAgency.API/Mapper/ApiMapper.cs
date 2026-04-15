@@ -22,6 +22,7 @@ public partial class ApiMapper
     [MapperIgnoreSource(nameof(RegisterRequestDto.Password))]
     [MapperIgnoreSource(nameof(RegisterRequestDto.Email))]
     [MapperIgnoreSource(nameof(RegisterRequestDto.PhoneNumber))]
+    [MapperIgnoreSource(nameof(RegisterRequestDto.Avatar))]
     public partial RegisterResponseDto RegisterRequestToResponse(RegisterRequestDto request);
     
     [MapperIgnoreSource(nameof(AnnouncementRequest.Photos))]
@@ -135,6 +136,7 @@ public partial class ApiMapper
     
     [MapperIgnoreSource(nameof(AnnouncementsShortAndPages.Data))]
     [MapProperty(nameof(AnnouncementsShortAndPages.PagesCnt), nameof(AnnouncementsResponseAndPages.TotalPages))]
+    [MapProperty(nameof(AnnouncementsShortAndPages.TotalItems), nameof(AnnouncementsResponseAndPages.TotalItems))]
     public partial AnnouncementsResponseAndPages ToAnnouncementsResponseAndPages(
         AnnouncementsShortAndPages source, 
         List<AnnouncementResponse> data 
@@ -181,6 +183,13 @@ public partial class ApiMapper
     [MapperIgnoreTarget(nameof(User.QuestionsNavigation))]
     [MapperIgnoreTarget(nameof(User.StatementsNavigation))]
     [MapperIgnoreTarget(nameof(User.VerificationsNavigation))]
+    [MapperIgnoreTarget(nameof(User.ViewsNavigation))]
+    [MapperIgnoreTarget(nameof(User.ChatMembersNavigation))]
+    [MapperIgnoreTarget(nameof(User.ComplaintsNavigation))]
+    [MapperIgnoreTarget(nameof(User.FavoritesNavigation))]
+    [MapperIgnoreTarget(nameof(User.UserPushSubscriptionsNavigation))]
+    [MapperIgnoreTarget(nameof(User.MessagesNavigation))]
+    [MapperIgnoreTarget(nameof(User.PublicAvatarId))]
     [MapperIgnoreTarget(nameof(User.NormalizedEmail))]
     [MapperIgnoreTarget(nameof(User.NormalizedUserName))]
     [MapperIgnoreTarget(nameof(User.Id))]

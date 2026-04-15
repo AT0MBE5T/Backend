@@ -9,7 +9,7 @@ namespace RealEstateAgency.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ViewController(IViewService viewService, ApiMapper mapper): ControllerBase
+public class ViewController(IViewService viewService): ControllerBase
 {
     [HttpPost("add-view")]
     public async Task<IActionResult> AddView([FromBody] ViewRequest request)

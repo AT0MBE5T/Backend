@@ -12,24 +12,6 @@ public class AnnouncementsService(IAnnouncementRepository announcementRepository
     IAuditService auditService, IPropertyService propertyService, IImageService imageService,
     ApplicationMapper mapper, IVerificationRepository verificationRepository, IUnitOfWork unitOfWork) : IAnnouncementsService
 {
-    private const int Pagesize = 8;
-    
-    public async Task<List<AnnouncementDto>> GetAllAnnouncementsPaginated(int page)
-    {
-        var res = await announcementRepository.GetAllPaginatedAsync(page, Pagesize);
-
-        if (res.Count == 0)
-        {
-            return [];
-        }
-        
-        var mapped = res
-            .Select(mapper.AnnouncementEntityToAnnouncementDto)
-            .ToList();
-        
-        return mapped;
-    }
-
     public async Task<AnnouncementGetEditRequest?> GetAnnouncementForEditByIdAsync(Guid announcementId)
     {
         var announcement = await announcementRepository.GetAnnouncementById(announcementId);
@@ -201,6 +183,12 @@ public class AnnouncementsService(IAnnouncementRepository announcementRepository
 
         return false;
     }
+
+    public async Task<Guid> GetAuthorOfferIdByQuestionId(Guid questionId)
+    {
+        var data = await announcementRepository.GetAuthorOfferIdByQuestionIdAsync(questionId);
+        return data;
+    }
     
     public async Task<AnnouncementsShortAndPages> GetSearchDataPaginated(string text, List<string> filters, int sortId, int page, int limit, Guid? userId)
     {
@@ -219,32 +207,25 @@ public class AnnouncementsService(IAnnouncementRepository announcementRepository
         var result = await announcementRepository.GetAnnouncementFullById(id, userId);
         return result;
     }
-
-    public async Task<int> GetPages()
-    {
-        var cnt = await announcementRepository.GetAmount();
-        var pages = Math.Ceiling((double)cnt / Pagesize);
-        return (int)pages;
-    }
     
     public async Task<bool> SetClosedAt(Guid id)
     {
         return await announcementRepository.SetClosedAt(id);
     }
 
-    public async Task<AnnouncementsShortAndPages> GetBoughtAnnouncementsByUserId(Guid userId, int page)
+    public async Task<AnnouncementsShortAndPages> GetBoughtAnnouncementsByUserId(Guid userId, int page, int limit)
     {
-        return await announcementRepository.GetBoughtByUserId(userId, page, Pagesize);
+        return await announcementRepository.GetBoughtByUserId(userId, page, limit);
     }
     
-    public async Task<AnnouncementsShortAndPages> GetSoldAnnouncementsByUserId(Guid userId, int page)
+    public async Task<AnnouncementsShortAndPages> GetSoldAnnouncementsByUserId(Guid userId, int page, int limit)
     {
-        return await announcementRepository.GetSoldByUserId(userId, page, Pagesize);
+        return await announcementRepository.GetSoldByUserId(userId, page, limit);
     }
     
-    public async Task<AnnouncementsShortAndPages> GetPlacedAnnouncementsByUserId(Guid userId, int page)
+    public async Task<AnnouncementsShortAndPages> GetPlacedAnnouncementsByUserId(Guid userId, int page, int limit)
     {
-        return await announcementRepository.GetPlacedByUserId(userId, page, Pagesize);
+        return await announcementRepository.GetPlacedByUserId(userId, page, limit);
     }
     
     public async Task<byte[]> GetBytesByAnnouncementIdAsync(Guid announcementId)
@@ -268,6 +249,12 @@ public class AnnouncementsService(IAnnouncementRepository announcementRepository
     public async Task<Guid?> GetStatementIdByAnnouncementIdAsync(Guid announcementId)
     {
         var result = await announcementRepository.GetStatementIdByAnnouncementIdAsync(announcementId);
+        return result;
+    }
+    
+    public async Task<List<AnnouncementGrid>> GetAnnouncementsGrid()
+    {
+        var result = await announcementRepository.GetAnnouncementsGridAsync();
         return result;
     }
 }

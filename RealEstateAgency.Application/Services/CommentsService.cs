@@ -3,6 +3,7 @@ using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Mapper;
 using RealEstateAgency.Application.Utils;
+using RealEstateAgency.Core.DTO;
 
 namespace RealEstateAgency.Application.Services;
 
@@ -55,31 +56,31 @@ public class CommentsService(ICommentsRepository commentsRepository, IAuditServi
         try
         {
             var comment = await commentsRepository.GetCommentByIdAsync(commentId);
-            
+
             if (comment == null)
             {
                 return false;
             }
-            
+
             var userId = comment.UserId;
-        
+
             var res = await commentsRepository.DeleteByIdAsync(commentId);
             if (!res)
             {
                 await unitOfWork.RollbackAsync();
                 return false;
             }
-        
+
             var auditDto = new AuditDto
             {
                 ActionId = Guid.Parse(AuditAction.DeleteComment),
                 UserId = comment.UserId,
                 Details = $"Comment {commentId} deleted by {userId}"
             };
-            
+
             await auditService.InsertAudit(auditDto);
             await unitOfWork.CommitAsync();
-            
+
             return res;
         }
         catch
@@ -87,6 +88,11 @@ public class CommentsService(ICommentsRepository commentsRepository, IAuditServi
             await unitOfWork.RollbackAsync();
             return false;
         }
-        
+    }
+
+    public async Task<List<CommentGrid>> GetCommentsGrid()
+    {
+        var res = await commentsRepository.GetCommentsGridAsync();
+        return res;
     }
 }

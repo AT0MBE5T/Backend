@@ -12,12 +12,19 @@ namespace RealEstateAgency.API.Controllers;
 public class ChatController(IChatService chatService): ControllerBase
 {
     [HttpPost("get-or-create-chat")]
-    public async Task<IActionResult> GetOrCreateChatRoom([FromBody] Guid authorId)
+    public async Task<IActionResult> GetOrCreateChatRoom([FromBody] Guid announcementId)
     {
         var userId = User.GetUserId();
         
-        var chatId = await chatService.GetOrCreateChat(userId, authorId);
+        var chatId = await chatService.GetOrCreateChat(userId, announcementId);
         return Ok(chatId);
+    }
+    
+    [HttpGet("get-messages-grid")]
+    public async Task<IActionResult> GetMessagesGrid()
+    {
+        var result = await chatService.GetMessagesGrid();
+        return Ok(result);
     }
     
     [HttpGet("my-chats")]

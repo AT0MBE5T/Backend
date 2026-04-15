@@ -17,6 +17,16 @@ public class QuestionsRepository(IDbContextFactory<RealEstateContext> dbContextF
             .ToListAsync();
     }
 
+    public async Task<Guid> GetQuestionUserIdByAnswerIdAsync(Guid id)
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        var questionUserId = await ctx.Answers
+            .Where(x => x.Id == id)
+            .Select(x => x.QuestionNavigation.UserId)
+            .FirstOrDefaultAsync();
+        return questionUserId;
+    }
+
     public async Task<List<QuestionAnswerModel>> GetQuestionsAnswersByAnnouncementIdAsync(Guid id)
     {
         await using var ctx = await dbContextFactory.CreateDbContextAsync();
@@ -56,6 +66,26 @@ public class QuestionsRepository(IDbContextFactory<RealEstateContext> dbContextF
             .Where(x  => x.Id == id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
+        
+        return res;
+    }
+    
+    public async Task<List<QuestionAnswerGrid>> GetQuestionsAnswersGridAsync()
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        var res = await ctx.Questions.Select(x => new QuestionAnswerGrid
+        {
+            QuestionId = x.Id,
+            TextQuestion = x.Text,
+            CreatedAtQuestion = x.CreatedAt,
+            CreatedByQuestion = x.UserNavigation.UserName,
+            AnswerId = x.AnswerNavigation.Id,
+            CreatedAtAnswer = x.AnswerNavigation.CreatedAt,
+            TextAnswer = x.AnswerNavigation.Text,
+            CreatedByAnswer = x.AnswerNavigation.UserNavigation.UserName,
+            AnnouncementName = x.AnnouncementNavigation.StatementNavigation.Title,
+            AnnouncementId = x.AnnouncementId
+        }).ToListAsync();
         
         return res;
     }

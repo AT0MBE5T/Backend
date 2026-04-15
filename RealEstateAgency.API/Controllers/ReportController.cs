@@ -52,4 +52,14 @@ public class ReportController(
             ? NotFound()
             : Ok(res);
     }
+    
+    [HttpGet("get-report-by-user-id/{userId:guid}")]
+    public async Task<IActionResult> GetReportByUserId(Guid userId)
+    {
+        var res = await accountService.GetReportByUserId(userId);
+        
+        return res == null
+            ? NotFound()
+            : Ok(res);
+    }
 }

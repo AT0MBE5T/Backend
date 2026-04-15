@@ -6,5 +6,8 @@ public record ChatSummaryDto(
     string? LastMessage,
     DateTime? LastMessageAt,
     int UnreadCount,
-    string? AvatarUrl
+    string? AvatarUrl,
+    DateTime? ClosedAt,
+    Guid? OfferId,
+    Guid? RealtorId
 );

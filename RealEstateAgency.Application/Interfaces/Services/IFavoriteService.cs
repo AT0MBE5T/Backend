@@ -9,7 +9,7 @@ public interface IFavoriteService
         int sortId, int pageNumber, int pageSize);
 
     Task<bool> IsInFavoriteAsync(FavoriteDto dto);
-    Task<AnnouncementsShortAndPages> GetFavoritesByUserId(Guid userId, int page);
+    Task<AnnouncementsShortAndPages> GetFavoritesByUserId(Guid userId, int page, int limit);
     Task<bool> AddAsync(FavoriteDto entity);
     Task<bool> DeleteByDtoAsync(FavoriteDto entity);
 }

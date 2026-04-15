@@ -3,14 +3,13 @@ using RealEstateAgency.API.Dto;
 using RealEstateAgency.API.Mapper;
 using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Application.Services;
 using RealEstateAgency.Application.Utils;
 
 namespace RealEstateAgency.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class FavoriteController(IFavoriteService favoriteService, ApiMapper mapper): ControllerBase
+public class FavoriteController(IFavoriteService favoriteService, IPaymentService paymentService, ApiMapper mapper): ControllerBase
 {
     [HttpPost("search")]
     public async Task<IActionResult> Search([FromBody] SearchFavoritesRequestDto request)
@@ -25,11 +24,33 @@ public class FavoriteController(IFavoriteService favoriteService, ApiMapper mapp
         return Ok(response);
     }
     
-    [HttpGet("get-favorites-by-user-id/{page:int}")]
-    public async Task<IActionResult> GetSoldAnnouncementsByUserId(int page)
+    [HttpGet("get-favorites")]
+    public async Task<IActionResult> GetFavoriteAnnouncements(
+        [FromQuery] int page, 
+        [FromQuery] int pageSize)
     {
         var userId = User.GetUserId();
-        var announcements = await favoriteService.GetFavoritesByUserId(userId, page);
+        var announcements = await favoriteService.GetFavoritesByUserId(userId, page, pageSize);
+        var res = mapper.ListAnnouncementsShortAndPagesToListAnnouncementResponse(announcements.Data);
+        var response = mapper.ToAnnouncementsResponseAndPages(
+            announcements,
+            res
+        );
+        
+        return Ok(response);
+    }
+    
+    [HttpGet("get-favorites-by-user-id")]
+    public async Task<IActionResult> GetFavoriteAnnouncementsByUserId(
+        [FromQuery] Guid userId,
+        [FromQuery] int page, 
+        [FromQuery] int pageSize)
+    {
+        var isAdmin = User.IsInRole("Admin");
+        if (page < 1 || !isAdmin)
+            return BadRequest();
+            
+        var announcements = await favoriteService.GetFavoritesByUserId(userId, page, pageSize);
         var res = mapper.ListAnnouncementsShortAndPagesToListAnnouncementResponse(announcements.Data);
         var response = mapper.ToAnnouncementsResponseAndPages(
             announcements,
@@ -42,6 +63,11 @@ public class FavoriteController(IFavoriteService favoriteService, ApiMapper mapp
     [HttpPost("add-favorite")]
     public async Task<IActionResult> AddFavorite([FromBody] FavoriteRequest request)
     {
+        var isPaid = await paymentService.IsExistByAnnouncementIdAsync(request.AnnouncementId);
+        
+        if (isPaid)
+            return BadRequest("Announcement already paid");
+        
         var favoriteDto = new FavoriteDto
         {
             UserId = request.UserId,
@@ -59,6 +85,11 @@ public class FavoriteController(IFavoriteService favoriteService, ApiMapper mapp
     [HttpPost("delete-favorite")]
     public async Task<IActionResult> DeleteFavorite([FromBody] FavoriteRequest request)
     {
+        var isPaid = await paymentService.IsExistByAnnouncementIdAsync(request.AnnouncementId);
+        
+        if (isPaid)
+            return BadRequest("Announcement already paid");
+        
         var favoriteDto = new FavoriteDto
         {
             UserId = request.UserId,

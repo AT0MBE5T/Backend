@@ -305,6 +305,10 @@ namespace RealEstateAgency.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("AnnouncementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("announcement_id");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -314,6 +318,8 @@ namespace RealEstateAgency.Infrastructure.Migrations
                         .HasColumnName("type_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AnnouncementId");
 
                     b.HasIndex("TypeId");
 
@@ -908,6 +914,42 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_user", (string)null);
                 });
 
+            modelBuilder.Entity("RealEstateAgency.Core.Models.UserPushSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Auth")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("auth");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("endpint");
+
+                    b.Property<string>("P256DH")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("p256dh");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("t_user_push_subscription");
+                });
+
             modelBuilder.Entity("RealEstateAgency.Core.Models.Verification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1073,11 +1115,17 @@ namespace RealEstateAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("RealEstateAgency.Core.Models.Chat", b =>
                 {
+                    b.HasOne("RealEstateAgency.Core.Models.Announcement", "AnnouncementNavigation")
+                        .WithMany("ChatsNavigation")
+                        .HasForeignKey("AnnouncementId");
+
                     b.HasOne("RealEstateAgency.Core.Models.ChatType", "ChatTypeNavigation")
                         .WithMany("ChatsNavigation")
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AnnouncementNavigation");
 
                     b.Navigation("ChatTypeNavigation");
                 });
@@ -1296,6 +1344,17 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
+            modelBuilder.Entity("RealEstateAgency.Core.Models.UserPushSubscription", b =>
+                {
+                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                        .WithMany("UserPushSubscriptionsNavigation")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserNavigation");
+                });
+
             modelBuilder.Entity("RealEstateAgency.Core.Models.Verification", b =>
                 {
                     b.HasOne("RealEstateAgency.Core.Models.Announcement", "AnnouncementNavigation")
@@ -1336,6 +1395,8 @@ namespace RealEstateAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("RealEstateAgency.Core.Models.Announcement", b =>
                 {
+                    b.Navigation("ChatsNavigation");
+
                     b.Navigation("CommentsNavigation");
 
                     b.Navigation("ComplaintsNavigation");
@@ -1428,6 +1489,8 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("QuestionsNavigation");
 
                     b.Navigation("StatementsNavigation");
+
+                    b.Navigation("UserPushSubscriptionsNavigation");
 
                     b.Navigation("VerificationsNavigation");
 

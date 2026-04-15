@@ -17,6 +17,18 @@ public class QuestionsService(IQuestionsRepository questionsRepository, Applicat
             .OrderBy(x => x.CreatedAtQuestion)
             .ToList();
     }
+
+    public async Task<Guid> GetQuestionUserIdByAnswerId(Guid answerId)
+    {
+        var res = await questionsRepository.GetQuestionUserIdByAnswerIdAsync(answerId);
+        return res;
+    }
+    
+    public async Task<List<QuestionAnswerGrid>> GetQuestionsAnswersGrid()
+    {
+        var res = await questionsRepository.GetQuestionsAnswersGridAsync();
+        return res;
+    }
     
     public async Task<Guid?> InsertQuestionAsync(QuestionDto questionDto)
     {

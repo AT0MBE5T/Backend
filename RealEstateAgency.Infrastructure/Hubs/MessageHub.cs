@@ -16,7 +16,7 @@ public interface IChatClient
     public Task ReceiveComment(Guid commentId, Guid offerId, string userName, string message);
     public Task ReceiveQuestion(Guid announcementId, Guid questionId, string userName, string message);
     public Task ReceiveAnswer(Guid answerId, Guid questionId, string userName, string message);
-    public Task UpdateChatList(Guid chatId, Guid userId, string userName, string message);
+    public Task UpdateChatList(Guid chatId, Guid offerId, string userName, string message);
     public Task ReceiveOffer(AnnouncementShort offer);
     public Task UpdateOffer(AnnouncementShort offer);
     public Task DeleteOffer(Guid offerId);
@@ -36,6 +36,7 @@ public class MessageHub: Hub<IChatClient>
     private readonly IQuestionsService _questionsService;
     private readonly IAnswersService _answersService;
     private readonly IAnnouncementsService _announcementsService;
+    private readonly WebPushService _webPushService;
     
     public MessageHub(
         IDistributedCache cache,
@@ -43,7 +44,8 @@ public class MessageHub: Hub<IChatClient>
         ICommentsService commentsService,
         IAnswersService answersService,
         IQuestionsService questionsService,
-        IAnnouncementsService announcementsService)
+        IAnnouncementsService announcementsService,
+        WebPushService webPushService)
     {
         _cache = cache;
         _chatService = chatService;
@@ -51,45 +53,48 @@ public class MessageHub: Hub<IChatClient>
         _answersService = answersService;
         _questionsService = questionsService;
         _announcementsService = announcementsService;
+        _webPushService = webPushService;
     }
 
     public async Task JoinChat(UserConnection connection)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
-
         var userId = Context.User.GetUserId();
+        
+        var options = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+        };
 
-        await _cache.SetStringAsync($"user_conn_{userId}", JsonSerializer.Serialize(connection));
+        await _cache.SetStringAsync($"user_conn_{userId}", JsonSerializer.Serialize(connection), options);
     }
     
-    public async Task JoinCommentsChat(UserConnection connection)
+    public async Task JoinChatGeneral(UserConnection connection)
     {
+        var userId = Context.User.GetUserId();
         await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
-
         var stringConnection = JsonSerializer.Serialize(connection);
         
-        await _cache.SetStringAsync(Context.ConnectionId, stringConnection);
-    }
-    
-    public async Task JoinQuestionAnswerChat(UserConnection connection)
-    {
-        await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
-
-        var stringConnection = JsonSerializer.Serialize(connection);
+        var options = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+        };
         
-        await _cache.SetStringAsync(Context.ConnectionId, stringConnection);
+        await _cache.SetStringAsync(Context.ConnectionId, stringConnection, options);
+        await _cache.SetStringAsync($"active_question_room_{userId}", connection.ChatRoom,
+            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30) });
     }
     
-    public async Task JoinOffersChat(UserConnection connection)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
-
-        var stringConnection = JsonSerializer.Serialize(connection);
-        
-        await _cache.SetStringAsync(Context.ConnectionId, stringConnection);
+        var userId = Context.User.GetUserId();
+        await _cache.RemoveAsync(Context.ConnectionId);
+        await _cache.RemoveAsync($"active_question_room_{userId}");
+        await _cache.RemoveAsync($"user_conn_{userId}");
+        await base.OnDisconnectedAsync(exception);
     }
     
-    public async Task SendMessage(Guid chatId, string message)
+    public async Task SendMessage(Guid chatId, string message, string userName, Guid offerId)
     {
         var userId = Context.User.GetUserId();
 
@@ -110,12 +115,24 @@ public class MessageHub: Hub<IChatClient>
         
         var participants = await _chatService.GetChatParticipants(chatId);
         
+        var receiverIds = participants.Where(p => p != userId);
+        
+        foreach (var receiverId in receiverIds)
+        {
+            var activeRoom = await _cache.GetStringAsync($"user_conn_{receiverId}");
+
+            if (activeRoom is not null)
+                continue;
+
+            _ = _webPushService.SendNotificationToUserAsync(receiverId, $"[{userName}] {message}", $"/chats/{chatId}", "New message");
+        }
+        
         foreach (var participantId in participants)
         {
             await Clients.Group(participantId.ToString())
                 .UpdateChatList(
                         chatId,
-                        userId,
+                        offerId,
                         connection.UserName,
                         message
                     );
@@ -166,9 +183,25 @@ public class MessageHub: Hub<IChatClient>
         };
         
         var questionId = await _questionsService.InsertQuestionAsync(questionDto);
+
+        if (questionId is null)
+            return;
         
-        if (questionId is not null)
-            await Clients.Group(chatId.ToString()).ReceiveQuestion(chatId, questionId.Value, userName, message);
+        await Clients.Group(chatId.ToString()).ReceiveQuestion(chatId, questionId.Value, userName, message);
+        
+        var authorId = await _announcementsService.GetAuthorOfferIdByQuestionId(questionId.Value);
+        if (authorId == Guid.Empty)
+            return;
+        
+        var activeRoom = await _cache.GetStringAsync($"active_question_room_{authorId}");
+
+        if (activeRoom is not null)
+            return;
+        
+        // if (activeRoom == chatId.ToString())
+        //     return; 
+        
+        await _webPushService.SendNotificationToUserAsync(authorId, $"[{userName}] {message}", $"/offers/{chatId}/questions","New answer");
     }
     
     public async Task SendAnswer(Guid chatId, Guid questionId, string message, string userName)
@@ -191,9 +224,24 @@ public class MessageHub: Hub<IChatClient>
         };
     
         var answerId = await _answersService.InsertAnswerAsync(answerDto);
+        if (answerId is null)
+            return;
         
-        if (answerId is not null)
-            await Clients.Group(chatId.ToString()).ReceiveAnswer(answerId.Value, questionId, userName, message);
+        await Clients.Group(chatId.ToString()).ReceiveAnswer(answerId.Value, questionId, userName, message);
+
+        var questionUserId = await _questionsService.GetQuestionUserIdByAnswerId(answerId.Value);
+        if (questionUserId == Guid.Empty)
+            return;
+        
+        var activeRoom = await _cache.GetStringAsync($"active_question_room_{questionUserId}");
+
+        if (activeRoom is not null)
+            return;
+        
+        // if (activeRoom == chatId.ToString())
+        //     return; 
+        
+        await _webPushService.SendNotificationToUserAsync(questionUserId, $"[{userName}] {message}", $"/offers/{chatId}/questions", "New answer");
     }
     
     public async Task AddOffer(Guid chatId, AnnouncementShort offer)

@@ -13,4 +13,5 @@ public class AnnouncementShort
     public required bool IsVerified { get; set; }
     public bool IsFavorite { get; set; }
     public required int ViewsCnt { get; set; }
+    public required DateTime? ClosedAt { get; set; }
 }

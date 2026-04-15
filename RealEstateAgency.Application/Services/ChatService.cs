@@ -2,6 +2,7 @@
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
+using RealEstateAgency.Core.DTO;
 using RealEstateAgency.Core.Models;
 
 namespace RealEstateAgency.Application.Services;
@@ -10,16 +11,22 @@ public class ChatService(
     IChatRepository chatRepository,
     IMessageRepository messageRepository,
     IChatMemberRepository chatMemberRepository,
-    IUnitOfWork unitOfWork): IChatService
+    IUnitOfWork unitOfWork,
+    IAnnouncementsService announcementsService): IChatService
 {
-    public async Task<Guid?> GetOrCreateChat(Guid userId, Guid authorId)
+    public async Task<Guid?> GetOrCreateChat(Guid userId, Guid announcementId)
     {
-        var chatId = await chatRepository.GetChatByBothIdsAsync(userId, authorId);
+        var announcement = await announcementsService.GetAnnouncementFullById(announcementId, userId);
+
+        if (announcement is null || announcement.ClosedAt != null)
+            return null;
+        
+        var chatId = await chatRepository.GetChatByBothIdsAsync(userId, announcement.AuthorId);
 
         if (chatId is not null)
             return chatId;
         
-        var objToAdd = new Chat { TypeId = Guid.Parse(ChatTypes.Private) };
+        var objToAdd = new Chat { TypeId = Guid.Parse(ChatTypes.Private), AnnouncementId = announcementId };
 
         try
         {
@@ -34,13 +41,13 @@ public class ChatService(
 
             var chatMemberUser = new ChatMember
             {
-                UserId =  userId,
+                UserId = userId,
                 ChatId = chatId.Value,
             };
         
             var chatMemberAuthor = new ChatMember
             {
-                UserId =  authorId,
+                UserId = announcement.AuthorId,
                 ChatId = chatId.Value,
             };
         
@@ -117,6 +124,12 @@ public class ChatService(
         
         var result = await messageRepository.AddMessageAsync(newMessage);
 
+        return result;
+    }
+
+    public async Task<List<MessageGrid>> GetMessagesGrid()
+    {
+        var result = await  messageRepository.GetMessagesGridAsync();
         return result;
     }
 }

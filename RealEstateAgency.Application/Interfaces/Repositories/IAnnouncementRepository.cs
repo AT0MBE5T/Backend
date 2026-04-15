@@ -6,13 +6,15 @@ namespace RealEstateAgency.Application.Interfaces.Repositories;
 public interface IAnnouncementRepository
 {
     Task<List<Announcement>> GetAllPaginatedAsync(int pageNumber, int pageSize);
+    Task<int> GetTotalViews();
+    Task<Guid> GetAuthorOfferIdByQuestionIdAsync(Guid id);
+    Task<List<AnnouncementGrid>> GetAnnouncementsGridAsync();
     Task<Guid> InsertAsync(Announcement announcement);
     Task<bool> UpdateAsync(Guid id, Announcement announcement);
     Task<bool> DeleteAsync(Guid id);
     Task<Announcement?> GetAnnouncementById(Guid id);
     Task<Verification?> GetVerificationAsync(Guid id);
     Task<AnnouncementFull?> GetAnnouncementFullById(Guid id, Guid? userId);
-    Task<int> GetAmount();
     Task<AnnouncementsShortAndPages> GetSearchData(string text, List<string> filtersId, int sortId, int pageNumber, int pageSize, Guid? userId);
     Task<bool> SetClosedAt(Guid id);
     Task<AnnouncementsShortAndPages> GetPlacedByUserId(Guid userId, int pageNumber, int pageSize);

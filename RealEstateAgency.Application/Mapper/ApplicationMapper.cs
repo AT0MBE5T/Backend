@@ -15,6 +15,10 @@ public partial class ApplicationMapper
     [MapperIgnoreSource(nameof(Announcement.PaymentNavigation))]
     [MapperIgnoreSource(nameof(Announcement.UserNavigation))]
     [MapperIgnoreSource(nameof(Announcement.VerificationNavigation))]
+    [MapperIgnoreSource(nameof(Announcement.ViewsNavigation))]
+    [MapperIgnoreSource(nameof(Announcement.ComplaintsNavigation))]
+    [MapperIgnoreSource(nameof(Announcement.FavoritesNavigation))]
+    [MapperIgnoreSource(nameof(Announcement.ChatsNavigation))]
     [MapperIgnoreTarget(nameof(AnnouncementDto.IsActive))]
     public partial AnnouncementDto AnnouncementEntityToAnnouncementDto(Announcement announcementEntity);
     
@@ -24,6 +28,10 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(Announcement.PaymentNavigation))]
     [MapperIgnoreTarget(nameof(Announcement.UserNavigation))]
     [MapperIgnoreTarget(nameof(Announcement.VerificationNavigation))]
+    [MapperIgnoreTarget(nameof(Announcement.ViewsNavigation))]
+    [MapperIgnoreTarget(nameof(Announcement.ComplaintsNavigation))]
+    [MapperIgnoreTarget(nameof(Announcement.FavoritesNavigation))]
+    [MapperIgnoreTarget(nameof(Announcement.ChatsNavigation))]
     [MapperIgnoreSource(nameof(AnnouncementDto.IsActive))]
     public partial Announcement AnnouncementDtoToAnnouncementEntity(AnnouncementDto announcementDto);
     
@@ -166,6 +174,7 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.TotalPlacedAnnouncements))]
     [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.TotalDeals))]
     [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.TotalIncome))]
+    [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.Views))]
     private partial PropertyTypeStatsDto MapDealToRequest(PropertyTypeTopDealDto dealDto);
     
     [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.TopClientName))]
@@ -180,6 +189,7 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.TopDealCustomerName))]
     [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.TopDealPrice))]
     [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.TopDealRealtorName))]
+    [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.Views))]
     private partial PropertyTypeStatsDto MapRealtorToRequest(PropertyTypeTopRealtorDto realtorDto);
     
     [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.TopRealtorName))]
@@ -194,9 +204,11 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.TopDealCustomerName))]
     [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.TopDealPrice))]
     [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.TopDealRealtorName))]
+    [MapperIgnoreTarget(nameof(PropertyTypeStatsDto.Views))]
     private partial PropertyTypeStatsDto MapClientToRequest(PropertyTypeTopClientDto clientDto);
     
     public GeneralStatsResponseDto ToGeneralStatsResponseDto(
+        int views,
         GeneralTopDeal topDeal,
         List<GeneralTopRealtors> topRealtors,
         List<GeneralTopProperty> topPropertyTypes,
@@ -211,7 +223,8 @@ public partial class ApplicationMapper
         var propertySecond = MapPropertiesToGeneralStatsResponseSecondDto(topPropertyTypes.ElementAtOrDefault(1) ?? new GeneralTopProperty());
         var clientFirst = MapClientsToGeneralStatsResponseFirstDto(topClients.ElementAtOrDefault(0) ?? new GeneralTopClient());
         var clientSecond = MapClientsToGeneralStatsResponseSecondDto(topClients.ElementAtOrDefault(1) ?? new GeneralTopClient());
-    
+
+        target.Views = views;
         target.TotalClosedAnnouncements = totalPlacedAnnouncements;
         target.TotalIncome = totalIncome;
         target.TopRealtorDealsFirst = realtorFirst.TopRealtorDealsFirst;
@@ -256,6 +269,7 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopPropertyTypeNameSecond))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TotalClosedAnnouncements))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TotalIncome))]
+    [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.Views))]
     private partial GeneralStatsResponseDto MapDealsToGeneralStatsResponseDto(GeneralTopDeal dealDto);
     
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopClientDealsFirst))]
@@ -281,6 +295,7 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealPrice))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealSoldDate))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealStatementType))]
+    [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.Views))]
     [MapProperty(nameof(GeneralTopRealtors.TopRealtorDeals), nameof(GeneralStatsResponseDto.TopRealtorDealsFirst))]
     [MapProperty(nameof(GeneralTopRealtors.TopRealtorIncome), nameof(GeneralStatsResponseDto.TopRealtorIncomeFirst))]
     [MapProperty(nameof(GeneralTopRealtors.TopRealtorName), nameof(GeneralStatsResponseDto.TopRealtorNameFirst))]
@@ -309,6 +324,7 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealPrice))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealSoldDate))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealStatementType))]
+    [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.Views))]
     [MapProperty(nameof(GeneralTopRealtors.TopRealtorDeals), nameof(GeneralStatsResponseDto.TopRealtorDealsSecond))]
     [MapProperty(nameof(GeneralTopRealtors.TopRealtorIncome), nameof(GeneralStatsResponseDto.TopRealtorIncomeSecond))]
     [MapProperty(nameof(GeneralTopRealtors.TopRealtorName), nameof(GeneralStatsResponseDto.TopRealtorNameSecond))]
@@ -337,6 +353,7 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealPrice))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealSoldDate))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealStatementType))]
+    [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.Views))]
     [MapProperty(nameof(GeneralTopProperty.TopPropertyTypeAvgPrice), nameof(GeneralStatsResponseDto.TopPropertyTypeAvgPriceFirst))]
     [MapProperty(nameof(GeneralTopProperty.TopPropertyTypeCnt), nameof(GeneralStatsResponseDto.TopPropertyTypeCntFirst))]
     [MapProperty(nameof(GeneralTopProperty.TopPropertyTypeName), nameof(GeneralStatsResponseDto.TopPropertyTypeNameFirst))]
@@ -365,6 +382,7 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealPrice))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealSoldDate))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealStatementType))]
+    [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.Views))]
     [MapProperty(nameof(GeneralTopProperty.TopPropertyTypeAvgPrice), nameof(GeneralStatsResponseDto.TopPropertyTypeAvgPriceSecond))]
     [MapProperty(nameof(GeneralTopProperty.TopPropertyTypeCnt), nameof(GeneralStatsResponseDto.TopPropertyTypeCntSecond))]
     [MapProperty(nameof(GeneralTopProperty.TopPropertyTypeName), nameof(GeneralStatsResponseDto.TopPropertyTypeNameSecond))]
@@ -393,6 +411,7 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealPrice))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealSoldDate))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealStatementType))]
+    [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.Views))]
     [MapProperty(nameof(GeneralTopClient.TopClientDeals), nameof(GeneralStatsResponseDto.TopClientDealsFirst))]
     [MapProperty(nameof(GeneralTopClient.TopClientName), nameof(GeneralStatsResponseDto.TopClientNameFirst))]
     [MapProperty(nameof(GeneralTopClient.TopClientSpent), nameof(GeneralStatsResponseDto.TopClientSpentFirst))]
@@ -421,6 +440,7 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealPrice))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealSoldDate))]
     [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.TopDealStatementType))]
+    [MapperIgnoreTarget(nameof(GeneralStatsResponseDto.Views))]
     [MapProperty(nameof(GeneralTopClient.TopClientDeals), nameof(GeneralStatsResponseDto.TopClientDealsSecond))]
     [MapProperty(nameof(GeneralTopClient.TopClientName), nameof(GeneralStatsResponseDto.TopClientNameSecond))]
     [MapProperty(nameof(GeneralTopClient.TopClientSpent), nameof(GeneralStatsResponseDto.TopClientSpentSecond))]
@@ -446,6 +466,22 @@ public partial class ApplicationMapper
     [MapperIgnoreSource(nameof(User.SecurityStamp))]
     [MapperIgnoreSource(nameof(User.ConcurrencyStamp))]
     [MapperIgnoreSource(nameof(User.TwoFactorEnabled))]
+    
+    [MapperIgnoreSource(nameof(User.ViewsNavigation))]
+    [MapperIgnoreSource(nameof(User.ComplaintsNavigation))]
+    [MapperIgnoreSource(nameof(User.FavoritesNavigation))]
+    [MapperIgnoreSource(nameof(User.AnswersNavigation))]
+    [MapperIgnoreSource(nameof(User.AnnouncementsNavigation))]
+    [MapperIgnoreSource(nameof(User.AuHistoriesNavigation))]
+    [MapperIgnoreSource(nameof(User.ChatMembersNavigation))]
+    [MapperIgnoreSource(nameof(User.CommentsNavigation))]
+    [MapperIgnoreSource(nameof(User.MessagesNavigation))]
+    [MapperIgnoreSource(nameof(User.PaymentsNavigation))]
+    [MapperIgnoreSource(nameof(User.QuestionsNavigation))]
+    [MapperIgnoreSource(nameof(User.StatementsNavigation))]
+    [MapperIgnoreSource(nameof(User.VerificationsNavigation))]
+    [MapperIgnoreSource(nameof(User.UserPushSubscriptionsNavigation))]
+    
     [MapProperty(nameof(User.UserName), nameof(UserDto.Login))]
     [MapProperty(nameof(User.Avatar), nameof(UserDto.AvatarUrl))]
     [MapProperty(nameof(User.PublicAvatarId), nameof(UserDto.PublicId))]

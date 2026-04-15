@@ -19,6 +19,13 @@ namespace RealEstateAgency.API.Controllers
             return Ok(res);
         }
         
+        [HttpGet("get-questions-grid")]
+        public async Task<IActionResult> GetQuestionsGrid()
+        {
+            var result = await questionsService.GetQuestionsAnswersGrid();
+            return Ok(result);
+        }
+        
         [HttpPost("add-question")]
         public async Task<IActionResult> AddQuestion([FromBody] QuestionDto questionDto)
         {

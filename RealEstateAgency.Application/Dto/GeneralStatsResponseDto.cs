@@ -28,4 +28,5 @@ public class GeneralStatsResponseDto
     public string TopClientNameSecond { get; set; } = string.Empty;
     public int TopClientDealsSecond { get; set; }
     public decimal TopClientSpentSecond { get; set; }
+    public int Views { get; set; }
 }

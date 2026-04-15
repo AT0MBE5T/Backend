@@ -9,8 +9,6 @@ namespace RealEstateAgency.Application.Services;
 
 public class FavoriteService(IFavoriteRepository favoriteRepository, ApplicationMapper applicationMapper) : IFavoriteService
 {
-    private const int Pagesize = 8;
-    
     public async Task<AnnouncementsShortAndPages> GetSearchDataAsync(Guid userId, string text, List<string> filtersId,
         int sortId, int pageNumber, int pageSize)
     {
@@ -18,9 +16,9 @@ public class FavoriteService(IFavoriteRepository favoriteRepository, Application
         return result;
     }
 
-    public async Task<AnnouncementsShortAndPages> GetFavoritesByUserId(Guid userId, int page)
+    public async Task<AnnouncementsShortAndPages> GetFavoritesByUserId(Guid userId, int page, int limit)
     {
-        var result = await  favoriteRepository.GetFavoritesByUserId(userId, page, Pagesize);
+        var result = await  favoriteRepository.GetFavoritesByUserId(userId, page, limit);
         return result;
     }
     

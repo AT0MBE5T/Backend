@@ -13,13 +13,15 @@ public class ChatRepository(IDbContextFactory<RealEstateContext> dbContextFactor
     public async Task<List<ChatSummaryDto>> GetChatsByUserIdAsync(Guid id)
     {
         await using var ctx = await dbContextFactory.CreateDbContextAsync();
-
         var query = await ctx.ChatMembers
             .AsNoTracking()
             .Where(cm => cm.UserId == id)
             .Select(cm => new
             {
                 ChatId = cm.ChatId,
+                ClosedAt = cm.ChatNavigation!.AnnouncementNavigation!.ClosedAt,
+                OfferId = cm.ChatNavigation.AnnouncementNavigation.Id,
+                RealtorId = cm.ChatNavigation.AnnouncementNavigation.StatementNavigation!.UserId,
                 OtherMember = ctx.ChatMembers
                     .Where(other => other.ChatId == cm.ChatId && other.UserId != id)
                     .Select(other => other.UserNavigation)
@@ -39,7 +41,10 @@ public class ChatRepository(IDbContextFactory<RealEstateContext> dbContextFactor
                 x.LastMessage?.Content ?? string.Empty,
                 x.LastMessage?.CreatedAt, 
                 x.UnreadCount,
-                ""
+                x.OtherMember?.Avatar,
+                x.ClosedAt,
+                x.OfferId,
+                x.RealtorId
             ))
             .OrderByDescending(x => x.LastMessageAt)
             .ToList();

@@ -49,6 +49,11 @@ namespace RealEstateAgency.Infrastructure.Configurations
                 .HasMany(a => a.FavoritesNavigation)
                 .WithOne(c => c.AnnouncementNavigation)
                 .HasForeignKey(c => c.AnnouncementId);
+            
+            builder
+                .HasMany(a => a.ChatsNavigation)
+                .WithOne(c => c.AnnouncementNavigation)
+                .HasForeignKey(c => c.AnnouncementId);
         }
     }
 }

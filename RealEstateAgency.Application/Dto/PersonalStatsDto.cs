@@ -12,4 +12,6 @@ public class PersonalStatsDto
     public int CommentsCnt { get; set; }
     public decimal TotalMoneyEarned { get; set; }
     public decimal TotalMoneySpent { get; set; }
+    public int Views { get; set; }
+    public string FavoriteCategory { get; set; } = string.Empty;
 }

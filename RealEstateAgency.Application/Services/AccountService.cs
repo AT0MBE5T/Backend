@@ -3,6 +3,7 @@ using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Mapper;
+using RealEstateAgency.Core.DTO;
 using RealEstateAgency.Core.Models;
 
 namespace RealEstateAgency.Application.Services;
@@ -33,22 +34,31 @@ public class AccountService(
         
         var result = mapper.UserToUserDto(data);
 
+        var roles = await userManager.GetRolesAsync(data);
+
+        result.Roles = roles.ToList();
+
         return result;
     }
-
-    public async Task<PersonalStatsDto> GetPersonalStatsByUserId(Guid userId)
+    
+    public async Task<PersonalStatsDto?> GetReportByUserId(Guid userId)
     {
-        var placedCnt = await repository.GetPlacedPropertyCntByUserId(userId);
-        var soldCnt = await repository.GetSoldPropertyCntByUserId(userId);
-        var boughtCnt = await repository.GetBoughtPropertyCntByUserId(userId);
+        var dateFrom = DateTime.MinValue;
+        var dateTo = DateTime.MaxValue.AddDays(-2);
+        
+        var placedCnt = await repository.GetPlacedPropertyCntByUserIdDateSpan(userId, dateFrom, dateTo);
+        var soldCnt = await repository.GetSoldPropertyCntByUserIdDateSpan(userId, dateFrom, dateTo);
+        var boughtCnt = await repository.GetBoughtPropertyCntByUserIdDateSpan(userId, dateFrom, dateTo);
         var days = await repository.GetDaysFromRegisterByUserId(userId);
-        var paymentsCnt = await repository.GetPaymentsCntByUserId(userId);
-        var questionsCnt = await repository.GetQuestionsCntByUserId(userId);
-        var answersCnt = await repository.GetAnswersCntByUserId(userId);
-        var commentsCnt = await repository.GetCommentsCntByUserId(userId);
-        var moneyEarned = await repository.GetTotalMoneyEarnedByUserId(userId);
-        var moneySpent = await repository.GetTotalMoneySpentByUserId(userId);
-
+        var paymentsCnt = await repository.GetPaymentsCntByUserIdDateSpan(userId, dateFrom, dateTo);
+        var questionsCnt = await repository.GetQuestionsCntByUserIdDateSpan(userId, dateFrom, dateTo);
+        var answersCnt = await repository.GetAnswersCntByUserIdDateSpan(userId, dateFrom, dateTo);
+        var commentsCnt = await repository.GetCommentsCntByUserIdDateSpan(userId, dateFrom, dateTo);
+        var moneyEarned = await repository.GetTotalMoneyEarnedByUserIdDateSpan(userId, dateFrom, dateTo);
+        var moneySpent = await repository.GetTotalMoneySpentByUserIdDateSpan(userId, dateFrom, dateTo);
+        var views = await repository.GetViewsDateSpan(userId, dateFrom, dateTo);
+        var favoriteCategory = await repository.GetFavoriteCategoryDateSpan(userId, dateFrom, dateTo);
+        
         return new PersonalStatsDto
         {
             PlacedCnt = placedCnt,
@@ -60,7 +70,9 @@ public class AccountService(
             PaymentsCnt = paymentsCnt,
             QuestionsCnt = questionsCnt,
             TotalMoneyEarned = moneyEarned,
-            TotalMoneySpent = moneySpent
+            TotalMoneySpent =  moneySpent,
+            Views = views,
+            FavoriteCategory = favoriteCategory
         };
     }
     
@@ -83,6 +95,8 @@ public class AccountService(
         var commentsCnt = await repository.GetCommentsCntByUserIdDate(userId, reportUserDto.DateFrom);
         var moneyEarned = await repository.GetTotalMoneyEarnedByUserIdDate(userId, reportUserDto.DateFrom);
         var moneySpent = await repository.GetTotalMoneySpentByUserIdDate(userId, reportUserDto.DateFrom);
+        var views = await repository.GetViewsDate(userId, reportUserDto.DateFrom);
+        var favoriteCategory = await repository.GetFavoriteCategoryDate(userId, reportUserDto.DateFrom);
         
         return new PersonalStatsDto
         {
@@ -95,7 +109,9 @@ public class AccountService(
             PaymentsCnt = paymentsCnt,
             QuestionsCnt = questionsCnt,
             TotalMoneyEarned = moneyEarned,
-            TotalMoneySpent = moneySpent
+            TotalMoneySpent = moneySpent,
+            Views = views,
+            FavoriteCategory = favoriteCategory
         };
     }
     
@@ -118,6 +134,8 @@ public class AccountService(
         var commentsCnt = await repository.GetCommentsCntByUserIdDateSpan(userId, reportUserDto.DateFrom, reportUserDto.DateTo);
         var moneyEarned = await repository.GetTotalMoneyEarnedByUserIdDateSpan(userId, reportUserDto.DateFrom, reportUserDto.DateTo);
         var moneySpent = await repository.GetTotalMoneySpentByUserIdDateSpan(userId, reportUserDto.DateFrom, reportUserDto.DateTo);
+        var views = await repository.GetViewsDateSpan(userId, reportUserDto.DateFrom, reportUserDto.DateTo);
+        var favoriteCategory = await repository.GetFavoriteCategoryDateSpan(userId, reportUserDto.DateFrom, reportUserDto.DateTo);
         
         return new PersonalStatsDto
         {
@@ -130,7 +148,9 @@ public class AccountService(
             PaymentsCnt = paymentsCnt,
             QuestionsCnt = questionsCnt,
             TotalMoneyEarned = moneyEarned,
-            TotalMoneySpent =  moneySpent
+            TotalMoneySpent =  moneySpent,
+            Views = views,
+            FavoriteCategory = favoriteCategory
         };
     }
     
@@ -146,5 +166,52 @@ public class AccountService(
 
         var res = await repository.UpdateAsync(user);
         return res;
+    }
+    
+    public async Task SetRole(Guid userId, string roleName)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+            return;
+        
+        var oldRoles = await userManager.GetRolesAsync(user);
+        await userManager.RemoveFromRolesAsync(user, oldRoles);
+        await userManager.AddToRoleAsync(user, roleName);
+    }
+    
+    public async Task SetBan(Guid userId, DateTime? dateTime)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+            return;
+        
+        DateTimeOffset? lockoutContent = dateTime.HasValue 
+            ? DateTime.SpecifyKind(dateTime.Value, DateTimeKind.Utc) 
+            : null;
+        
+        await userManager.SetLockoutEndDateAsync(user, lockoutContent);
+    }
+    
+    public async Task<List<UserGrid>> GetAll()
+    {
+        var result = await repository.GetAllAsync();
+        return result;
+    }
+    
+    public async Task<bool> Delete(Guid userId)
+    {
+        try
+        {
+            var user = await userManager.FindByIdAsync(userId.ToString());
+            if (user is null)
+                return false;
+
+            await userManager.DeleteAsync(user);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

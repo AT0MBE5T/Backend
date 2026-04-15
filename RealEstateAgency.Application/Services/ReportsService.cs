@@ -11,13 +11,14 @@ public class ReportsService(IAnnouncementRepository repository,  ApplicationMapp
     public async Task<GeneralStatsResponseDto> GetGeneralReport()
     {
         var totalPlacedAnnouncements = await GetTotalAnnouncements();
+        var views = await GetTotalViews();
         var totalIncome = await GetTotalIncome();
         var topDeal = await GetTopDeal() ?? new GeneralTopDeal();
         var topRealtors = await GetTopRealtors();
         var topPropertyTypes = await GetTopPropertyTypes();
         var topClients = await GetTopClients();
 
-        var res = mapper.ToGeneralStatsResponseDto(topDeal, topRealtors, topPropertyTypes, topClients, totalPlacedAnnouncements, totalIncome);
+        var res = mapper.ToGeneralStatsResponseDto(views, topDeal, topRealtors, topPropertyTypes, topClients, totalPlacedAnnouncements, totalIncome);
 
         return res;
     }
@@ -25,6 +26,11 @@ public class ReportsService(IAnnouncementRepository repository,  ApplicationMapp
     private async Task<int> GetTotalAnnouncements()
     {
         return await repository.GetTotalAnnouncements();
+    }
+    
+    private async Task<int> GetTotalViews()
+    {
+        return await repository.GetTotalViews();
     }
 
     private async Task<decimal> GetTotalIncome()

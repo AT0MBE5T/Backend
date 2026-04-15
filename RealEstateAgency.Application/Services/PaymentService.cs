@@ -39,4 +39,10 @@ public class PaymentService(IPaymentRepository repository, IAnnouncementsService
             return null;
         }
     }
+
+    public async Task<bool> IsExistByAnnouncementIdAsync(Guid announcementId)
+    {
+        var result = await repository.IsExistByAnnouncementId(announcementId);
+        return result;
+    }
 }

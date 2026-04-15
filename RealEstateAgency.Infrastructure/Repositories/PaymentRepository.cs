@@ -14,4 +14,11 @@ public class PaymentRepository(IDbContextFactory<RealEstateContext> dbContextFac
         await ctx.SaveChangesAsync();
         return payment.Id;
     }
+
+    public async Task<bool> IsExistByAnnouncementId(Guid announcementId)
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        var result = await ctx.Payments.AnyAsync(p => p.AnnouncementId == announcementId);
+        return result;
+    }
 }

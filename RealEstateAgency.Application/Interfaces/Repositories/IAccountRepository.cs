@@ -1,10 +1,13 @@
-﻿using RealEstateAgency.Core.Models;
+﻿using RealEstateAgency.Core.DTO;
+using RealEstateAgency.Core.Models;
 
 namespace RealEstateAgency.Application.Interfaces.Repositories;
 
 public interface IAccountRepository
 {
     Task<User?> GetUserById(Guid userId);
+    Task<int> GetViewsDate(Guid userId, DateTime dateTime);
+    Task<int> GetViewsDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo);
     Task<int> GetPlacedPropertyCntByUserId(Guid userId);
     Task<int> GetPlacedPropertyCntByUserIdDate(Guid userId, DateTime dateTime);
     Task<int> GetPlacedPropertyCntByUserIdDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo);
@@ -35,4 +38,7 @@ public interface IAccountRepository
     Task<decimal> GetTotalMoneySpentByUserIdDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo);
     Task<Guid> GetUserIdByLogin(string login);
     Task<bool> UpdateAsync(User user);
+    Task<string> GetFavoriteCategoryDate(Guid userId, DateTime dateTime);
+    Task<string> GetFavoriteCategoryDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo);
+    Task<List<UserGrid>> GetAllAsync();
 }

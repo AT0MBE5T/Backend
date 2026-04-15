@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Services;
+using RealEstateAgency.Core.DTO;
 using RealEstateAgency.Core.Models;
 using RealEstateAgency.Infrastructure.Context;
 
@@ -21,11 +22,31 @@ public class MessageRepository(IDbContextFactory<RealEstateContext> dbContextFac
         await using var ctx = await dbContextFactory.CreateDbContextAsync();
     
         return await ctx.Messages
-            .AsNoTracking() // Отключаем отслеживание для ускорения (чтение)
+            .AsNoTracking()
             .Where(x => x.ChatId == chatId)
-            .OrderBy(x => x.CreatedAt) // Всегда сортируйте сообщения по времени
+            .OrderBy(x => x.CreatedAt)
             .Include(x => x.UserNavigation)
             .ToListAsync();
+    }
+    
+    public async Task<List<MessageGrid>> GetMessagesGridAsync()
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+    
+        var result = await ctx.Messages
+            .Select(x => new MessageGrid
+            {
+                Id = x.Id,
+                Text = x.Content,
+                CreatedAt = x.CreatedAt,
+                UserFromLogin = x.UserNavigation.UserName,
+                UserFromId = x.UserNavigation.Id,
+                UserToId = x.ChatNavigation.ChatMembersNavigation.Where(y => y.UserId != x.UserNavigation.Id).Select(y => y.UserNavigation.Id).FirstOrDefault(),
+                UserToLogin = x.ChatNavigation.ChatMembersNavigation.Where(y => y.UserId != x.UserNavigation.Id).Select(y => y.UserNavigation.UserName).FirstOrDefault()
+            })
+            .ToListAsync();
+
+        return result;
     }
     
     public async Task<bool> RemoveMessageAsync(Guid messageId)

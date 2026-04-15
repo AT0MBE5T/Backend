@@ -37,6 +37,7 @@ namespace RealEstateAgency.Infrastructure.Context
         public DbSet<Complaint> Complaints { get; set; }
         public DbSet<ComplaintStatus> ComplaintStatus { get; set; }
         public DbSet<ComplaintType> ComplaintTypes { get; set; }
+        public DbSet<UserPushSubscription> UserPushSubscriptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -72,6 +73,7 @@ namespace RealEstateAgency.Infrastructure.Context
             modelBuilder.ApplyConfiguration(new UserClaimConfiguration());
             modelBuilder.ApplyConfiguration(new UserLoginConfiguration());
             modelBuilder.ApplyConfiguration(new UserTokenConfiguration());
+            modelBuilder.ApplyConfiguration(new UserPushSubscriptionConfiguration());
 
             modelBuilder.Entity<User>().ToTable("t_user");
             modelBuilder.Entity<IdentityRole<Guid>>().ToTable("t_role");

@@ -1,12 +1,15 @@
 ﻿services:
-  chathub.redis:
+  realsy-redis:
     image: redis
     restart: always
     ports:
       - "6379:6379"
-
-  realestateagency.api:
-    image: realestateagency.api
-    build:
-      context: .
-      dockerfile: Dockerfile
+      
+  realsy-postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 345543
+      POSTGRES_DB: postgresDB
+    ports:
+      - "5433:5432"

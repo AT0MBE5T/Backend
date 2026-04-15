@@ -36,5 +36,6 @@ namespace RealEstateAgency.Core.Models
         public ICollection<View> ViewsNavigation { get; set; } = [];
         public ICollection<Complaint> ComplaintsNavigation { get; set; } = [];
         public ICollection<Favorite> FavoritesNavigation { get; set; } = [];
+        public ICollection<Chat> ChatsNavigation { get; set; } = [];
     }
 }
