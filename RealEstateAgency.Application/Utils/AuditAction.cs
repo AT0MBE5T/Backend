@@ -9,7 +9,6 @@ public static class AuditAction
     public const string CreateAnnouncement = "3baef9c8-f733-4daa-818c-33084a8514b9";
     public const string DeleteAnnouncement = "5a7c18bd-e64e-4957-b753-e7935996bd12";
     public const string UpdateStatement = "704c60b0-b244-45a1-b07c-c8f17c375223";
-    public const string UpdateAnnouncement = "8408dc36-3662-463f-a65b-84f2d2448ed6";
     public const string AddAnswer = "82d238d4-7ab0-49ee-b559-77cd530704a1";
     public const string DeleteAnswer = "41706efe-7bcd-4073-9dcc-35e46c7e4790";
     public const string AddQuestion = "ebf4f3e1-5812-4297-92d3-96f296a2c758";

@@ -127,15 +127,6 @@ public class AnnouncementsService(IAnnouncementRepository announcementRepository
                 return false;
             }
 
-            var auditDto = new AuditDto
-            {
-                ActionId = Guid.Parse(AuditAction.UpdateAnnouncement),
-                UserId = userId,
-                Details = $"Announcement {announcement.Id} updated by {userId}"
-            };
-            
-            await auditService.InsertAudit(auditDto);
-            
             await unitOfWork.CommitAsync();
             return true;
         }
