@@ -32,6 +32,7 @@ public partial class ApiMapper
     [MapperIgnoreSource(nameof(AnnouncementRequest.Floors))]
     [MapperIgnoreSource(nameof(AnnouncementRequest.Rooms))]
     [MapperIgnoreSource(nameof(AnnouncementRequest.Description))]
+    [MapperIgnoreTarget(nameof(StatementDto.UserId))]
     [MapperIgnoreTarget(nameof(StatementDto.Id))]
     [MapProperty(nameof(AnnouncementRequest.StatementType), nameof(StatementDto.StatementTypeId))]
     public partial StatementDto AnnouncementRequestToStatementDto(
@@ -63,7 +64,6 @@ public partial class ApiMapper
     [MapperIgnoreSource(nameof(AnnouncementRequest.Price))]
     [MapperIgnoreSource(nameof(AnnouncementRequest.StatementType))]
     [MapperIgnoreSource(nameof(AnnouncementRequest.Content))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.UserId))]
     [MapperIgnoreTarget(nameof(PropertyDto.Id))]
     [MapProperty(nameof(AnnouncementRequest.PropertyType), nameof(PropertyDto.PropertyTypeId))]
     public partial PropertyDto AnnouncementRequestToPropertyDto(
@@ -75,7 +75,6 @@ public partial class ApiMapper
     [MapperIgnoreSource(nameof(AnnouncementRequest.Price))]
     [MapperIgnoreSource(nameof(AnnouncementRequest.StatementType))]
     [MapperIgnoreSource(nameof(AnnouncementRequest.Content))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.UserId))]
     [MapperIgnoreSource(nameof(AnnouncementRequest.PropertyType))]
     [MapperIgnoreSource(nameof(AnnouncementRequest.Location))]
     [MapperIgnoreSource(nameof(AnnouncementRequest.Area))]

@@ -1,15 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RealEstateAgency.API.Mapper;
 using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Services;
+using RealEstateAgency.Application.Utils;
 
 namespace RealEstateAgency.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class CommentController(ICommentsService commentsService, IAccountService accountService, ApiMapper mapper): ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet("get-comments-by-announcement-id/{chatId:guid}")]
     public async Task<IActionResult> GetCommentsByAnnouncementId(Guid chatId)
     {
@@ -29,6 +33,9 @@ public class CommentController(ICommentsService commentsService, IAccountService
     [HttpGet("get-comments-grid")]
     public async Task<IActionResult> GetCommentsGrid()
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         var result = await commentsService.GetCommentsGrid();
         return Ok(result);
     }
@@ -46,6 +53,9 @@ public class CommentController(ICommentsService commentsService, IAccountService
     [HttpPost("delete-comment-by-id")]
     public async Task<IActionResult> DeleteCommentById([FromBody]Guid commentId)
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         return await commentsService.DeleteByCommentIdAsync(commentId)
             ? Ok()
             : BadRequest();

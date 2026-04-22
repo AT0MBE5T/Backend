@@ -482,6 +482,8 @@ public partial class ApplicationMapper
     [MapperIgnoreSource(nameof(User.VerificationsNavigation))]
     [MapperIgnoreSource(nameof(User.UserPushSubscriptionsNavigation))]
     
+    [MapperIgnoreTarget(nameof(UserDto.Roles))]
+    
     [MapProperty(nameof(User.UserName), nameof(UserDto.Login))]
     [MapProperty(nameof(User.Avatar), nameof(UserDto.AvatarUrl))]
     [MapProperty(nameof(User.PublicAvatarId), nameof(UserDto.PublicId))]

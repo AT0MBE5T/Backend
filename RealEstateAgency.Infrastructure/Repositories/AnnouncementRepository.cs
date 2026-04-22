@@ -199,7 +199,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
         return res;
     }
     
-    public async Task<AnnouncementsShortAndPages> GetSearchData(string text, List<string> filtersId, int sortId, int pageNumber, int pageSize, Guid? userId)
+    public async Task<AnnouncementsShortAndPages> GetSearchData(string text, List<string> filtersId, int sortId, int pageNumber, int pageSize, Guid userId)
     {
         await using var ctx = await dbContextFactory.CreateDbContextAsync();
         var query = ctx.Announcements.Where(x => x.ClosedAt == null);

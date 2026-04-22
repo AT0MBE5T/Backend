@@ -15,7 +15,7 @@ public interface IAnnouncementRepository
     Task<Announcement?> GetAnnouncementById(Guid id);
     Task<Verification?> GetVerificationAsync(Guid id);
     Task<AnnouncementFull?> GetAnnouncementFullById(Guid id, Guid? userId);
-    Task<AnnouncementsShortAndPages> GetSearchData(string text, List<string> filtersId, int sortId, int pageNumber, int pageSize, Guid? userId);
+    Task<AnnouncementsShortAndPages> GetSearchData(string text, List<string> filtersId, int sortId, int pageNumber, int pageSize, Guid userId);
     Task<bool> SetClosedAt(Guid id);
     Task<AnnouncementsShortAndPages> GetPlacedByUserId(Guid userId, int pageNumber, int pageSize);
     Task<AnnouncementsShortAndPages> GetSoldByUserId(Guid userId, int pageNumber, int pageSize);

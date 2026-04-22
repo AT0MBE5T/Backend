@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RealEstateAgency.API.Dto;
 using RealEstateAgency.API.Mapper;
 using RealEstateAgency.Application.Dto;
@@ -8,6 +9,7 @@ using RealEstateAgency.Application.Utils;
 
 namespace RealEstateAgency.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ComplaintController(IComplaintService complaintService): ControllerBase
@@ -15,9 +17,14 @@ public class ComplaintController(IComplaintService complaintService): Controller
     [HttpPost("add-complaint")]
     public async Task<IActionResult> AddComplaint([FromBody] ComplaintRequest request)
     {
+        var userId = User.GetUserId();
+        
+        if (userId == Guid.Empty)
+            return Unauthorized();
+        
         var viewDto = new ComplaintDto
         {
-            UserId = request.UserId,
+            UserId = userId,
             AnnouncementId = request.AnnouncementId,
             CreatedAt = DateTime.UtcNow,
             TypeId = request.TypeId,
@@ -35,6 +42,9 @@ public class ComplaintController(IComplaintService complaintService): Controller
     [HttpPost("update-complaint")]
     public async Task<IActionResult> UpdateComplaint([FromBody] ComplaintAdminRequest request)
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         var oldComplaint = await complaintService.GetByIdAsync(request.ComplaintId);
 
         if (oldComplaint is null)
@@ -64,6 +74,9 @@ public class ComplaintController(IComplaintService complaintService): Controller
     [HttpGet("get-all")]
     public async Task<IActionResult> GetAll()
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         try
         {
             var result = await complaintService.GetAllComplaints();
@@ -78,6 +91,9 @@ public class ComplaintController(IComplaintService complaintService): Controller
     [HttpGet("get-opened")]
     public async Task<IActionResult> GetOpened()
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         try
         {
             var result = await complaintService.GetAllOpenedComplaints();
@@ -92,6 +108,11 @@ public class ComplaintController(IComplaintService complaintService): Controller
     [HttpGet("get-by-user-id/{userId:guid}")]
     public async Task<IActionResult> GetByUserId(Guid userId)
     {
+        var currentUserId = User.GetUserId();
+        
+        if (currentUserId != userId && !User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         try
         {
             var result = await complaintService.GetComplaintsByUserId(userId);

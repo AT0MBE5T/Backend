@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using RealEstateAgency.API.Dto;
@@ -11,6 +12,7 @@ using RealEstateAgency.Infrastructure.Hubs;
 
 namespace RealEstateAgency.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AnnouncementController(
@@ -23,6 +25,7 @@ public class AnnouncementController(
     IHubContext<MessageHub> hubContext,
     ApiMapper mapper): ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet("get-announcement-full-by-id/{announcementId:guid}")]
     public async Task<IActionResult> GetAnnouncementFullById(Guid announcementId)
     {
@@ -41,6 +44,9 @@ public class AnnouncementController(
     [HttpGet("get-announcements-grid")]
     public async Task<IActionResult> GetAnnouncementsGrid()
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         var result = await announcementService.GetAnnouncementsGrid();
         return Ok(result);
     }
@@ -48,6 +54,9 @@ public class AnnouncementController(
     [HttpPost("get-announcement-for-edit")]
     public async Task<IActionResult> GetAnnouncementForEdit([FromBody]Guid id)
     {
+        if (User.IsInRole(Roles.USER))
+            return Unauthorized();
+        
         var announcementData = await announcementService.GetAnnouncementForEditByIdAsync(id);
 
         if (announcementData == null)
@@ -61,6 +70,9 @@ public class AnnouncementController(
     [HttpPost("add-announcement")]
     public async Task<IActionResult> AddAnnouncement([FromForm] AnnouncementRequest request)
     {
+        if (User.IsInRole(Roles.USER))
+            return Unauthorized();
+        
         var userId = User.GetUserId();
         
         var photos = request.Photos;
@@ -96,7 +108,7 @@ public class AnnouncementController(
         }
 
         var announcement = mapper.AnnouncementRequestToAnnouncementDto(request, (Guid)statementId, true);
-        var announcementId = await announcementService.AddAnnouncement(request.UserId, announcement);
+        var announcementId = await announcementService.AddAnnouncement(userId, announcement);
 
         var offerDto = await announcementService.GetAnnouncementShortByOfferId(announcementId!.Value, userId);
         
@@ -109,6 +121,9 @@ public class AnnouncementController(
     [HttpPost("update-announcement")]
     public async Task<IActionResult> UpdateAnnouncement([FromForm] AnnouncementEditRequest request)
     {
+        if (User.IsInRole(Roles.USER))
+            return Unauthorized();
+        
         var userId = User.GetUserId();
         
         var user = await userManager.GetUserAsync(User);
@@ -195,6 +210,9 @@ public class AnnouncementController(
     [HttpPost("delete-announcement-by-id")]
     public async Task<IActionResult> DeleteAnnouncement([FromBody] Guid announcementId)
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         var isPaid = await paymentService.IsExistByAnnouncementIdAsync(announcementId);
 
         if (isPaid)
@@ -219,7 +237,8 @@ public class AnnouncementController(
     [HttpPost("search")]
     public async Task<IActionResult> Search([FromBody] SearchRequestDto request)
     {
-        var announcements = await announcementService.GetSearchDataPaginated(request.Text, request.Filters, request.SortId, request.Page, request.Limit, request.UserId);
+        var userId = User.GetUserId();
+        var announcements = await announcementService.GetSearchDataPaginated(request.Text, request.Filters, request.SortId, request.Page, request.Limit, userId);
         var res = mapper.ListAnnouncementsShortAndPagesToListAnnouncementResponse(announcements.Data);
         var response = mapper.ToAnnouncementsResponseAndPages(
             announcements,
@@ -232,6 +251,9 @@ public class AnnouncementController(
     [HttpPost("close-announcement")]
     public async Task<IActionResult> BuyPropertyByAnnouncement([FromBody] BuyRequest request)
     {
+        if (User.IsInRole(Roles.USER))
+            return Unauthorized();
+        
         var isExist = await paymentService.IsExistByAnnouncementIdAsync(request.AnnouncementId);
 
         if (isExist)
@@ -267,7 +289,7 @@ public class AnnouncementController(
         [FromQuery] int page, 
         [FromQuery] int pageSize)
     {
-        var isAdmin = User.IsInRole("Admin");
+        var isAdmin = User.IsInRole(Roles.ADMIN);
         if (page < 1 || !isAdmin)
             return BadRequest();
             
@@ -303,7 +325,7 @@ public class AnnouncementController(
         [FromQuery] int page, 
         [FromQuery] int pageSize)
     {
-        var isAdmin = User.IsInRole("Admin");
+        var isAdmin = User.IsInRole(Roles.ADMIN);
         if (page < 1 || !isAdmin)
             return BadRequest();
         
@@ -343,7 +365,7 @@ public class AnnouncementController(
         [FromQuery] int page, 
         [FromQuery] int pageSize)
     {
-        var userRoles = User.IsInRole("Admin");
+        var userRoles = User.IsInRole(Roles.ADMIN);
         if (page < 1 || !userRoles)
             return BadRequest();
         
@@ -360,6 +382,9 @@ public class AnnouncementController(
     [HttpPost("switch-verification")]
     public async Task<IActionResult> SwitchVerify([FromBody] Guid announcementId)
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         var isPaid = await paymentService.IsExistByAnnouncementIdAsync(announcementId);
         
         if(isPaid)

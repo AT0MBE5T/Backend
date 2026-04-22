@@ -11,7 +11,7 @@ public interface IAnnouncementsService
     Task<Guid?> AddAnnouncement(Guid userId, AnnouncementDto announcementDto);
     Task<bool> UpdateAnnouncementAsync(Guid announcementId, Guid userId, AnnouncementDto announcementDto);
     Task<bool> DeleteAnnouncementAsync(Guid announcementId, Guid userId);
-    Task<AnnouncementsShortAndPages> GetSearchDataPaginated(string text, List<string> filters, int sortId, int page, int limit, Guid? userId);
+    Task<AnnouncementsShortAndPages> GetSearchDataPaginated(string text, List<string> filters, int sortId, int page, int limit, Guid userId);
     Task<AnnouncementFull?> GetAnnouncementFullById(Guid id, Guid? userId);
     Task<bool> SetClosedAt(Guid id);
     Task<AnnouncementsShortAndPages> GetBoughtAnnouncementsByUserId(Guid userId, int page, int limit);

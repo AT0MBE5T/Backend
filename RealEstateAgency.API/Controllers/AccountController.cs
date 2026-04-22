@@ -34,7 +34,7 @@ public class AccountController(UserManager<User> userManager,
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
     {
-        var user = await userManager.FindByIdAsync(request.UserId.ToString());
+        var user = await userManager.GetUserAsync(User);
 
         if (user == null)
         {
@@ -48,7 +48,7 @@ public class AccountController(UserManager<User> userManager,
     [HttpPost("change-email")]
     public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailRequestDto request)
     {
-        var user = await userManager.FindByIdAsync(request.UserId.ToString());
+        var user = await userManager.GetUserAsync(User);
 
         if (user == null)
         {
@@ -62,12 +62,12 @@ public class AccountController(UserManager<User> userManager,
     [HttpPost("change-avatar")]
     public async Task<IActionResult> ChangeAvatar([FromForm] ChangeAvatarRequestDto request)
     {
-        var user = await userManager.FindByIdAsync(request.UserId.ToString());
+        var userId = User.GetUserId();
 
-        if (user == null || request.Avatar is null || request.Avatar.Length == 0)
+        if (userId == Guid.Empty || request.Avatar is null || request.Avatar.Length == 0)
             return NotFound();
         
-        await imageService.DeleteAvatarAsync(request.UserId);
+        await imageService.DeleteAvatarAsync(userId);
         var newAvatar = await imageService.UploadImageAsync(request.Avatar);
         
         if (newAvatar.StatusCode != HttpStatusCode.OK)
@@ -75,7 +75,7 @@ public class AccountController(UserManager<User> userManager,
         
         var url = newAvatar.SecureUrl.ToString();
         var publicId = newAvatar.PublicId;
-        var res = await accountService.UpdateUserAvatarAsync(user.Id, url, publicId);
+        var res = await accountService.UpdateUserAvatarAsync(userId, url, publicId);
         
         return res
             ? Ok(new { url })
@@ -85,7 +85,7 @@ public class AccountController(UserManager<User> userManager,
     [HttpPost("change-phone")]
     public async Task<IActionResult> ChangePhone([FromBody] ChangePhoneRequestDto request)
     {
-        var user = await userManager.FindByIdAsync(request.UserId.ToString());
+        var user = await userManager.GetUserAsync(User);
 
         if (user == null)
         {
@@ -99,8 +99,7 @@ public class AccountController(UserManager<User> userManager,
     [HttpGet("get-user-dto")]
     public async Task<IActionResult> GetUserDto()
     {
-        var userId = User.GetUserId();
-        var user = await accountService.GetUserDtoById(userId);
+        var user = await userManager.GetUserAsync(User);
 
         if (user == null)
         {
@@ -113,6 +112,9 @@ public class AccountController(UserManager<User> userManager,
     [HttpGet("get-user-dto-by-id/{userId:guid}")]
     public async Task<IActionResult> GetUserDtoById(Guid userId)
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return BadRequest();
+        
         var user = await accountService.GetUserDtoById(userId);
 
         if (user == null)
@@ -134,6 +136,9 @@ public class AccountController(UserManager<User> userManager,
     [HttpGet("get-all")]
     public async Task<IActionResult> GetAll()
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         var users = await accountService.GetAll();
         return Ok(users);
     }
@@ -141,6 +146,9 @@ public class AccountController(UserManager<User> userManager,
     [HttpPost("set-role")]
     public async Task<IActionResult> SetRole([FromBody] RoleRequest request)
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         await accountService.SetRole(request.UserId, request.RoleName);
         return Ok();
     }
@@ -148,16 +156,22 @@ public class AccountController(UserManager<User> userManager,
     [HttpPost("set-ban")]
     public async Task<IActionResult> SetBan([FromBody] BanRequest request)
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         await accountService.SetBan(request.UserId, request.BanTime);
         return Ok();
     }
     
-        [HttpPost("delete")]
-        public async Task<IActionResult> SetBan([FromBody] Guid userId)
-        {
-            await accountService.Delete(userId);
-            return Ok();
-        }
+    [HttpPost("delete")]
+    public async Task<IActionResult> Delete([FromBody] Guid userId)
+    {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
+        await accountService.Delete(userId);
+        return Ok();
+    }
     
     [AllowAnonymous]
     [HttpPost("register")]

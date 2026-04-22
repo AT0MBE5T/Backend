@@ -181,7 +181,7 @@ public class AnnouncementsService(IAnnouncementRepository announcementRepository
         return data;
     }
     
-    public async Task<AnnouncementsShortAndPages> GetSearchDataPaginated(string text, List<string> filters, int sortId, int page, int limit, Guid? userId)
+    public async Task<AnnouncementsShortAndPages> GetSearchDataPaginated(string text, List<string> filters, int sortId, int page, int limit, Guid userId)
     {
         var data = await announcementRepository.GetSearchData(text, filters, sortId, page, limit, userId);
         return data;

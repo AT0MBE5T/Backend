@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Services;
 
 namespace RealEstateAgency.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ImageController(IImageService imageService, IPropertyService propertyService) : ControllerBase
@@ -24,6 +26,7 @@ public class ImageController(IImageService imageService, IPropertyService proper
     //     return Ok();
     // }
 
+    [AllowAnonymous]
     [HttpGet("get/{id}")]
     public async Task<IActionResult> GetByStatementId(Guid id)
     {
@@ -38,8 +41,7 @@ public class ImageController(IImageService imageService, IPropertyService proper
         if (result.Error != null) {
             return BadRequest(result.Error.Message);
         }
-
-        // Возвращаем объект с URL и PublicId для сохранения в базу
+        
         return Ok(new { 
             Url = result.SecureUrl.ToString(), 
             PublicId = result.PublicId 

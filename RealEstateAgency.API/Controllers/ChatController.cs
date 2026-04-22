@@ -6,7 +6,7 @@ using RealEstateAgency.Application.Utils;
 
 namespace RealEstateAgency.API.Controllers;
 
-// [Authorize]
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ChatController(IChatService chatService): ControllerBase
@@ -23,6 +23,9 @@ public class ChatController(IChatService chatService): ControllerBase
     [HttpGet("get-messages-grid")]
     public async Task<IActionResult> GetMessagesGrid()
     {
+        if (!User.IsInRole(Roles.ADMIN))
+            return Unauthorized();
+        
         var result = await chatService.GetMessagesGrid();
         return Ok(result);
     }
@@ -38,6 +41,13 @@ public class ChatController(IChatService chatService): ControllerBase
     [HttpGet("get-messages-by-chat-id/{chatId:guid}")]
     public async Task<IActionResult> GetMessagesByChatId(Guid chatId)
     {
+        var participants = await chatService.GetChatParticipants(chatId);
+
+        var isUserInThisChat = participants.Contains(User.GetUserId());
+
+        if (!isUserInThisChat)
+            return Unauthorized();
+        
         var messages = await chatService.GetMessagesByChatId(chatId);
 
         return Ok(messages);

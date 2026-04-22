@@ -1,17 +1,21 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Services;
+using RealEstateAgency.Application.Utils;
 using RealEstateAgency.Core.Models;
 
 namespace RealEstateAgency.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class QuestionController(IQuestionsService questionsService,
         IAnswersService answersService,
         UserManager<User> userManager) : ControllerBase
     {
+        [AllowAnonymous]
         [HttpGet("get-all-by-announcement-id/{chatId:guid}")]
         public async Task<IActionResult> GetAllByAnnouncementId(Guid chatId)
         {
@@ -22,31 +26,19 @@ namespace RealEstateAgency.API.Controllers
         [HttpGet("get-questions-grid")]
         public async Task<IActionResult> GetQuestionsGrid()
         {
+            if (!User.IsInRole(Roles.ADMIN))
+                return BadRequest();
+            
             var result = await questionsService.GetQuestionsAnswersGrid();
             return Ok(result);
         }
-        
-        [HttpPost("add-question")]
-        public async Task<IActionResult> AddQuestion([FromBody] QuestionDto questionDto)
-        {
-            var questionId = await questionsService.InsertQuestionAsync(questionDto);
-            return questionId == Guid.Empty
-                ? StatusCode(StatusCodes.Status500InternalServerError)
-                : StatusCode(StatusCodes.Status201Created);
-        }
-        
-        [HttpPost("add-answer")]
-        public async Task<IActionResult> AddAnswer([FromBody] AnswerDto answerDto)
-        {
-            var answerId = await answersService.InsertAnswerAsync(answerDto);
-            return answerId == Guid.Empty
-                ? StatusCode(StatusCodes.Status500InternalServerError)
-                : StatusCode(StatusCodes.Status201Created);
-        }
-        
+
         [HttpPost("delete-question-by-id")]
         public async Task<IActionResult> DeleteQuestionById([FromBody]Guid questionId)
         {
+            if (!User.IsInRole(Roles.ADMIN))
+                return BadRequest();
+            
             var user = await userManager.GetUserAsync(User);
             if (user == null)
             {
@@ -61,6 +53,9 @@ namespace RealEstateAgency.API.Controllers
         [HttpPost("delete-answer-by-id")]
         public async Task<IActionResult> DeleteAnswerById([FromBody]Guid answerId)
         {
+            if (!User.IsInRole(Roles.ADMIN))
+                return BadRequest();
+            
             var user = await userManager.GetUserAsync(User);
             if (user == null)
             {
