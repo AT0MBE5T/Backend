@@ -6,7 +6,11 @@ using RealEstateAgency.Core.DTO;
 
 namespace RealEstateAgency.Application.Services;
 
-public class ReportsService(IAnnouncementRepository repository,  ApplicationMapper mapper) : IReportsService
+public class ReportsService(
+    IAnnouncementRepository repository,
+    ApplicationMapper mapper,
+    IPropertyTypeService propertyTypeService,
+    IAccountService accountService) : IReportsService
 {
     public async Task<GeneralStatsResponseDto> GetGeneralReport()
     {
@@ -21,6 +25,30 @@ public class ReportsService(IAnnouncementRepository repository,  ApplicationMapp
         var res = mapper.ToGeneralStatsResponseDto(views, topDeal, topRealtors, topPropertyTypes, topClients, totalPlacedAnnouncements, totalIncome);
 
         return res;
+    }
+    
+    public async Task<PropertyTypeStatsDto?> GetReportByPropertyTypeId(ReportPropertyTypeDto dto)
+    {
+        var result = dto.DateTo == default
+            ? await propertyTypeService.GetReportByPropertyTypeDate(dto)
+            : await propertyTypeService.GetReportByPropertyTypeDateSpan(dto);
+
+        return result;
+    }
+    
+    public async Task<PersonalStatsDto?> GetReportByUserLogin(ReportUserDto dto)
+    {
+        var result = dto.DateTo == default
+            ? await accountService.GetReportByUserLoginDate(dto)
+            : await accountService.GetReportByUserLoginDateSpan(dto);
+
+        return result;
+    }
+    
+    public async Task<PersonalStatsDto?> GetReportByUserId(Guid userId)
+    {
+        var result = await accountService.GetReportByUserId(userId);
+        return result;
     }
 
     private async Task<int> GetTotalAnnouncements()

@@ -57,4 +57,15 @@ public class ImageRepository(IDbContextFactory<RealEstateContext> dbContextFacto
         var image = await ctx.Images.FirstOrDefaultAsync(x => x.Id == id);
         return image;
     }
+    
+    public async Task<string?> GetPublicIdByUserId(Guid userId)
+    {
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        var publicId = await ctx.Users
+            .Where(x => x.Id == userId)
+            .Select(x => x.PublicAvatarId)
+            .FirstOrDefaultAsync();
+        
+        return publicId;
+    }
 }

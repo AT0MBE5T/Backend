@@ -7,12 +7,12 @@ public interface IAnnouncementsService
 {
     Task<AnnouncementGetEditRequest?> GetAnnouncementForEditByIdAsync(Guid announcementId);
     Task<Guid> GetAuthorOfferIdByQuestionId(Guid questionId);
-    Task<bool> SwitchVerificateAnnouncement(Guid announcementId, Guid userId);
-    Task<Guid?> AddAnnouncement(Guid userId, AnnouncementDto announcementDto);
-    Task<bool> UpdateAnnouncementAsync(Guid announcementId, Guid userId, AnnouncementDto announcementDto);
-    Task<bool> DeleteAnnouncementAsync(Guid announcementId, Guid userId);
+    Task<string> SwitchVerifyAnnouncement(SwitchVerificationCommand command);
+    Task<AddAnnouncementResponse> CreateAnnouncementAsync(CreateAnnouncementCommand command);
+    Task<string> UpdateAnnouncementAsync(AnnouncementUpdateCommand command);
+    Task<string> DeleteAnnouncementAsync(DeleteAnnouncementCommand command);
     Task<AnnouncementsShortAndPages> GetSearchDataPaginated(string text, List<string> filters, int sortId, int page, int limit, Guid userId);
-    Task<AnnouncementFull?> GetAnnouncementFullById(Guid id, Guid? userId);
+    Task<AnnouncementFull?> GetAnnouncementFullById(AnnouncementInfoCommand command);
     Task<bool> SetClosedAt(Guid id);
     Task<AnnouncementsShortAndPages> GetBoughtAnnouncementsByUserId(Guid userId, int page, int limit);
     Task<AnnouncementsShortAndPages> GetSoldAnnouncementsByUserId(Guid userId, int page, int limit);
@@ -23,4 +23,5 @@ public interface IAnnouncementsService
     Task<Guid?> GetStatementIdByAnnouncementIdAsync(Guid announcementId);
     Task<AnnouncementShort?> GetAnnouncementShortByOfferId(Guid offerId, Guid userId);
     Task<List<AnnouncementGrid>> GetAnnouncementsGrid();
+    Task<CloseAnnouncementResponse> CloseAnnouncement(CloseAnnouncementCommand command);
 }

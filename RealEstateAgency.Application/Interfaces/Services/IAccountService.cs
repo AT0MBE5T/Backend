@@ -12,7 +12,12 @@ public interface IAccountService
     Task<PersonalStatsDto?> GetReportByUserLoginDate(ReportUserDto reportUserDto);
     Task<PersonalStatsDto?> GetReportByUserLoginDateSpan(ReportUserDto reportUserDto);
     Task<PersonalStatsDto?> GetReportByUserId(Guid userId);
-    Task<bool> UpdateUserAvatarAsync(Guid userId, string avatarUrl, string avatarPublicId);
+    Task<string> ChangeUserAvatarAsync(ChangeAvatarCommand command);
     Task<List<UserGrid>> GetAll();
     Task<bool> Delete(Guid userId);
+    Task<RegistrationResponseDto> RegisterAsync(RegisterCommand command);
+    Task<RegistrationResponseDto> LoginAsync(LoginCommand command);
+    Task<List<string>> ChangePasswordAsync(ChangePasswordCommand command);
+    Task<List<string>> ChangeEmailAsync(ChangeEmailCommand command);
+    Task<List<string>> ChangePhoneAsync(ChangePhoneCommand command);
 }

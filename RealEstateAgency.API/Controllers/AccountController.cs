@@ -1,28 +1,21 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RealEstateAgency.API.Dto;
 using RealEstateAgency.API.Mapper;
 using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
-using RealEstateAgency.Core.Models;
 
 namespace RealEstateAgency.API.Controllers;
 
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class AccountController(UserManager<User> userManager,
+public class AccountController(
     IAccountService accountService,
     ApiMapper mapper,
-    IRefreshService refreshService,
-    IJwtService jwtService,
-    RoleManager<IdentityRole<Guid>> roleManager,
-    IAuditService auditService,
-    SignInManager<User> signInManager,
-    IImageService imageService): ControllerBase
+    IRefreshService refreshService): ControllerBase
 {
     [AllowAnonymous]
     [HttpGet("ping")]
@@ -30,76 +23,73 @@ public class AccountController(UserManager<User> userManager,
     {
         return Ok("Pong");
     }
-
+    
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
     {
-        var user = await userManager.GetUserAsync(User);
+        var userId = User.GetUserId();
+        if (userId == Guid.Empty) return Unauthorized();
 
-        if (user == null)
-        {
-            return NotFound();
-        }
+        var command = new ChangePasswordCommand(userId, request.OldPassword, request.NewPassword);
+        var result = await accountService.ChangePasswordAsync(command);
         
-        var res = await userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
-        return Ok(res.Errors);
+        return result.Count != 0
+            ? BadRequest(result)
+            : NoContent();
     }
     
     [HttpPost("change-email")]
     public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailRequestDto request)
     {
-        var user = await userManager.GetUserAsync(User);
+        var userId = User.GetUserId();
+        if (userId == Guid.Empty) return Unauthorized();
 
-        if (user == null)
-        {
-            return NotFound();
-        }
+        var command = new ChangeEmailCommand(userId, request.NewEmail);
+        var result = await accountService.ChangeEmailAsync(command);
         
-        var res = await userManager.ChangeEmailAsync(user, request.NewEmail,  await userManager.GenerateChangeEmailTokenAsync(user, request.NewEmail));
-        return Ok(!res.Errors.Any());
+        return result.Count != 0
+            ? BadRequest(result)
+            : NoContent();
     }
     
     [HttpPost("change-avatar")]
     public async Task<IActionResult> ChangeAvatar([FromForm] ChangeAvatarRequestDto request)
     {
         var userId = User.GetUserId();
+        if (request.Avatar == null || request.Avatar.Length == 0)
+            return NotFound("Invalid file");
 
-        if (userId == Guid.Empty || request.Avatar is null || request.Avatar.Length == 0)
-            return NotFound();
+        try 
+        {
+            await using var stream = request.Avatar.OpenReadStream();
+            var command = new ChangeAvatarCommand(userId, stream, request.Avatar.FileName);
         
-        await imageService.DeleteAvatarAsync(userId);
-        var newAvatar = await imageService.UploadImageAsync(request.Avatar);
+            var url = await accountService.ChangeUserAvatarAsync(command);
         
-        if (newAvatar.StatusCode != HttpStatusCode.OK)
-            return BadRequest();
-        
-        var url = newAvatar.SecureUrl.ToString();
-        var publicId = newAvatar.PublicId;
-        var res = await accountService.UpdateUserAvatarAsync(userId, url, publicId);
-        
-        return res
-            ? Ok(new { url })
-            : BadRequest();
+            return Ok(new { url });
+        }
+        catch (Exception) { return BadRequest("Upload failed"); }
     }
     
     [HttpPost("change-phone")]
     public async Task<IActionResult> ChangePhone([FromBody] ChangePhoneRequestDto request)
     {
-        var user = await userManager.GetUserAsync(User);
+        var userId = User.GetUserId();
+        if (userId == Guid.Empty) return Unauthorized();
 
-        if (user == null)
-        {
-            return NotFound();
-        }
+        var command = new ChangePhoneCommand(userId, request.NewPhone);
+        var result = await accountService.ChangePhoneAsync(command);
         
-        var res = await userManager.ChangePhoneNumberAsync(user, request.NewPhone, await userManager.GenerateChangePhoneNumberTokenAsync(user, request.NewPhone));
-        return Ok(res.Errors);
+        return result.Count != 0
+            ? BadRequest(result)
+            : NoContent();
     }
     
     [HttpGet("get-user-dto")]
     public async Task<IActionResult> GetUserDto()
     {
-        var user = await userManager.GetUserAsync(User);
+        var userId = User.GetUserId();
+        var user = await accountService.GetUserDtoById(userId);
 
         if (user == null)
         {
@@ -175,56 +165,41 @@ public class AccountController(UserManager<User> userManager,
     
     [AllowAnonymous]
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromForm] RegisterRequestDto registerRequest)
+    public async Task<IActionResult> Register([FromForm] RegisterRequestDto request)
     {
-        var photo = registerRequest.Avatar;
-        
-        if (photo.Length == 0)
-            return BadRequest("No avatar uploaded");
-        
-        var existingUser = await userManager.FindByNameAsync(registerRequest.Login);
-        
-        if (existingUser != null)
-            return Unauthorized("User with this login already exists");
-        
-        var imageResult = await imageService.UploadImageAsync(registerRequest.Avatar);
-        
-        if (imageResult.Error != null) 
-            throw new Exception(imageResult.Error.Message);
+        if (request.Avatar.Length == 0)
+            return BadRequest("Avatar is required");
 
-        var userId = Guid.NewGuid();
-        var user = mapper.RegisterRequestDtoToUser(registerRequest, DateTime.UtcNow);
+        await using var stream = request.Avatar.OpenReadStream();
+        var command = new RegisterCommand(
+            request.Login, 
+            request.Email, 
+            request.Password, 
+            stream, 
+            request.Avatar.FileName,
+            request.Name,
+            request.Surname,
+            request.Age,
+            request.PhoneNumber
+        );
 
-        user.Avatar = imageResult.SecureUrl.ToString();
-        user.PublicAvatarId = imageResult.PublicId;
-        
-        var response = mapper.RegisterRequestToResponse(registerRequest);
-        response.Id = userId;
-        var result = await userManager.CreateAsync(user, registerRequest.Password);
-        
-        if (!result.Succeeded)
+        var result = await accountService.RegisterAsync(command);
+
+        switch (result.StatusCode)
         {
-            return BadRequest(result.Errors);
+            case (int)HttpStatusCode.Unauthorized:
+                return Unauthorized(result.Errors);
+            
+            case (int)HttpStatusCode.BadRequest:
+                return BadRequest(result.Errors);
         }
 
-        if (!await roleManager.RoleExistsAsync("User"))
-        {
-            await roleManager.CreateAsync(new IdentityRole<Guid> { Name = "User" });
-        }
+        refreshService.SetRefreshToken(result.RefreshToken);
         
-        await userManager.AddToRoleAsync(user, "User");
-        var refreshToken = await refreshService.GenerateRefreshToken(user.Id);
-        var accessToken = await jwtService.GenerateAccessToken(user);
-        SetRefreshTokenCookie(refreshToken);
-        response.AccessToken = accessToken;
-        var auditDto = new AuditDto
-        {
-            ActionId = Guid.Parse(AuditAction.Register),
-            UserId = user.Id,
-            Details = $"User {user.UserName} registered"
-        };
-        await auditService.InsertAudit(auditDto);
-        
+        var response = mapper.RegisterRequestToResponse(request);
+        response.Id = result.UserId;
+        response.AccessToken = result.AccessToken;
+    
         return Ok(response);
     }
     
@@ -232,39 +207,22 @@ public class AccountController(UserManager<User> userManager,
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequest)
     {
-        var user = await userManager.FindByNameAsync(loginRequest.Login);
-        if (user == null)
+        var command = new LoginCommand(loginRequest.Login, loginRequest.Password);
+        var response = await accountService.LoginAsync(command);
+
+        switch (response.StatusCode)
         {
-            return NotFound("Login not found");
+            case (int)HttpStatusCode.Unauthorized:
+                return Unauthorized(response.Errors);
+            case (int)HttpStatusCode.NotFound:
+                return NotFound(response.Errors);
         }
 
-        var response = mapper.LoginRequestToResponse(loginRequest);
-        response.Id = user.Id;
-        var result = await signInManager.CheckPasswordSignInAsync(user, loginRequest.Password, false);
-        if (!result.Succeeded)
-        {
-            return Unauthorized("Incorrect password");
-        }
-
-        var refreshToken = await refreshService.GenerateRefreshToken(user.Id);
-        var accessToken = await jwtService.GenerateAccessToken(user);
-        SetRefreshTokenCookie(refreshToken);
-        response.AccessToken = accessToken;
-
-        var auditDto = new AuditDto
-        {
-            ActionId = Guid.Parse(AuditAction.Login),
-            UserId = user.Id,
-            Details = $"User {user.UserName} logged in"
-        };
-        await auditService.InsertAudit(auditDto);
+        var result = mapper.LoginRequestToResponse(loginRequest);
+        result.Id = response.UserId;
+        refreshService.SetRefreshToken(response.RefreshToken);
+        result.AccessToken = response.AccessToken;
         
-        return Ok(response);
-    }
-    
-    private void SetRefreshTokenCookie(string refreshToken)
-    {
-        var cookieOptions = refreshService.GetCookieOptions();
-        Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+        return Ok(result);
     }
 }

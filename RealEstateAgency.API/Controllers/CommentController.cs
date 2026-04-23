@@ -11,21 +11,17 @@ namespace RealEstateAgency.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class CommentController(ICommentsService commentsService, IAccountService accountService, ApiMapper mapper): ControllerBase
+public class CommentController(
+    ICommentsService commentsService,
+    ApiMapper mapper): ControllerBase
 {
     [AllowAnonymous]
     [HttpGet("get-comments-by-announcement-id/{chatId:guid}")]
     public async Task<IActionResult> GetCommentsByAnnouncementId(Guid chatId)
     {
         var comments = await commentsService.GetAllByAnnouncementId(chatId);
-        var tasks = comments
-            .Select(async x =>
-            {
-                var authorName = await accountService.GetNameSurnameById(x.UserId);
-                return mapper.CommentDtoToCommentResponse(x, authorName);
-            }).ToList();
-
-        var result = await Task.WhenAll(tasks);
+        var result = comments
+            .Select(mapper.CommentDtoToCommentResponse).ToList();
         
         return Ok(result);
     }

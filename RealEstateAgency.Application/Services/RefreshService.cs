@@ -1,13 +1,20 @@
 ﻿using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
+using RealEstateAgency.Application.Utils;
 using RealEstateAgency.Core.Models;
 
 namespace RealEstateAgency.Application.Services;
 
-public class RefreshService(IRefreshRepository refreshRepository, IConfiguration configuration) : IRefreshService
+public class RefreshService(
+    IRefreshRepository refreshRepository,
+    IConfiguration configuration,
+    ICookieService cookieService,
+    IJwtService jwtService,
+    IAuditService auditService) : IRefreshService
 {
     public async Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
     {
@@ -40,14 +47,40 @@ public class RefreshService(IRefreshRepository refreshRepository, IConfiguration
         return result;
     }
 
-    public CookieOptions GetCookieOptions()
+    public void SetRefreshToken(string refreshToken)
     {
-        return new CookieOptions
+        cookieService.SetRefreshTokenCookie(refreshToken);
+    }
+    
+    public async Task<AverageResponse<string>> RefreshTokenAsync(string refreshToken)
+    {
+        if (string.IsNullOrEmpty(refreshToken) || !await CheckRefreshToken(refreshToken))
+            return new AverageResponse<string>(string.Empty, "Refresh token is not valid");
+
+        var user = await GetUserByRefreshTokenAsync(refreshToken);
+        if (user == null) return new AverageResponse<string>(string.Empty, "User is not valid");
+
+        var newAccessToken = await jwtService.GenerateAccessToken(user);
+        return new AverageResponse<string>(newAccessToken, string.Empty);
+    }
+
+    public async Task<string> LogoutAsync(string refreshToken)
+    {
+        var user = await GetUserByRefreshTokenAsync(refreshToken);
+        if (user == null) return "User not found";
+
+        var deleted = await DeleteRefreshTokenAsync(refreshToken);
+        if (!deleted) return "Could not delete token";
+
+        var auditDto = new AuditDto
         {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict, 
-            Expires = DateTime.UtcNow.AddDays(Convert.ToDouble(configuration["Refresh:ExpireDays"]))
+            ActionId = Guid.Parse(AuditAction.Logout),
+            UserId = user.Id,
+            Details = $"User {user.UserName} logged out"
         };
+        
+        await auditService.InsertAudit(auditDto);
+
+        return string.Empty;
     }
 }

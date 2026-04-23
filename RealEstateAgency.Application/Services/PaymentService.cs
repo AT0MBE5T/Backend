@@ -6,7 +6,7 @@ using RealEstateAgency.Application.Utils;
 
 namespace RealEstateAgency.Application.Services;
 
-public class PaymentService(IPaymentRepository repository, IAnnouncementsService announcementsService,
+public class PaymentService(IPaymentRepository repository,
     IAuditService auditService, ApplicationMapper mapper, IUnitOfWork unitOfWork) : IPaymentService
 {
     public async Task<Guid?> InsertPayment(PaymentDto paymentDto)
@@ -15,11 +15,6 @@ public class PaymentService(IPaymentRepository repository, IAnnouncementsService
         try
         {
             var mapped = mapper.PaymentDtoToPaymentEntity(paymentDto);
-
-            if (!await announcementsService.SetClosedAt(paymentDto.AnnouncementId))
-            {
-                return Guid.Empty;
-            }
 
             var auditDto = new AuditDto
             {

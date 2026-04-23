@@ -333,20 +333,20 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
         return res;
     }
     
-    public async Task<bool> UpdateAsync(User user)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var res = await ctx.Users.FindAsync(user.Id);
-
-        if (res is null)
-            return false;
-
-        res.PublicAvatarId = user.PublicAvatarId;
-        res.Avatar =  user.Avatar;
-        
-        await ctx.SaveChangesAsync();
-        return true;
-    }
+    // public async Task<bool> UpdateAsync(User user)
+    // {
+    //     await using var ctx = await dbContextFactory.CreateDbContextAsync();
+    //     var res = await ctx.Users.FindAsync(user.Id);
+    //
+    //     if (res is null)
+    //         return false;
+    //
+    //     res.PublicAvatarId = user.PublicAvatarId;
+    //     res.Avatar =  user.Avatar;
+    //     
+    //     await ctx.SaveChangesAsync();
+    //     return true;
+    // }
     
     // public async Task<User?> GetByIdAsync(Guid id)
     // {

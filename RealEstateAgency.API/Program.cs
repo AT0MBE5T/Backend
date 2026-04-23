@@ -13,6 +13,7 @@ using RealEstateAgency.API.Mapper;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Infrastructure.Hubs;
+using RealEstateAgency.Infrastructure.Services;
 
 // CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 // CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
@@ -29,6 +30,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContextFactory<RealEstateContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RealEstateAgencyConnectionString")));
+
+// builder.Services.AddDbContext<RealEstateContext>(options =>
+//     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
 {
@@ -104,6 +108,10 @@ builder.Services.AddScoped<IAnalyticRepository, AnalyticRepository>();
 builder.Services.AddScoped<IUserPushSubscriptionRepository, UserPushSubscriptionRepository>();
 
 // Services
+builder.Services.AddScoped<IHubService, HubService>();
+builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<ICookieService, CookieService>();
+builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IRefreshService, RefreshService>();
 builder.Services.AddScoped<IAnnouncementsService, AnnouncementsService>();
@@ -111,7 +119,6 @@ builder.Services.AddScoped<IStatementsService, StatementsService>();
 builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IPropertyTypeService, PropertyTypeService>();
 builder.Services.AddScoped<IStatementTypeService, StatementTypeService>();
-builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<ICommentsService, CommentsService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IQuestionsService, QuestionsService>();

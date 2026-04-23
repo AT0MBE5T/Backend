@@ -41,9 +41,8 @@ public class ChatController(IChatService chatService): ControllerBase
     [HttpGet("get-messages-by-chat-id/{chatId:guid}")]
     public async Task<IActionResult> GetMessagesByChatId(Guid chatId)
     {
-        var participants = await chatService.GetChatParticipants(chatId);
-
-        var isUserInThisChat = participants.Contains(User.GetUserId());
+        var userId = User.GetUserId();
+        var isUserInThisChat = await chatService.IsUserInThisChat(userId, chatId);
 
         if (!isUserInThisChat)
             return Unauthorized();

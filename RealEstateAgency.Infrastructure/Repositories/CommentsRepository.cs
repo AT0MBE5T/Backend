@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Core.DTO;
 using RealEstateAgency.Core.Models;
@@ -8,12 +9,21 @@ namespace RealEstateAgency.Infrastructure.Repositories;
 
 public class CommentsRepository(IDbContextFactory<RealEstateContext> dbContextFactory) : ICommentsRepository
 {
-    public async Task<List<Comment>> GetAllByAnnouncementIdAsync(Guid id)
+    public async Task<List<CommentDto>> GetAllByAnnouncementIdAsync(Guid id)
     {
         await using var ctx = await dbContextFactory.CreateDbContextAsync();
         return await ctx.Comments
             .Where(x => x.AnnouncementId == id)
-            .AsNoTracking()
+            .Select(x => new CommentDto
+            {
+                Id = x.Id,
+                AnnouncementId =  x.AnnouncementId,
+                Text = x.Text,
+                CreatedAt = x.CreatedAt,
+                UserId =  x.UserId,
+                AuthorName = $"{x.UserNavigation.Name} {x.UserNavigation.Surname}"
+            })
+            .OrderBy(x => x.CreatedAt)
             .ToListAsync();
     }
     

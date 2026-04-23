@@ -3,6 +3,7 @@ using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using RealEstateAgency.API.Dto;
+using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Core.DTO;
@@ -14,12 +15,10 @@ public class ImageService : IImageService
 {
     private readonly Cloudinary _cloudinary;
     private readonly IImageRepository _repository;
-    private readonly IAccountService _accountService;
 
-    public ImageService(IImageRepository repository, IConfiguration config,  IAccountService accountService)
+    public ImageService(IImageRepository repository, IConfiguration config)
     {
         _repository = repository;
-        _accountService = accountService;
         
         var acc = new Account(
             config["CloudinarySettings:CloudName"],
@@ -29,19 +28,45 @@ public class ImageService : IImageService
         _cloudinary = new Cloudinary(acc);
     }
     
-    public async Task<ImageUploadResult> UploadImageAsync(IFormFile file)
+    // public async Task<ImageUploadResult> UploadImageAsync(IFormFile file)
+    // {
+    //     var uploadResult = new ImageUploadResult();
+    //
+    //     if (file.Length > 0) {
+    //         using var stream = file.OpenReadStream();
+    //         var uploadParams = new ImageUploadParams {
+    //             File = new FileDescription(file.FileName, stream)
+    //         };
+    //         uploadResult = await _cloudinary.UploadAsync(uploadParams);
+    //     }
+    //
+    //     return uploadResult;
+    // }
+    
+    public async Task<ImageUploadResponse> UploadImageAsync(Stream fileStream, string fileName)
     {
-        var uploadResult = new ImageUploadResult();
+        var uploadParams = new ImageUploadParams
+        {
+            File = new FileDescription(fileName, fileStream),
+            Transformation = new Transformation().Height(500).Width(500).Crop("fill").Gravity("face")
+        };
 
-        if (file.Length > 0) {
-            using var stream = file.OpenReadStream();
-            var uploadParams = new ImageUploadParams {
-                File = new FileDescription(file.FileName, stream)
-            };
-            uploadResult = await _cloudinary.UploadAsync(uploadParams);
+        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+        if (uploadResult.Error != null)
+        {
+            return new ImageUploadResponse(
+                string.Empty,
+                string.Empty,
+                uploadResult.Error.Message
+            );
         }
 
-        return uploadResult;
+        return new ImageUploadResponse(
+            uploadResult.PublicId,
+            uploadResult.SecureUrl.ToString(),
+            string.Empty
+        );
     }
     
     public async Task<DeletionResult> DeleteImageAsync(string publicId)
@@ -111,12 +136,12 @@ public class ImageService : IImageService
     {
         try
         {
-            var userDto =  await _accountService.GetUserDtoById(userId);
+            var publicId =  await _repository.GetPublicIdByUserId(userId);
             
-            if (userDto is null)
+            if (publicId is null)
                 return false;
             
-            var deletionResult = await DeleteImageAsync(userDto.PublicId);
+            await DeleteImageAsync(publicId);
             return true;
         }
         catch

@@ -518,4 +518,115 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(View.AnnouncementNavigation))]
     [MapperIgnoreTarget(nameof(View.UserNavigation))]
     public partial View MapViewDtoToEntity(ViewDto viewDto);
+    
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Photos))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Title))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Price))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.StatementType))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Content))]
+    [MapperIgnoreTarget(nameof(PropertyDto.Id))]
+    [MapProperty(nameof(AnnouncementRequestApp.PropertyType), nameof(PropertyDto.PropertyTypeId))]
+    public partial PropertyDto AnnouncementRequestToPropertyDto(
+        AnnouncementRequestApp requestApp
+    );
+    
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Photos))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Title))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Price))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.StatementType))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Content))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.PropertyType))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Location))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Area))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Floors))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Rooms))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Description))]
+    [MapperIgnoreTarget(nameof(AnnouncementDto.Id))]
+    [MapperIgnoreTarget(nameof(AnnouncementDto.PublishedAt))]
+    [MapperIgnoreTarget(nameof(AnnouncementDto.ClosedAt))]
+    [MapperIgnoreTarget(nameof(AnnouncementDto.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(AnnouncementDto.UpdatedBy))]
+    public partial AnnouncementDto AnnouncementRequestToAnnouncementDto(
+        AnnouncementRequestApp requestApp, 
+        Guid statementId,
+        bool isActive
+    );
+    
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Photos))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.PropertyType))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Location))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Area))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Floors))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Rooms))]
+    [MapperIgnoreSource(nameof(AnnouncementRequestApp.Description))]
+    [MapperIgnoreTarget(nameof(StatementDto.UserId))]
+    [MapperIgnoreTarget(nameof(StatementDto.Id))]
+    [MapProperty(nameof(AnnouncementRequestApp.StatementType), nameof(StatementDto.StatementTypeId))]
+    public partial StatementDto AnnouncementRequestToStatementDto(
+        AnnouncementRequestApp requestApp, 
+        Guid propertyId, 
+        DateTime createdAt
+    );
+    
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.NewPhotos))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.DeletedImageIds))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.ExistingImageOrder))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.PropertyType))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Location))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Area))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Floors))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Rooms))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Description))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.AnnouncementId))]
+    [MapperIgnoreTarget(nameof(StatementDto.Id))]
+    [MapProperty(nameof(AnnouncementEditRequestApp.StatementType), nameof(StatementDto.StatementTypeId))]
+    public partial StatementDto AnnouncementEditRequestToStatementDto(
+        AnnouncementEditRequestApp requestApp, 
+        Guid propertyId, 
+        DateTime createdAt
+    );
+    
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.NewPhotos))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.DeletedImageIds))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.ExistingImageOrder))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Title))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Price))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.StatementType))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Content))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.UserId))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.PropertyType))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Location))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Area))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Floors))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Rooms))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Description))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.AnnouncementId))]
+    [MapperIgnoreTarget(nameof(AnnouncementDto.Id))]
+    [MapperIgnoreTarget(nameof(AnnouncementDto.PublishedAt))]
+    [MapperIgnoreTarget(nameof(AnnouncementDto.ClosedAt))]
+    [MapperIgnoreTarget(nameof(AnnouncementDto.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(AnnouncementDto.UpdatedBy))]
+    public partial AnnouncementDto AnnouncementEditRequestToAnnouncementDto(
+        AnnouncementEditRequestApp requestApp, 
+        Guid statementId,
+        bool isActive
+    );
+    
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.StatementType))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.NewPhotos))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.DeletedImageIds))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.ExistingImageOrder))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Title))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Content))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.AnnouncementId))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.Price))]
+    [MapperIgnoreSource(nameof(AnnouncementEditRequestApp.UserId))]
+    [MapperIgnoreTarget(nameof(PropertyDto.Id))]
+    [MapProperty(nameof(AnnouncementEditRequestApp.PropertyType), nameof(PropertyDto.PropertyTypeId))]
+    public partial PropertyDto AnnouncementEditRequestToPropertyDto(
+        AnnouncementEditRequestApp requestApp
+    );
+    
+    [MapperIgnoreTarget(nameof(PaymentDto.Id))]
+    public partial PaymentDto CloseAnnouncementToPaymentDto(CloseAnnouncementCommand source);
 }

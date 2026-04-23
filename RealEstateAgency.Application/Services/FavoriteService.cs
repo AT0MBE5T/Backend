@@ -7,7 +7,10 @@ using RealEstateAgency.Infrastructure.Repositories;
 
 namespace RealEstateAgency.Application.Services;
 
-public class FavoriteService(IFavoriteRepository favoriteRepository, ApplicationMapper applicationMapper) : IFavoriteService
+public class FavoriteService(
+    IFavoriteRepository favoriteRepository,
+    IPaymentService paymentService,
+    ApplicationMapper applicationMapper) : IFavoriteService
 {
     public async Task<AnnouncementsShortAndPages> GetSearchDataAsync(Guid userId, string text, List<string> filtersId,
         int sortId, int pageNumber, int pageSize)
@@ -28,21 +31,40 @@ public class FavoriteService(IFavoriteRepository favoriteRepository, Application
         return result;
     }
 
-    public async Task<bool> AddAsync(FavoriteDto dto)
+    public async Task<string> AddComplaintAsync(FavoriteDto dto)
     {
-        var isAlreadyComplained = await IsInFavoriteAsync(dto);
+        var isPaid = await paymentService.IsExistByAnnouncementIdAsync(dto.AnnouncementId);
         
-        if (isAlreadyComplained)
-            return false;
+        if (isPaid)
+            return "Announcement already paid";
+        
+        var favoriteDto = new FavoriteDto
+        {
+            UserId = dto.UserId,
+            AnnouncementId = dto.AnnouncementId,
+            CreatedAt = DateTime.UtcNow
+        };
+        
+        var isInFavorite = await IsInFavoriteAsync(dto);
+
+        if (isInFavorite)
+            return "Already in favorite";
         
         var model = applicationMapper.MapFavoriteDtoToEntity(dto);
         var result = await favoriteRepository.AddAsync(model);
-        return result;
+        return result
+            ? string.Empty
+            : "Addition failed";
     }
 
-    public async Task<bool> DeleteByDtoAsync(FavoriteDto entity)
+    public async Task<string> DeleteByDtoAsync(FavoriteDto dto)
     {
-        var result = await favoriteRepository.DeleteByIdAsync(entity.UserId, entity.AnnouncementId);
-        return result;
+        var isPaid = await paymentService.IsExistByAnnouncementIdAsync(dto.AnnouncementId);
+        
+        if (isPaid)
+            return "Announcement already paid";
+        
+        var result = await favoriteRepository.DeleteByIdAsync(dto.UserId, dto.AnnouncementId);
+        return string.Empty;
     }
 }

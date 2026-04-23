@@ -13,10 +13,7 @@ public class CommentsService(ICommentsRepository commentsRepository, IAuditServi
     public async Task<List<CommentDto>> GetAllByAnnouncementId(Guid announcementId)
     {
         var res = await commentsRepository.GetAllByAnnouncementIdAsync(announcementId);
-        return res
-            .Select(mapper.CommentEntityToCommentDto)
-            .OrderBy(x => x.CreatedAt)
-            .ToList();
+        return res;
     }
     
     public async Task<Guid?> InsertCommentAsync(CommentDto commentDto)

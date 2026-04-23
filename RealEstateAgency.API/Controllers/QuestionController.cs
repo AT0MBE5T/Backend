@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
-using RealEstateAgency.Core.Models;
 
 namespace RealEstateAgency.API.Controllers
 {
@@ -12,8 +9,7 @@ namespace RealEstateAgency.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     public class QuestionController(IQuestionsService questionsService,
-        IAnswersService answersService,
-        UserManager<User> userManager) : ControllerBase
+        IAnswersService answersService) : ControllerBase
     {
         [AllowAnonymous]
         [HttpGet("get-all-by-announcement-id/{chatId:guid}")]
@@ -38,15 +34,13 @@ namespace RealEstateAgency.API.Controllers
         {
             if (!User.IsInRole(Roles.ADMIN))
                 return BadRequest();
-            
-            var user = await userManager.GetUserAsync(User);
-            if (user == null)
-            {
+
+            var userId = User.GetUserId();
+            if (userId == Guid.Empty)
                 return Unauthorized();
-            }
             
-            return await questionsService.DeleteByQuestionIdAsync(questionId, user.Id)
-                ?  Ok()
+            return await questionsService.DeleteByQuestionIdAsync(questionId, userId)
+                ? Ok()
                 : BadRequest();
         }
         
@@ -56,14 +50,12 @@ namespace RealEstateAgency.API.Controllers
             if (!User.IsInRole(Roles.ADMIN))
                 return BadRequest();
             
-            var user = await userManager.GetUserAsync(User);
-            if (user == null)
-            {
+            var userId = User.GetUserId();
+            if (userId == Guid.Empty)
                 return Unauthorized();
-            }
             
-            return await answersService.DeleteByAnswerIdAsync(answerId, user.Id)
-                ?  Ok()
+            return await answersService.DeleteByAnswerIdAsync(answerId, userId)
+                ? Ok()
                 : BadRequest();
         }
     }

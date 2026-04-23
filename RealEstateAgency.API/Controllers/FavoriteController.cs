@@ -11,7 +11,9 @@ namespace RealEstateAgency.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class FavoriteController(IFavoriteService favoriteService, IPaymentService paymentService, ApiMapper mapper): ControllerBase
+public class FavoriteController(
+    IFavoriteService favoriteService,
+    ApiMapper mapper): ControllerBase
 {
     // [HttpPost("search")]
     // public async Task<IActionResult> Search([FromBody] SearchFavoritesRequestDto request)
@@ -67,24 +69,18 @@ public class FavoriteController(IFavoriteService favoriteService, IPaymentServic
     public async Task<IActionResult> AddFavorite([FromBody] FavoriteRequest request)
     {
         var userId =  User.GetUserId();
-        
-        var isPaid = await paymentService.IsExistByAnnouncementIdAsync(request.AnnouncementId);
-        
-        if (isPaid)
-            return BadRequest("Announcement already paid");
-        
+
         var favoriteDto = new FavoriteDto
         {
-            UserId = userId,
             AnnouncementId = request.AnnouncementId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UserId = userId
         };
+        var error = await favoriteService.AddComplaintAsync(favoriteDto);
         
-        var result = await favoriteService.AddAsync(favoriteDto);
-        
-        return !result
-            ? StatusCode(StatusCodes.Status500InternalServerError)
-            : StatusCode(StatusCodes.Status201Created);
+        return error == string.Empty
+            ? StatusCode(StatusCodes.Status201Created)
+            : StatusCode(StatusCodes.Status500InternalServerError);
     }
     
     [HttpPost("delete-favorite")]
@@ -92,11 +88,6 @@ public class FavoriteController(IFavoriteService favoriteService, IPaymentServic
     {
         var userId =  User.GetUserId();
         
-        var isPaid = await paymentService.IsExistByAnnouncementIdAsync(request.AnnouncementId);
-        
-        if (isPaid)
-            return BadRequest("Announcement already paid");
-        
         var favoriteDto = new FavoriteDto
         {
             UserId = userId,
@@ -104,10 +95,10 @@ public class FavoriteController(IFavoriteService favoriteService, IPaymentServic
             CreatedAt = DateTime.UtcNow
         };
         
-        var result = await favoriteService.DeleteByDtoAsync(favoriteDto);
+        var error = await favoriteService.DeleteByDtoAsync(favoriteDto);
         
-        return !result
-            ? StatusCode(StatusCodes.Status500InternalServerError)
-            : StatusCode(StatusCodes.Status201Created);
+        return error == string.Empty
+            ? StatusCode(StatusCodes.Status201Created)
+            : StatusCode(StatusCodes.Status500InternalServerError);
     }
 }

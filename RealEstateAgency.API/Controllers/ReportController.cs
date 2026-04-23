@@ -4,7 +4,6 @@ using RealEstateAgency.API.Dto;
 using RealEstateAgency.API.Mapper;
 using RealEstateAgency.Application.Dto;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Application.Services;
 using RealEstateAgency.Application.Utils;
 
 namespace RealEstateAgency.API.Controllers;
@@ -14,8 +13,6 @@ namespace RealEstateAgency.API.Controllers;
 [Route("api/[controller]")]
 public class ReportController(
     IReportsService reportService,
-    IPropertyTypeService propertyTypeService,
-    IAccountService accountService,
     ApiMapper mapper) : ControllerBase
 {
     [HttpGet("get-general-report")]
@@ -43,9 +40,10 @@ public class ReportController(
                 : DateTime.Parse(request.DateTo)
         };
         
-        return mapped.DateTo == default
-            ? Ok(await propertyTypeService.GetReportByPropertyTypeDate(mapped))
-            : Ok(await propertyTypeService.GetReportByPropertyTypeDateSpan(mapped));
+        var result = await reportService.GetReportByPropertyTypeId(mapped);
+        return result is not null
+            ? Ok(result)
+            : NotFound();
     }
     
     [HttpPost("get-report-by-user-login")]
@@ -56,13 +54,10 @@ public class ReportController(
         
         var mapped = mapper.ReportUserRequestToReportUserDto(request);
 
-        var res = mapped.DateTo == default
-            ? await accountService.GetReportByUserLoginDate(mapped)
-            : await accountService.GetReportByUserLoginDateSpan(mapped);
-        
-        return res == null
-            ? NotFound()
-            : Ok(res);
+        var result = await reportService.GetReportByUserLogin(mapped);
+        return result is not null
+            ? Ok(result)
+            : NotFound();
     }
     
     [HttpGet("get-report-by-user-id/{userId:guid}")]
@@ -71,10 +66,9 @@ public class ReportController(
         if (!User.IsInRole(Roles.ADMIN))
             return Unauthorized();   
         
-        var res = await accountService.GetReportByUserId(userId);
-        
-        return res == null
-            ? NotFound()
-            : Ok(res);
+        var result = await reportService.GetReportByUserId(userId);
+        return result is not null
+            ? Ok(result)
+            : NotFound();
     }
 }

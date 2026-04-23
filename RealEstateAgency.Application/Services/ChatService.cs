@@ -16,7 +16,8 @@ public class ChatService(
 {
     public async Task<Guid?> GetOrCreateChat(Guid userId, Guid announcementId)
     {
-        var announcement = await announcementsService.GetAnnouncementFullById(announcementId, userId);
+        var command = new AnnouncementInfoCommand(announcementId, userId);
+        var announcement = await announcementsService.GetAnnouncementFullById(command);
 
         if (announcement is null || announcement.ClosedAt != null)
             return null;
@@ -70,6 +71,13 @@ public class ChatService(
         }
 
         return chatId;
+    }
+
+    public async Task<bool> IsUserInThisChat(Guid userId, Guid chatId)
+    {
+        var participants = await GetChatParticipants(chatId);
+        var result = participants.Contains(userId);
+        return result;
     }
 
     public async Task<List<ChatSummaryDto>> GetChatsAsyncByUserId(Guid id)

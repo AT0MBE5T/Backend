@@ -25,22 +25,6 @@ public partial class ApiMapper
     [MapperIgnoreSource(nameof(RegisterRequestDto.Avatar))]
     public partial RegisterResponseDto RegisterRequestToResponse(RegisterRequestDto request);
     
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Photos))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.PropertyType))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Location))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Area))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Floors))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Rooms))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Description))]
-    [MapperIgnoreTarget(nameof(StatementDto.UserId))]
-    [MapperIgnoreTarget(nameof(StatementDto.Id))]
-    [MapProperty(nameof(AnnouncementRequest.StatementType), nameof(StatementDto.StatementTypeId))]
-    public partial StatementDto AnnouncementRequestToStatementDto(
-        AnnouncementRequest request, 
-        Guid propertyId, 
-        DateTime createdAt
-    );
-    
     [MapperIgnoreSource(nameof(AnnouncementEditRequest.NewPhotos))]
     [MapperIgnoreSource(nameof(AnnouncementEditRequest.DeletedImageIds))]
     [MapperIgnoreSource(nameof(AnnouncementEditRequest.ExistingImageOrder))]
@@ -57,39 +41,6 @@ public partial class ApiMapper
         AnnouncementEditRequest request, 
         Guid propertyId, 
         DateTime createdAt
-    );
-    
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Photos))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Title))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Price))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.StatementType))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Content))]
-    [MapperIgnoreTarget(nameof(PropertyDto.Id))]
-    [MapProperty(nameof(AnnouncementRequest.PropertyType), nameof(PropertyDto.PropertyTypeId))]
-    public partial PropertyDto AnnouncementRequestToPropertyDto(
-        AnnouncementRequest request
-    );
-    
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Photos))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Title))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Price))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.StatementType))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Content))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.PropertyType))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Location))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Area))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Floors))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Rooms))]
-    [MapperIgnoreSource(nameof(AnnouncementRequest.Description))]
-    [MapperIgnoreTarget(nameof(AnnouncementDto.Id))]
-    [MapperIgnoreTarget(nameof(AnnouncementDto.PublishedAt))]
-    [MapperIgnoreTarget(nameof(AnnouncementDto.ClosedAt))]
-    [MapperIgnoreTarget(nameof(AnnouncementDto.UpdatedAt))]
-    [MapperIgnoreTarget(nameof(AnnouncementDto.UpdatedBy))]
-    public partial AnnouncementDto AnnouncementRequestToAnnouncementDto(
-        AnnouncementRequest request, 
-        Guid statementId,
-        bool isActive
     );
     
     [MapperIgnoreSource(nameof(AnnouncementEditRequest.NewPhotos))]
@@ -172,7 +123,8 @@ public partial class ApiMapper
     }
     
     [MapperIgnoreSource(nameof(CommentDto.UserId))]
-    public partial CommentResponse CommentDtoToCommentResponse(CommentDto source, string author);
+    [MapProperty(nameof(CommentDto.AuthorName), nameof(CommentResponse.Author))]
+    public partial CommentResponse CommentDtoToCommentResponse(CommentDto source);
     
     [MapperIgnoreTarget(nameof(User.AnnouncementsNavigation))]
     [MapperIgnoreTarget(nameof(User.AnswersNavigation))]
