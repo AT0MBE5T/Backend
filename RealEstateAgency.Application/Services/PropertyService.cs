@@ -1,7 +1,7 @@
-﻿using RealEstateAgency.Application.Dto;
+﻿using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Application.Mapper;
+using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper;
 
 namespace RealEstateAgency.Application.Services;
 
@@ -29,12 +29,6 @@ public class PropertyService(IPropertyRepository repository, ApplicationMapper a
     {
         var propertyEntity = applicationMapper.PropertyDtoToPropertyEntity(propertyDto);
         var result = await repository.UpdateAsync(propertyId, propertyEntity);
-        return result;
-    }
-    
-    public async Task<byte[]> GetBytesByPropertyIdAsync(Guid id)
-    {
-        var result = await repository.GetImageByPropertyIdAsync(id);
         return result;
     }
 }

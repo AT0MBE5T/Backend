@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Core.Models;
+using RealEstateAgency.Core.Entities;
 
 namespace RealEstateAgency.Infrastructure.Services;
 

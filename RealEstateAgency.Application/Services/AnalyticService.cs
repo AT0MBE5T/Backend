@@ -1,53 +1,64 @@
-﻿using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Infrastructure.Repositories;
+﻿using RealEstateAgency.Application.Interfaces.Repositories;
+using RealEstateAgency.Core.Dtos;
 
 namespace RealEstateAgency.Application.Services;
 
 public class AnalyticService(IAnalyticRepository repository) : IAnalyticService
 {
-    public async Task<MainStatsDto> GetMainStats(AnalyticsFilter filter)
+    public async Task<MainStatsDto> GetMainStats(AnalyticsFilterDto filterDto)
     {
-        var result = await repository.GetMainStats(filter);
+        var raw = await repository.GetMainStats(filterDto);
+
+        var result = new MainStatsDto
+        {
+            TotalDeals = raw.TotalDeals,
+            TotalActive = raw.TotalActive,
+            Revenue = raw.Revenue,
+            AvgPricePerMeter = raw.SumArea > 0 
+                ? raw.SumPrice / (decimal)raw.SumArea 
+                : 0
+        };
+
         return result;
     }
     
-    public async Task<List<ChartDataDto>> GetDistributionStatementTypeData(AnalyticsFilter filter)
+    public async Task<List<ChartDataDto>> GetDistributionStatementTypeData(AnalyticsFilterDto filterDto)
     {
-        filter.DateFrom = DateTime.SpecifyKind(filter.DateFrom, DateTimeKind.Utc);
-        filter.DateTo = DateTime.SpecifyKind(filter.DateTo, DateTimeKind.Utc);
-        var result = await repository.GetDistributionStatementTypeData(filter);
+        filterDto.DateFrom = DateTime.SpecifyKind(filterDto.DateFrom, DateTimeKind.Utc);
+        filterDto.DateTo = DateTime.SpecifyKind(filterDto.DateTo, DateTimeKind.Utc);
+        var result = await repository.GetDistributionStatementTypeData(filterDto);
         return result;
     }
     
-    public async Task<List<ChartDataDto>> GetDistributionPropertyTypeData(AnalyticsFilter filter)
+    public async Task<List<ChartDataDto>> GetDistributionPropertyTypeData(AnalyticsFilterDto filterDto)
     {
-        filter.DateFrom = DateTime.SpecifyKind(filter.DateFrom, DateTimeKind.Utc);
-        filter.DateTo = DateTime.SpecifyKind(filter.DateTo, DateTimeKind.Utc);
-        var result = await repository.GetDistributionPropertyTypeData(filter);
+        filterDto.DateFrom = DateTime.SpecifyKind(filterDto.DateFrom, DateTimeKind.Utc);
+        filterDto.DateTo = DateTime.SpecifyKind(filterDto.DateTo, DateTimeKind.Utc);
+        var result = await repository.GetDistributionPropertyTypeData(filterDto);
         return result;
     }
     
-    public async Task<List<TrendDataDto>> GetMarketTrends(AnalyticsFilter filter)
+    public async Task<List<TrendDataDto>> GetMarketTrends(AnalyticsFilterDto filterDto)
     {
-        filter.DateFrom = DateTime.SpecifyKind(filter.DateFrom, DateTimeKind.Utc);
-        filter.DateTo = DateTime.SpecifyKind(filter.DateTo, DateTimeKind.Utc);
-        var result = await repository.GetMarketTrends(filter);
+        filterDto.DateFrom = DateTime.SpecifyKind(filterDto.DateFrom, DateTimeKind.Utc);
+        filterDto.DateTo = DateTime.SpecifyKind(filterDto.DateTo, DateTimeKind.Utc);
+        var result = await repository.GetMarketTrends(filterDto);
         return result;
     }
     
-    public async Task<List<AnnouncementGrid>> GetFilteredAnnouncements(AnalyticsFilter filter)
+    public async Task<List<AnnouncementGridDto>> GetFilteredAnnouncements(AnalyticsFilterDto filterDto)
     {
-        filter.DateFrom = DateTime.SpecifyKind(filter.DateFrom, DateTimeKind.Utc);
-        filter.DateTo = DateTime.SpecifyKind(filter.DateTo, DateTimeKind.Utc);
-        var result = await repository.GetFilteredAnnouncements(filter);
+        filterDto.DateFrom = DateTime.SpecifyKind(filterDto.DateFrom, DateTimeKind.Utc);
+        filterDto.DateTo = DateTime.SpecifyKind(filterDto.DateTo, DateTimeKind.Utc);
+        var result = await repository.GetFilteredAnnouncements(filterDto);
         return result;
     }
     
-    public async Task<List<RealtorGrid>> GetRealtors(AnalyticsFilter filter)
+    public async Task<List<RealtorGridDto>> GetRealtors(AnalyticsFilterDto filterDto)
     {
-        filter.DateFrom = DateTime.SpecifyKind(filter.DateFrom, DateTimeKind.Utc);
-        filter.DateTo = DateTime.SpecifyKind(filter.DateTo, DateTimeKind.Utc);
-        var result = await repository.GetRealtors(filter);
+        filterDto.DateFrom = DateTime.SpecifyKind(filterDto.DateFrom, DateTimeKind.Utc);
+        filterDto.DateTo = DateTime.SpecifyKind(filterDto.DateTo, DateTimeKind.Utc);
+        var result = await repository.GetRealtors(filterDto);
         return result;
     }
 }

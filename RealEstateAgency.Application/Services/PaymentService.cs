@@ -1,8 +1,8 @@
-﻿using RealEstateAgency.Application.Dto;
+﻿using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Application.Mapper;
 using RealEstateAgency.Application.Utils;
+using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper;
 
 namespace RealEstateAgency.Application.Services;
 
@@ -23,10 +23,10 @@ public class PaymentService(IPaymentRepository repository,
                 Details = $"User: {paymentDto.CustomerId} bought from an announcement: {paymentDto.AnnouncementId}"
             };
             
+            var paymentId =  await repository.Insert(mapped);
             await auditService.InsertAudit(auditDto);
             await unitOfWork.CommitAsync();
-            
-            return await repository.Insert(mapped);
+            return paymentId;
         }
         catch
         {

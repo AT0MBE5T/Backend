@@ -1,25 +1,24 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstateAgency.Application.Interfaces.Repositories;
-using RealEstateAgency.Core.Models;
-using RealEstateAgency.Infrastructure.Context;
+using RealEstateAgency.Core.Entities;
+using RealEstateAgency.Infrastructure.Contexts;
 
 namespace RealEstateAgency.Infrastructure.Repositories;
 
-public class RefreshRepository(IDbContextFactory<RealEstateContext> dbFactory) : IRefreshRepository
+public class RefreshRepository(RealEstateContext context) : IRefreshRepository
 {
     public async Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
     {
-        await using var context = await dbFactory.CreateDbContextAsync();
-        return await context.RefreshTokens
+        var result = await context.RefreshTokens
+            .AsNoTracking()
             .Where(r => r.Token == refreshToken)
             .Select(r => r.User)
-            .AsNoTracking()
             .FirstOrDefaultAsync();
+        return result;
     }
     
     public async Task<bool> DeleteAsync(string refreshToken)
     {
-        await using var context = await dbFactory.CreateDbContextAsync();
         var tokenEntity = await context.RefreshTokens
             .FirstOrDefaultAsync(r => r.Token == refreshToken);
 
@@ -36,8 +35,6 @@ public class RefreshRepository(IDbContextFactory<RealEstateContext> dbFactory) :
     
     public async Task<string> GenerateRefreshToken(RefreshToken refreshToken)
     {
-        await using var context = await dbFactory.CreateDbContextAsync();
-
         await context.RefreshTokens.AddAsync(refreshToken);
         await context.SaveChangesAsync();
 
@@ -46,8 +43,8 @@ public class RefreshRepository(IDbContextFactory<RealEstateContext> dbFactory) :
 
     public async Task<bool> CheckRefreshToken(string token)
     {
-        await using var context = await dbFactory.CreateDbContextAsync();
         var refreshToken = await context.RefreshTokens
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Token == token);
 
         return refreshToken != null && refreshToken.Expires >= DateTime.UtcNow;

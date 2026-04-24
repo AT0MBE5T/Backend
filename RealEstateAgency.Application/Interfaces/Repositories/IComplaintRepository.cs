@@ -1,6 +1,5 @@
-﻿using RealEstateAgency.Application.Dto;
-using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Core.Models;
+﻿using RealEstateAgency.Core.Dtos;
+using RealEstateAgency.Core.Entities;
 
 namespace RealEstateAgency.Application.Interfaces.Repositories;
 
@@ -8,10 +7,9 @@ public interface IComplaintRepository
 {
     Task<bool> IsUserComplainedByUserIdAsync(Guid userId, Guid offerId);
     Task<Complaint?> GetByIdAsync(Guid complaintId);
-    Task<List<ComplaintGrid>> GetComplaintsByUserId(Guid userId);
-    Task<List<ComplaintGrid>> GetAllComplaintsAsync();
-    Task<List<ComplaintGrid>> GetAllOpenedComplaintsAsync();
+    Task<List<ComplaintGridDto>> GetComplaintsByUserId(Guid userId);
+    Task<List<ComplaintGridDto>> GetAllComplaintsAsync();
+    Task<List<ComplaintGridDto>> GetAllOpenedComplaintsAsync();
     Task<Guid> InsertAsync(Complaint complaint);
     Task<bool> UpdateAsync(Complaint complaint);
-    Task<bool> DeleteByIdAsync(Guid id);
 }

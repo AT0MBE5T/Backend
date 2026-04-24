@@ -1,6 +1,6 @@
 ﻿using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Core.Models;
+using RealEstateAgency.Core.Entities;
 
 namespace RealEstateAgency.Application.Services;
 

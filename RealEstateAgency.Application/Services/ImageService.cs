@@ -2,12 +2,11 @@
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using RealEstateAgency.API.Dto;
-using RealEstateAgency.Application.Dto;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Core.Models;
+using RealEstateAgency.Core.Dtos;
+using RealEstateAgency.Core.Entities;
 
 namespace RealEstateAgency.Application.Services;
 
@@ -28,22 +27,7 @@ public class ImageService : IImageService
         _cloudinary = new Cloudinary(acc);
     }
     
-    // public async Task<ImageUploadResult> UploadImageAsync(IFormFile file)
-    // {
-    //     var uploadResult = new ImageUploadResult();
-    //
-    //     if (file.Length > 0) {
-    //         using var stream = file.OpenReadStream();
-    //         var uploadParams = new ImageUploadParams {
-    //             File = new FileDescription(file.FileName, stream)
-    //         };
-    //         uploadResult = await _cloudinary.UploadAsync(uploadParams);
-    //     }
-    //
-    //     return uploadResult;
-    // }
-    
-    public async Task<ImageUploadResponse> UploadImageAsync(Stream fileStream, string fileName)
+    public async Task<ImageUploadResponseDto> UploadImageAsync(Stream fileStream, string fileName)
     {
         var uploadParams = new ImageUploadParams
         {
@@ -55,14 +39,14 @@ public class ImageService : IImageService
 
         if (uploadResult.Error != null)
         {
-            return new ImageUploadResponse(
+            return new ImageUploadResponseDto(
                 string.Empty,
                 string.Empty,
                 uploadResult.Error.Message
             );
         }
 
-        return new ImageUploadResponse(
+        return new ImageUploadResponseDto(
             uploadResult.PublicId,
             uploadResult.SecureUrl.ToString(),
             string.Empty
@@ -99,20 +83,6 @@ public class ImageService : IImageService
         }
     }
     
-    public async Task<bool> UpdateAsync(Guid imageId, byte[] bytes)
-    {
-        return false;
-        // try
-        // {
-        //     var res = await _repository.UpdateAsync(imageId, bytes);
-        //     return res;
-        // }
-        // catch
-        // {
-        //     return false;
-        // }
-    }
-    
     public async Task<bool> DeleteAsync(Guid imageId)
     {
         try
@@ -125,24 +95,6 @@ public class ImageService : IImageService
             var deletionResult = await DeleteImageAsync(photo.PublicId);
             var res = await _repository.DeleteAsync(imageId);
             return res;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-    
-    public async Task<bool> DeleteAvatarAsync(Guid userId)
-    {
-        try
-        {
-            var publicId =  await _repository.GetPublicIdByUserId(userId);
-            
-            if (publicId is null)
-                return false;
-            
-            await DeleteImageAsync(publicId);
-            return true;
         }
         catch
         {

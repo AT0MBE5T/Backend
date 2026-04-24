@@ -1,17 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using RealEstateAgency.Application.Interfaces.Repositories;
-using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Core.Models;
-using RealEstateAgency.Infrastructure.Context;
+using RealEstateAgency.Core.Dtos;
+using RealEstateAgency.Core.Entities;
+using RealEstateAgency.Infrastructure.Contexts;
 
 namespace RealEstateAgency.Infrastructure.Repositories;
 
-public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFactory) : IAccountRepository
+public class AccountRepository(RealEstateContext ctx) : IAccountRepository
 {
     public async Task<User?> GetUserById(Guid userId)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
         var user = await ctx.Users
             .Where(x => x.Id == userId)
             .AsNoTracking()
@@ -20,22 +18,8 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
         return user;
     }
     
-    public async Task<int> GetPlacedPropertyCntByUserId(Guid userId)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var query = await ctx.Announcements
-            .Where(x =>
-                x.StatementNavigation!.UserId == userId
-                && x.ClosedAt == null)
-            .CountAsync();
-        
-        return query;
-    }
-    
     public async Task<int> GetPlacedPropertyCntByUserIdDate(Guid userId, DateTime dateTime)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTime.ToUniversalTime().AddDays(1).Date;
         var end = start.AddDays(1);
         
@@ -51,8 +35,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<int> GetPlacedPropertyCntByUserIdDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
         
@@ -68,8 +50,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<int> GetViewsDate(Guid userId, DateTime dateTime)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTime.ToUniversalTime().AddDays(1).Date;
         var end = start.AddDays(1);
         
@@ -85,8 +65,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<int> GetViewsDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
         
@@ -102,8 +80,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<string> GetFavoriteCategoryDate(Guid userId, DateTime dateTime)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTime.ToUniversalTime().AddDays(1).Date;
         var end = start.AddDays(1);
         
@@ -111,7 +87,7 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
             .Where(x => x.UserId == userId 
                         && x.CreatedAt >= start 
                         && x.CreatedAt < end)
-            .GroupBy(x => x.AnnouncementNavigation.StatementNavigation.PropertyNavigation.PropertyTypeNavigation.Name)
+            .GroupBy(x => x.AnnouncementNavigation!.StatementNavigation!.PropertyNavigation!.PropertyTypeNavigation!.Name)
             .OrderByDescending(g => g.Count())
             .Select(g => g.Key)
             .FirstOrDefaultAsync();
@@ -121,8 +97,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<string> GetFavoriteCategoryDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
         
@@ -130,7 +104,7 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
             .Where(x => x.UserId == userId 
                         && x.CreatedAt >= start 
                         && x.CreatedAt < end)
-            .GroupBy(x => x.AnnouncementNavigation.StatementNavigation.PropertyNavigation.PropertyTypeNavigation.Name)
+            .GroupBy(x => x.AnnouncementNavigation!.StatementNavigation!.PropertyNavigation!.PropertyTypeNavigation!.Name)
             .OrderByDescending(g => g.Count())
             .Select(g => g.Key)
             .FirstOrDefaultAsync();
@@ -138,22 +112,8 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
         return query ?? "Unknown";
     }
     
-    public async Task<int> GetSoldPropertyCntByUserId(Guid userId)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var query = await ctx.Announcements
-            .Where(x =>
-                x.StatementNavigation!.UserId == userId
-                && x.ClosedAt != null)
-            .CountAsync();
-        
-        return query;
-    }
-    
     public async Task<int> GetSoldPropertyCntByUserIdDate(Guid userId, DateTime dateTime)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTime.ToUniversalTime().Date.AddDays(1);
         var end = start.AddDays(1);
         
@@ -169,8 +129,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<int> GetSoldPropertyCntByUserIdDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
         
@@ -184,21 +142,8 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
         return query;
     }
     
-    public async Task<int> GetBoughtPropertyCntByUserId(Guid userId)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var query = await ctx.Announcements
-            .Where(x =>
-                x.PaymentNavigation!.CustomerId == userId
-                && x.ClosedAt != null)
-            .CountAsync();
-        return query;
-    }
-    
     public async Task<int> GetBoughtPropertyCntByUserIdDate(Guid userId,  DateTime dateTime)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTime.ToUniversalTime().Date.AddDays(1);
         var end = start.AddDays(1);
         
@@ -214,8 +159,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<int> GetBoughtPropertyCntByUserIdDateSpan(Guid userId,  DateTime dateTimeFrom, DateTime dateTimeTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
         
@@ -232,7 +175,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
 
     public async Task<int> GetDaysFromRegisterByUserId(Guid userId)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
         var date = await ctx.Users
             .Where(x => x.Id == userId)
             .Select(x => DateTime.UtcNow - x.CreatedAt)
@@ -241,20 +183,8 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
         return date.Days;
     }
     
-    public async Task<int> GetPaymentsCntByUserId(Guid userId)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var res = await ctx.Payments
-            .Where(x => x.CustomerId == userId)
-            .CountAsync();
-
-        return res;
-    }
-    
     public async Task<int> GetPaymentsCntByUserIdDate(Guid userId, DateTime dateTime)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTime.ToUniversalTime().Date.AddDays(1);
         var end = start.AddDays(1);
         
@@ -270,8 +200,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<int> GetPaymentsCntByUserIdDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
         
@@ -285,20 +213,8 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
         return res;
     }
     
-    public async Task<int> GetQuestionsCntByUserId(Guid userId)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var res = await ctx.Comments
-            .Where(x => x.UserId == userId)
-            .CountAsync();
-
-        return res;
-    }
-    
     public async Task<int> GetQuestionsCntByUserIdDate(Guid userId, DateTime dateTime)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTime.ToUniversalTime().Date.AddDays(1);
         var end = start.AddDays(1);
         
@@ -311,8 +227,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<int> GetQuestionsCntByUserIdDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
         
@@ -323,43 +237,8 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
         return res;
     }
     
-    public async Task<int> GetAnswersCntByUserId(Guid userId)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var res = await ctx.Answers
-            .Where(x => x.UserId == userId)
-            .CountAsync();
-
-        return res;
-    }
-    
-    // public async Task<bool> UpdateAsync(User user)
-    // {
-    //     await using var ctx = await dbContextFactory.CreateDbContextAsync();
-    //     var res = await ctx.Users.FindAsync(user.Id);
-    //
-    //     if (res is null)
-    //         return false;
-    //
-    //     res.PublicAvatarId = user.PublicAvatarId;
-    //     res.Avatar =  user.Avatar;
-    //     
-    //     await ctx.SaveChangesAsync();
-    //     return true;
-    // }
-    
-    // public async Task<User?> GetByIdAsync(Guid id)
-    // {
-    //     await using var ctx = await dbContextFactory.CreateDbContextAsync();
-    //     var res = await ctx.Users.FindAsync(id);
-    //
-    //     return res;
-    // }
-    
     public async Task<int> GetAnswersCntByUserIdDate(Guid userId, DateTime dateTime)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTime.ToUniversalTime().Date.AddDays(1);
         var end = start.AddDays(1);
         
@@ -372,8 +251,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<int> GetAnswersCntByUserIdDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
         
@@ -384,20 +261,8 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
         return res;
     }
     
-    public async Task<int> GetCommentsCntByUserId(Guid userId)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var res = await ctx.Comments
-            .Where(x => x.UserId == userId)
-            .CountAsync();
-
-        return res;
-    }
-    
     public async Task<int> GetCommentsCntByUserIdDate(Guid userId, DateTime dateTime)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTime.ToUniversalTime().Date.AddDays(1);
         var end = start.AddDays(1);
         
@@ -410,8 +275,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<int> GetCommentsCntByUserIdDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
         
@@ -422,32 +285,8 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
         return res;
     }
     
-    public async Task<decimal> GetTotalMoneyEarnedByUserId(Guid userId)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var res= await ctx.Payments
-            .Where(x => x.AnnouncementNavigation!.StatementNavigation!.UserId == userId)
-            .Select(x => x.AnnouncementNavigation!.StatementNavigation!.Price)
-            .SumAsync();
-
-        return res;
-    }
-    
-    public async Task<decimal> GetTotalMoneySpentByUserId(Guid userId)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var res= await ctx.Payments
-            .Where(x => x.CustomerId == userId)
-            .Select(x => x.AnnouncementNavigation!.StatementNavigation!.Price)
-            .SumAsync();
-
-        return res;
-    }
-    
     public async Task<decimal> GetTotalMoneySpentByUserIdDate(Guid userId, DateTime dateTime)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTime.ToUniversalTime().Date.AddDays(1);
         var end = start.AddDays(1);
         
@@ -464,8 +303,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<decimal> GetTotalMoneyEarnedByUserIdDate(Guid userId, DateTime dateTime)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTime.ToUniversalTime().Date.AddDays(1);
         var end = start.AddDays(1);
         
@@ -482,8 +319,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<decimal> GetTotalMoneySpentByUserIdDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
         
@@ -500,8 +335,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
     
     public async Task<decimal> GetTotalMoneyEarnedByUserIdDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
         
@@ -518,7 +351,6 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
 
     public async Task<Guid> GetUserIdByLogin(string login)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
         var res= await ctx.Users.Where(x => x.UserName == login)
             .Select(x => x.Id)
             .FirstOrDefaultAsync();
@@ -526,12 +358,10 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
         return res;
     }
     
-    public async Task<List<UserGrid>> GetAllAsync()
+    public async Task<List<UserGridDto>> GetAllAsync()
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-
         var res = await ctx.Users
-            .Select(u => new UserGrid
+            .Select(u => new UserGridDto
             {
                 Id = u.Id,
                 Name = u.Name,
@@ -554,22 +384,22 @@ public class AccountRepository(IDbContextFactory<RealEstateContext> dbContextFac
                     .FirstOrDefault() ?? "No Role",
 
                 TotalOffersPlacedCnt = ctx.Announcements
-                    .Count(a => a.StatementNavigation.UserId == u.Id),
+                    .Count(a => a.StatementNavigation!.UserId == u.Id),
 
                 OffersClosedCnt = ctx.Announcements
-                    .Count(a => a.StatementNavigation.UserId == u.Id && 
+                    .Count(a => a.StatementNavigation!.UserId == u.Id && 
                                 (a.ClosedAt != null || a.PaymentNavigation != null)),
 
                 TotalRevenue = ctx.Announcements
-                    .Where(a => a.StatementNavigation.UserId == u.Id && a.PaymentNavigation != null)
-                    .Sum(a => (decimal?)a.StatementNavigation.Price) ?? 0m,
+                    .Where(a => a.StatementNavigation!.UserId == u.Id && a.PaymentNavigation != null)
+                    .Sum(a => (decimal?)a.StatementNavigation!.Price) ?? 0m,
 
                 OffersBoughtCnt = ctx.Announcements
-                    .Count(a => a.PaymentNavigation.CustomerId == u.Id),
+                    .Count(a => a.PaymentNavigation!.CustomerId == u.Id),
 
                 TotalSpent = ctx.Announcements
-                    .Where(a => a.PaymentNavigation.CustomerId == u.Id)
-                    .Sum(a => (decimal?)a.StatementNavigation.Price) ?? 0m
+                    .Where(a => a.PaymentNavigation!.CustomerId == u.Id)
+                    .Sum(a => (decimal?)a.StatementNavigation!.Price) ?? 0m
             })
             .ToListAsync();
 

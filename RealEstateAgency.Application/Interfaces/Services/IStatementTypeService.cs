@@ -1,4 +1,4 @@
-﻿using RealEstateAgency.Application.Dto;
+﻿using RealEstateAgency.Application.Dtos;
 
 namespace RealEstateAgency.Application.Interfaces.Services;
 

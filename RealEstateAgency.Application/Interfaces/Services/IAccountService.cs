@@ -1,5 +1,5 @@
-﻿using RealEstateAgency.Application.Dto;
-using RealEstateAgency.Core.DTO;
+﻿using RealEstateAgency.Application.Dtos;
+using RealEstateAgency.Core.Dtos;
 
 namespace RealEstateAgency.Application.Interfaces.Services;
 
@@ -12,12 +12,12 @@ public interface IAccountService
     Task<PersonalStatsDto?> GetReportByUserLoginDate(ReportUserDto reportUserDto);
     Task<PersonalStatsDto?> GetReportByUserLoginDateSpan(ReportUserDto reportUserDto);
     Task<PersonalStatsDto?> GetReportByUserId(Guid userId);
-    Task<string> ChangeUserAvatarAsync(ChangeAvatarCommand command);
-    Task<List<UserGrid>> GetAll();
+    Task<string> ChangeUserAvatarAsync(ChangeAvatarCommandDto commandDto);
+    Task<List<UserGridDto>> GetAll();
     Task<bool> Delete(Guid userId);
-    Task<RegistrationResponseDto> RegisterAsync(RegisterCommand command);
-    Task<RegistrationResponseDto> LoginAsync(LoginCommand command);
-    Task<List<string>> ChangePasswordAsync(ChangePasswordCommand command);
-    Task<List<string>> ChangeEmailAsync(ChangeEmailCommand command);
-    Task<List<string>> ChangePhoneAsync(ChangePhoneCommand command);
+    Task<RegistrationResponseDto> RegisterAsync(RegisterCommandDto commandDto);
+    Task<RegistrationResponseDto> LoginAsync(LoginCommandDto commandDto);
+    Task<List<string>> ChangePasswordAsync(ChangePasswordCommandDto commandDto);
+    Task<List<string>> ChangeEmailAsync(ChangeEmailCommandDto commandDto);
+    Task<List<string>> ChangePhoneAsync(ChangePhoneCommandDto commandDto);
 }

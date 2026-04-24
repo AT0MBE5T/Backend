@@ -43,35 +43,4 @@ public class WebPushService(IConfiguration _configuration, IUserPushSubscription
             }
         }
     }
-    
-    // public async Task SendPush(PushSubscription subscription, string message)
-    // {
-    //     var vapidDetails = new VapidDetails(
-    //         _configuration["VapidDetails:Subject"],
-    //         _configuration["VapidDetails:PublicKey"],
-    //         _configuration["VapidDetails:PrivateKey"]
-    //     );
-    //
-    //     var webPushClient = new WebPushClient();
-    //
-    //     var payload = JsonSerializer.Serialize(new {
-    //         title = "Новое сообщение",
-    //         body = message,
-    //         url = "/chats" 
-    //     });
-    //
-    //     try
-    //     {
-    //         await webPushClient.SendNotificationAsync(subscription, payload, vapidDetails);
-    //     }
-    //     catch (WebPushException ex)
-    //     {
-    //         if (ex.StatusCode == System.Net.HttpStatusCode.Gone || ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-    //         {
-    //             // Подписка больше не валидна (пользователь удалил PWA или отозвал права)
-    //             // Удалите её из вашей базы данных
-    //         }
-    //         Console.WriteLine($"Ошибка Push: {ex.Message}");
-    //     }
-    // }
 }

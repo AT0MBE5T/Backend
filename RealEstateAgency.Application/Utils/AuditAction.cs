@@ -15,6 +15,6 @@ public static class AuditAction
     public const string DeleteQuestion = "a686cdbc-e507-4905-9fe1-0926b7bbbef1";
     public const string BuyProperty = "8ca9bdd2-1675-4ace-bd13-07519d1bfb70";
     public const string DeleteComment = "cc7a39b5-0b74-4603-b1a0-17bfe23409f4";
-    public const string Verificate = "dc84e6f9-9bb9-4f81-801e-10945f8e5396";
-    public const string Unverificate = "c1a7dbb2-1c89-410b-85a7-36a7aeb1a007";
+    public const string Verify = "dc84e6f9-9bb9-4f81-801e-10945f8e5396";
+    public const string Unverify = "c1a7dbb2-1c89-410b-85a7-36a7aeb1a007";
 }

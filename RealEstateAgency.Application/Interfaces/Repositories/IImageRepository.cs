@@ -1,4 +1,4 @@
-﻿using RealEstateAgency.Core.Models;
+﻿using RealEstateAgency.Core.Entities;
 
 namespace RealEstateAgency.Application.Interfaces.Repositories;
 
@@ -9,5 +9,4 @@ public interface IImageRepository
     Task<List<Image>> GetPhotosByPropertyIdAsync(Guid propertyId);
     Task<bool> DeleteAsync(Guid imageId);
     Task<Image?> GetPhotoByIdAsync(Guid id);
-    Task<string?> GetPublicIdByUserId(Guid userId);
 }

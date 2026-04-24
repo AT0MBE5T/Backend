@@ -1,9 +1,8 @@
-﻿using RealEstateAgency.Application.Dto;
+﻿using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Application.Mapper;
-using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Infrastructure.Repositories;
+using RealEstateAgency.Core.Dtos;
+using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper;
 
 namespace RealEstateAgency.Application.Services;
 
@@ -19,7 +18,7 @@ public class ComplaintService(
         return result;
     }
 
-    public async Task<List<ComplaintGrid>> GetAllComplaints()
+    public async Task<List<ComplaintGridDto>> GetAllComplaints()
     {
         var result = await complaintRepository.GetAllComplaintsAsync();
         return result;
@@ -36,13 +35,13 @@ public class ComplaintService(
         return result;
     }
     
-    public async Task<List<ComplaintGrid>> GetComplaintsByUserId(Guid userId)
+    public async Task<List<ComplaintGridDto>> GetComplaintsByUserId(Guid userId)
     {
         var result = await complaintRepository.GetComplaintsByUserId(userId);
         return result.ToList();
     }
 
-    public async Task<List<ComplaintGrid>> GetAllOpenedComplaints()
+    public async Task<List<ComplaintGridDto>> GetAllOpenedComplaints()
     {
         var result = await complaintRepository.GetAllOpenedComplaintsAsync();
         return result;
@@ -69,12 +68,6 @@ public class ComplaintService(
     {
         var mapped = applicationMapper.MapComplaintDtoToEntity(complaint);
         var result = await complaintRepository.UpdateAsync(mapped);
-        return result;
-    }
-
-    public async Task<bool> DeleteByIdAsync(Guid id)
-    {
-        var result = await complaintRepository.DeleteByIdAsync(id);
         return result;
     }
 }

@@ -1,51 +1,28 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using RealEstateAgency.API.Dto;
 using RealEstateAgency.Application.Interfaces.Repositories;
-using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Core.Models;
-using RealEstateAgency.Infrastructure.Context;
+using RealEstateAgency.Core.Dtos;
+using RealEstateAgency.Core.Entities;
+using RealEstateAgency.Infrastructure.Contexts;
 
 namespace RealEstateAgency.Infrastructure.Repositories;
 
-public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbContextFactory) : IAnnouncementRepository
+public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementRepository
 {
-    public async Task<List<Announcement>> GetAllPaginatedAsync(int pageNumber, int pageSize)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-
-        if (!await ctx.Announcements.AnyAsync())
-        {
-            return [];
-        }
-        
-        return await ctx.Announcements
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-    }
-
     public async Task<Guid> InsertAsync(Announcement announcement)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
         await ctx.Announcements.AddAsync(announcement);
-        await ctx.SaveChangesAsync();
         return announcement.Id;
     }
     
     public async Task<bool> UpdateAsync(Guid id, Announcement announcement)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
         try
         {
             var announcementToUpdate = await ctx.Announcements.FindAsync(id);
-            if (announcementToUpdate != null)
-            {
-                announcementToUpdate.StatementId = announcement.StatementId;
-                announcementToUpdate.UpdatedAt = DateTime.UtcNow;
-                announcementToUpdate.UpdatedBy = announcement.StatementNavigation?.UserId;
-            }
-            await ctx.SaveChangesAsync();
+            if (announcementToUpdate == null) return false;
+            announcementToUpdate.StatementId = announcement.StatementId;
+            announcementToUpdate.UpdatedAt = DateTime.UtcNow;
+            announcementToUpdate.UpdatedBy = announcement.StatementNavigation?.UserId;
             return true;
         }
         catch
@@ -58,11 +35,11 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
     {
         try
         {
-            await using var ctx = await dbContextFactory.CreateDbContextAsync();
-            await ctx.Announcements
-                .Where(a => a.Id == id)
-                .ExecuteDeleteAsync();
+            var entity = await ctx.Announcements.FindAsync(id);
+            if (entity is null)
+                return false;
             
+            ctx.Announcements.Remove(entity);
             return true;
         }
         catch
@@ -73,25 +50,25 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
     
     public async Task<Announcement?> GetAnnouncementById(Guid id)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(x => x.Id == id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
+        return result;
     }
     
-    public async Task<List<AnnouncementGrid>> GetAnnouncementsGridAsync()
+    public async Task<List<AnnouncementGridDto>> GetAnnouncementsGridAsync()
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         var result = await ctx.Announcements
-            .Select(x => new AnnouncementGrid
+            .Select(x => new AnnouncementGridDto
             {
                 Id = x.Id,
-                CreatedAt = x.StatementNavigation.CreatedAt,
+                CreatedAt = x.StatementNavigation!.CreatedAt,
                 Title = x.StatementNavigation.Title,
-                Author = x.StatementNavigation.UserNavigation.UserName,
-                PropertyTypeName = x.StatementNavigation.PropertyNavigation.PropertyTypeNavigation.Name,
-                StatementTypeName = x.StatementNavigation.StatementTypeNavigation.Name,
+                Author = x.StatementNavigation.UserNavigation!.UserName!,
+                PropertyTypeName = x.StatementNavigation.PropertyNavigation!.PropertyTypeNavigation!.Name,
+                StatementTypeName = x.StatementNavigation.StatementTypeNavigation!.Name,
                 AuthorId = x.StatementNavigation.UserNavigation.Id,
                 ClosedAt = x.ClosedAt,
                 IsVerified = x.VerificationNavigation != null,
@@ -100,25 +77,26 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
                 StatementTypeId = x.StatementNavigation.StatementTypeId,
                 ViewsCnt = x.ViewsNavigation.Count
             })
+            .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
         return result;
     }
     
     public async Task<Verification?> GetVerificationAsync(Guid id)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        return await ctx.Announcements
-            .Where(x => x.Id == id)
-            .Select(x => x.VerificationNavigation)
-            .FirstOrDefaultAsync();
+        var result = await ctx.Verifications
+            .AsNoTracking()
+            .FirstOrDefaultAsync(v => v.AnnouncementId == id);
+        
+        return result;
     }
     
-    public async Task<AnnouncementFull?> GetAnnouncementFullById(Guid id, Guid? userId)
+    public async Task<AnnouncementFullDto?> GetAnnouncementFullById(Guid id, Guid? userId)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         return await ctx.Announcements
             .Where(x => x.Id == id)
-            .Select(x => new AnnouncementFull
+            .Select(x => new AnnouncementFullDto
             {
                 Id = x.Id,
                 Area = x.StatementNavigation!.PropertyNavigation!.Area,
@@ -130,7 +108,6 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
                 Floors = x.StatementNavigation.PropertyNavigation.Floors,
                 Location = x.StatementNavigation.PropertyNavigation.Location,
                 Photos = x.StatementNavigation.PropertyNavigation.ImagesNavigation.OrderBy(i => i.OrderIndex).Select(i => new PhotoDto { Id = i.Id, Url = i.PhotoUrl }).ToList(),
-                //Photo = $"data:image/png;base64,{Convert.ToBase64String(x.StatementNavigation.PropertyNavigation.ImageNavigation!.Bytes)}",
                 Price = x.StatementNavigation.Price,
                 Rooms = x.StatementNavigation.PropertyNavigation.Rooms,
                 Title = x.StatementNavigation.Title,
@@ -139,13 +116,13 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
                 IsVerified = x.VerificationNavigation != null,
                 IsFavorite = ctx.Favorites
                     .Any(f => f.AnnouncementId == x.Id && f.UserId == userId),
-                ViewsCnt = ctx.Views.Count(x => x.AnnouncementId == id),
+                ViewsCnt = ctx.Views.Count(y => y.AnnouncementId == id),
                 ClosedAt = x.ClosedAt
             })
             .FirstOrDefaultAsync();
     }
 
-    private IQueryable<Announcement> GetTextSearchQuery(IQueryable<Announcement> query, string text)
+    private static IQueryable<Announcement> GetTextSearchQuery(IQueryable<Announcement> query, string text)
     {
         return query
             .Where(x => x.StatementNavigation!.Title.Contains(text) || x.StatementNavigation.PropertyNavigation!.Location.Contains(text));
@@ -199,10 +176,12 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
         return res;
     }
     
-    public async Task<AnnouncementsShortAndPages> GetSearchData(string text, List<string> filtersId, int sortId, int pageNumber, int pageSize, Guid userId)
+    public async Task<AnnouncementsShortAndPagesDto> GetSearchData(string text, List<string> filtersId, int sortId, int pageNumber, int pageSize, Guid userId)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var query = ctx.Announcements.Where(x => x.ClosedAt == null);
+        
+        var query = ctx.Announcements
+            .AsNoTracking()
+            .Where(x => x.ClosedAt == null);
 
         if (!string.IsNullOrEmpty(text))
         {
@@ -227,7 +206,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
         var data = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(x => new AnnouncementShort
+            .Select(x => new AnnouncementShortDto
             {
                 Id = x.Id,
                 Title = x.StatementNavigation!.Title,
@@ -244,7 +223,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
                 ClosedAt = x.ClosedAt
             }).ToListAsync();
 
-        return new AnnouncementsShortAndPages
+        return new AnnouncementsShortAndPagesDto
         {
             Data = data,
             PagesCnt = (int)pagesCnt,
@@ -254,20 +233,21 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
 
     public async Task<Guid> GetAuthorOfferIdByQuestionIdAsync(Guid id)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         var result = await ctx.Questions
+            .AsNoTracking()
             .Where(x => x.Id == id)
-            .Select(x => x.AnnouncementNavigation.StatementNavigation.UserId)
+            .Select(x => x.AnnouncementNavigation!.StatementNavigation!.UserId)
             .FirstOrDefaultAsync();
         return result;
     }
     
-    public async Task<AnnouncementShort?> GetAnnouncementShortByOfferId(Guid offerId, Guid userId)
+    public async Task<AnnouncementShortDto?> GetAnnouncementShortByOfferId(Guid offerId, Guid userId)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         var data = await ctx.Announcements
             .Where(x => x.ClosedAt == null && x.Id == offerId)
-            .Select(x => new AnnouncementShort
+            .Select(x => new AnnouncementShortDto
             {
                 Id = x.Id,
                 Title = x.StatementNavigation!.Title,
@@ -289,7 +269,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
 
     public async Task<bool> SetClosedAt(Guid id)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         var announcement = await ctx.Announcements.FindAsync(id);
 
         if (announcement == null)
@@ -302,19 +282,19 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
         return true;
     }
     
-    public async Task<AnnouncementsShortAndPages> GetPlacedByUserId(Guid userId, int pageNumber, int pageSize)
+    public async Task<AnnouncementsShortAndPagesDto> GetPlacedByUserId(Guid userId, int pageNumber, int pageSize)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var query = ctx.Announcements.Where(x => x.StatementNavigation!.UserId == userId && x.ClosedAt == null);
-            
-
+        var query = ctx.Announcements
+            .AsNoTracking()
+            .Where(x => x.StatementNavigation!.UserId == userId && x.ClosedAt == null);
+        
         var pagesCnt = Math.Ceiling((double)query.Count() / pageSize);
         var totalItems = await query.CountAsync();
         
         var data = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(x => new AnnouncementShort
+            .Select(x => new AnnouncementShortDto
             {
                 Id = x.Id,
                 Title = x.StatementNavigation!.Title,
@@ -322,8 +302,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
                 Price = x.StatementNavigation.Price,
                 Area = x.StatementNavigation.PropertyNavigation!.Area,
                 Location = x.StatementNavigation.PropertyNavigation.Location,
-                //Photo = x.StatementNavigation.PropertyNavigation.ImageNavigation!.Bytes,
-                PhotoUrl = x.StatementNavigation.PropertyNavigation.ImagesNavigation.FirstOrDefault().PhotoUrl,
+                PhotoUrl = x.StatementNavigation.PropertyNavigation.ImagesNavigation.FirstOrDefault()!.PhotoUrl,
                 PropertyTypeName = x.StatementNavigation.PropertyNavigation.PropertyTypeNavigation!.Name,
                 IsVerified = x.VerificationNavigation != null,
                 IsFavorite = ctx.Favorites
@@ -332,7 +311,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
                 ClosedAt = x.ClosedAt
             }).ToListAsync();
 
-        return new AnnouncementsShortAndPages
+        return new AnnouncementsShortAndPagesDto
         {
             Data = data,
             PagesCnt = (int)pagesCnt,
@@ -340,10 +319,12 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
         };
     }
     
-    public async Task<AnnouncementsShortAndPages> GetSoldByUserId(Guid userId, int pageNumber, int pageSize)
+    public async Task<AnnouncementsShortAndPagesDto> GetSoldByUserId(Guid userId, int pageNumber, int pageSize)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var query = ctx.Announcements.Where(x => x.StatementNavigation!.UserId == userId && x.ClosedAt != null);
+        
+        var query = ctx.Announcements
+            .AsNoTracking()
+            .Where(x => x.StatementNavigation!.UserId == userId && x.ClosedAt != null);
         
         var pagesCnt = Math.Ceiling((double)query.Count() / pageSize);
         var totalItems = await query.CountAsync();
@@ -351,7 +332,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
         var data = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(x => new AnnouncementShort
+            .Select(x => new AnnouncementShortDto
             {
                 Id = x.Id,
                 Title = x.StatementNavigation!.Title,
@@ -359,8 +340,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
                 Price = x.StatementNavigation.Price,
                 Area = x.StatementNavigation.PropertyNavigation!.Area,
                 Location = x.StatementNavigation.PropertyNavigation.Location,
-                //Photo = x.StatementNavigation.PropertyNavigation.ImageNavigation!.Bytes,
-                PhotoUrl = x.StatementNavigation.PropertyNavigation.ImagesNavigation.FirstOrDefault().PhotoUrl,
+                PhotoUrl = x.StatementNavigation.PropertyNavigation.ImagesNavigation.FirstOrDefault()!.PhotoUrl,
                 PropertyTypeName = x.StatementNavigation.PropertyNavigation.PropertyTypeNavigation!.Name,
                 IsVerified = x.VerificationNavigation != null,
                 IsFavorite = ctx.Favorites
@@ -369,7 +349,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
                 ClosedAt = x.ClosedAt
             }).ToListAsync();
 
-        return new AnnouncementsShortAndPages
+        return new AnnouncementsShortAndPagesDto
         {
             Data = data,
             PagesCnt = (int)pagesCnt,
@@ -377,16 +357,18 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
         };
     }
     
-    public async Task<AnnouncementsShortAndPages> GetBoughtByUserId(Guid userId, int pageNumber, int pageSize)
+    public async Task<AnnouncementsShortAndPagesDto> GetBoughtByUserId(Guid userId, int pageNumber, int pageSize)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var query = ctx.Announcements.Where(x => x.PaymentNavigation!.CustomerId == userId && x.ClosedAt != null);
+        
+        var query = ctx.Announcements
+            .AsNoTracking()
+            .Where(x => x.PaymentNavigation!.CustomerId == userId && x.ClosedAt != null);
         var pagesCnt = Math.Ceiling((double)query.Count() / pageSize);
         var totalItems = await query.CountAsync();
         var data = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(x => new AnnouncementShort
+            .Select(x => new AnnouncementShortDto
             {
                 Id = x.Id,
                 Title = x.StatementNavigation!.Title,
@@ -394,8 +376,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
                 Price = x.StatementNavigation.Price,
                 Area = x.StatementNavigation.PropertyNavigation!.Area,
                 Location = x.StatementNavigation.PropertyNavigation.Location,
-                //Photo = x.StatementNavigation.PropertyNavigation.ImageNavigation!.Bytes,
-                PhotoUrl = x.StatementNavigation.PropertyNavigation.ImagesNavigation.FirstOrDefault().PhotoUrl,
+                PhotoUrl = x.StatementNavigation.PropertyNavigation.ImagesNavigation.FirstOrDefault()!.PhotoUrl,
                 PropertyTypeName = x.StatementNavigation.PropertyNavigation.PropertyTypeNavigation!.Name,
                 IsVerified = x.VerificationNavigation != null,
                 IsFavorite = ctx.Favorites
@@ -404,7 +385,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
                 ClosedAt = x.ClosedAt
             }).ToListAsync();
 
-        return new AnnouncementsShortAndPages
+        return new AnnouncementsShortAndPagesDto
         {
             Data = data,
             PagesCnt = (int)pagesCnt,
@@ -414,7 +395,7 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
 
     public async Task<int> GetTotalAnnouncements()
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         return await ctx.Announcements
             .Where(x => x.ClosedAt != null)
             .CountAsync();
@@ -422,27 +403,27 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
     
     public async Task<int> GetTotalViews()
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         return await ctx.Views
             .CountAsync();
     }
     
     public async Task<decimal> GetTotalIncome()
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         return await ctx.Announcements
             .Where(x => x.ClosedAt != null)
             .Select(x => x.StatementNavigation!.Price)
             .SumAsync();
     }
     
-    public async Task<GeneralTopDeal?> GetTopDeal()
+    public async Task<GeneralTopDealDto?> GetTopDeal()
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         return await ctx.Announcements
             .Where(x => x.ClosedAt != null)
             .OrderByDescending(x => x.StatementNavigation!.Price)
-            .Select(x => new GeneralTopDeal
+            .Select(x => new GeneralTopDealDto
             {
                 TopDealName = x.StatementNavigation!.Title,
                 TopDealStatementType = x.StatementNavigation.StatementTypeNavigation!.Name,
@@ -454,13 +435,12 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
             .FirstOrDefaultAsync();
     }
     
-    public async Task<List<GeneralTopRealtors>> GetTopRealtors(int top)
+    public async Task<List<GeneralTopRealtorsDto>> GetTopRealtors(int top)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(a => a.ClosedAt != null)
             .GroupBy(a => new { a.StatementNavigation!.UserId, a.StatementNavigation.UserNavigation!.Name,  a.StatementNavigation.UserNavigation.Surname})
-            .Select(g => new GeneralTopRealtors
+            .Select(g => new GeneralTopRealtorsDto
             {
                 TopRealtorName = g.Key.Name + ' ' + g.Key.Surname,
                 TopRealtorDeals = g.Count(),
@@ -469,15 +449,15 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
             .OrderByDescending(x => x.TopRealtorIncome)
             .Take(top)
             .ToListAsync();
+        return result;
     }
     
-    public async Task<List<GeneralTopProperty>> GetTopPropertyTypes(int top)
+    public async Task<List<GeneralTopPropertyDto>> GetTopPropertyTypes(int top)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(a => a.ClosedAt != null)
             .GroupBy(a => new { a.StatementNavigation!.PropertyNavigation!.PropertyTypeId, a.StatementNavigation.PropertyNavigation.PropertyTypeNavigation!.Name})
-            .Select(g => new GeneralTopProperty
+            .Select(g => new GeneralTopPropertyDto
             {
                 TopPropertyTypeName = g.Key.Name,
                 TopPropertyTypeCnt = g.Count(),
@@ -486,15 +466,15 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
             .OrderByDescending(x => x.TopPropertyTypeAvgPrice)
             .Take(top)
             .ToListAsync();
+        return result;
     }
     
-    public async Task<List<GeneralTopClient>> GetTopClients(int top)
+    public async Task<List<GeneralTopClientDto>> GetTopClients(int top)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(a => a.ClosedAt != null)
             .GroupBy(a => new { a.PaymentNavigation!.CustomerId, a.PaymentNavigation.CustomerNavigation!.Name, a.PaymentNavigation.CustomerNavigation.Surname})
-            .Select(g => new GeneralTopClient
+            .Select(g => new GeneralTopClientDto
             {
                 TopClientName = g.Key.Name +  ' ' + g.Key.Surname,
                 TopClientDeals = g.Count(),
@@ -503,46 +483,13 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
             .OrderByDescending(x => x.TopClientSpent)
             .Take(top)
             .ToListAsync();
-    }
-    
-    // TODO: imageService
-    public async Task<byte[]> GetBytesByAnnouncementIdAsync(Guid announcementId)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var announcement = await ctx.Announcements
-            .Include(announcement => announcement.StatementNavigation)
-            .ThenInclude(statement => statement!.PropertyNavigation)
-            .ThenInclude(property => property!.ImagesNavigation)
-            .FirstOrDefaultAsync(x => x.Id == announcementId);
-        
-        // return announcement
-        //     ?.StatementNavigation
-        //     ?.PropertyNavigation
-        //     ?.ImageNavigation
-        //     ?.Bytes ?? [];
-        return [];
-    }
-    
-    // TODO: imageService
-    public async Task<Guid> GetImageIdByAnnouncementIdAsync(Guid announcementId)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var announcement = await ctx.Announcements
-            .Include(announcement => announcement.StatementNavigation)
-            .ThenInclude(statement => statement!.PropertyNavigation)
-            .FirstOrDefaultAsync(x => x.Id == announcementId);
-        
-        // return announcement
-        //     ?.StatementNavigation
-        //     ?.PropertyNavigation
-        //     ?.ImageId ?? Guid.Empty;
-        return Guid.Empty;
+        return result;
     }
     
     public async Task<Guid?> GetPropertyIdByAnnouncementIdAsync(Guid announcementId)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
         var announcement = await ctx.Announcements
+            .AsNoTracking()
             .Include(announcement => announcement.StatementNavigation)
             .FirstOrDefaultAsync(x => x.Id == announcementId);
         
@@ -551,10 +498,9 @@ public class AnnouncementRepository(IDbContextFactory<RealEstateContext> dbConte
     
     public async Task<Guid?> GetStatementIdByAnnouncementIdAsync(Guid announcementId)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
         var announcement = await ctx.Announcements
-            .Where(x => x.Id == announcementId)
             .AsNoTracking()
+            .Where(x => x.Id == announcementId)
             .FirstOrDefaultAsync();
         
         return announcement?.StatementId;

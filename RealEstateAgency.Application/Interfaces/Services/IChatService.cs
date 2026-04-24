@@ -1,6 +1,5 @@
-﻿using RealEstateAgency.Application.Dto;
-using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Core.Models;
+﻿using RealEstateAgency.Application.Dtos;
+using RealEstateAgency.Core.Dtos;
 
 namespace RealEstateAgency.Application.Interfaces.Services;
 
@@ -12,5 +11,5 @@ public interface IChatService
     Task<bool> IsUserInThisChat(Guid userId, Guid chatId);
     Task<bool> AddMessage(Guid userId, Guid chatId, string message);
     Task<List<Guid>> GetChatParticipants(Guid chatId);
-    Task<List<MessageGrid>> GetMessagesGrid();
+    Task<List<MessageGridDto>> GetMessagesGrid();
 }

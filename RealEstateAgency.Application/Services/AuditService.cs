@@ -1,8 +1,8 @@
-﻿using RealEstateAgency.Application.Dto;
+﻿using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Application.Mapper;
-using RealEstateAgency.Core.DTO;
+using RealEstateAgency.Core.Dtos;
+using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper;
 
 namespace RealEstateAgency.Application.Services;
 
@@ -14,7 +14,7 @@ public class AuditService(IAuditRepository auditRepository, ApplicationMapper ma
         await auditRepository.InsertAsync(auditEntity);
     }
     
-    public async Task<List<AuditGrid>> GetAllAudits()
+    public async Task<List<AuditGridDto>> GetAllAudits()
     {
         var result = await auditRepository.GetAll();
         return result;

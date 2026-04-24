@@ -1,11 +1,11 @@
 ﻿using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using RealEstateAgency.Application.Dto;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
-using RealEstateAgency.Core.Models;
+using RealEstateAgency.Core.Entities;
 
 namespace RealEstateAgency.Application.Services;
 
@@ -52,16 +52,16 @@ public class RefreshService(
         cookieService.SetRefreshTokenCookie(refreshToken);
     }
     
-    public async Task<AverageResponse<string>> RefreshTokenAsync(string refreshToken)
+    public async Task<AverageResponseDto<string>> RefreshTokenAsync(string refreshToken)
     {
         if (string.IsNullOrEmpty(refreshToken) || !await CheckRefreshToken(refreshToken))
-            return new AverageResponse<string>(string.Empty, "Refresh token is not valid");
+            return new AverageResponseDto<string>(string.Empty, "Refresh token is not valid");
 
         var user = await GetUserByRefreshTokenAsync(refreshToken);
-        if (user == null) return new AverageResponse<string>(string.Empty, "User is not valid");
+        if (user == null) return new AverageResponseDto<string>(string.Empty, "User is not valid");
 
         var newAccessToken = await jwtService.GenerateAccessToken(user);
-        return new AverageResponse<string>(newAccessToken, string.Empty);
+        return new AverageResponseDto<string>(newAccessToken, string.Empty);
     }
 
     public async Task<string> LogoutAsync(string refreshToken)

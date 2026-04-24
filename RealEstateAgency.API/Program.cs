@@ -1,22 +1,19 @@
 using Microsoft.AspNetCore.Identity;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
-using RealEstateAgency.Core.Models;
-using RealEstateAgency.Infrastructure.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using RealEstateAgency.Application.Services;
-using RealEstateAgency.Application.Mapper;
 using RealEstateAgency.Infrastructure.Repositories;
-using RealEstateAgency.API.Mapper;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
+using RealEstateAgency.Core.Entities;
+using RealEstateAgency.Infrastructure.Contexts;
 using RealEstateAgency.Infrastructure.Hubs;
 using RealEstateAgency.Infrastructure.Services;
-
-// CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-// CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+using ApiMapper = RealEstateAgency.API.Mappers.ApiMapper;
+using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper;
 
 var culture = (CultureInfo)CultureInfo.CurrentCulture.Clone();
 
@@ -28,11 +25,11 @@ CultureInfo.DefaultThreadCurrentUICulture = culture;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContextFactory<RealEstateContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("RealEstateAgencyConnectionString")));
+// builder.Services.AddDbContextFactory<RealEstateContext>(options =>
+//     options.UseNpgsql(builder.Configuration.GetConnectionString("RealEstateAgencyConnectionString")));
 
-// builder.Services.AddDbContext<RealEstateContext>(options =>
-//     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<RealEstateContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("RealEstateAgencyConnectionString")));
 
 builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
 {
@@ -69,7 +66,6 @@ builder.Services.AddAuthentication(options =>
     {
         OnMessageReceived = context =>
         {
-            // Читаем токен из куки "accessToken"
             context.Token = context.Request.Cookies["accessToken"];
             return Task.CompletedTask;
         }
@@ -87,10 +83,10 @@ builder.Services.AddScoped<IStatementRepository, StatementRepository>();
 builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
 builder.Services.AddScoped<IPropertyTypeRepository, PropertyTypeRepository>();
 builder.Services.AddScoped<IStatementTypeRepository, StatementTypeRepository>();
-builder.Services.AddScoped<ICommentsRepository, CommentsRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IQuestionsRepository, QuestionsRepository>();
-builder.Services.AddScoped<IAnswersRepository, AnswersRepository>();
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 builder.Services.AddScoped<IAuditRepository, AuditRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IVerificationRepository, VerificationRepository>();
@@ -114,18 +110,18 @@ builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IRefreshService, RefreshService>();
-builder.Services.AddScoped<IAnnouncementsService, AnnouncementsService>();
-builder.Services.AddScoped<IStatementsService, StatementsService>();
+builder.Services.AddScoped<IAnnouncementsService, AnnouncementService>();
+builder.Services.AddScoped<IStatementService, StatementService>();
 builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IPropertyTypeService, PropertyTypeService>();
 builder.Services.AddScoped<IStatementTypeService, StatementTypeService>();
-builder.Services.AddScoped<ICommentsService, CommentsService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<IQuestionsService, QuestionsService>();
-builder.Services.AddScoped<IAnswersService, AnswersService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IAnswerService, AnswerService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
-builder.Services.AddScoped<IReportsService, ReportsService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<IViewService, ViewService>();

@@ -1,18 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RealEstateAgency.Application.Dto;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Utils;
-using RealEstateAgency.Core.Models;
-using RealEstateAgency.Infrastructure.Context;
+using RealEstateAgency.Core.Entities;
+using RealEstateAgency.Infrastructure.Contexts;
 
 namespace RealEstateAgency.Infrastructure.Repositories;
 
-public class ChatRepository(IDbContextFactory<RealEstateContext> dbContextFactory) : IChatRepository
+public class ChatRepository(RealEstateContext ctx) : IChatRepository
 {
     public async Task<List<ChatSummaryDto>> GetChatsByUserIdAsync(Guid id)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         var query = await ctx.ChatMembers
             .AsNoTracking()
             .Where(cm => cm.UserId == id)
@@ -52,18 +52,19 @@ public class ChatRepository(IDbContextFactory<RealEstateContext> dbContextFactor
     
     public async Task<Guid?> GetChatByBothIdsAsync(Guid firstId, Guid secondId)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        return await ctx.Chats
+        var result = await ctx.Chats
+            .AsNoTracking()
             .Where(c => c.TypeId == Guid.Parse(ChatTypes.Private) &&
                         c.ChatMembersNavigation.Any(m => m.UserId == firstId) && 
                         c.ChatMembersNavigation.Any(m => m.UserId == secondId))
             .Select(c => (Guid?)c.Id)
             .FirstOrDefaultAsync();
+        return result;
     }
     
     public async Task<Chat?> GetChatByIdAsync(Guid id)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         var result = await ctx.Chats
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
@@ -72,7 +73,7 @@ public class ChatRepository(IDbContextFactory<RealEstateContext> dbContextFactor
     
     public async Task<List<ChatMember>> GetMembersByChatIdAsync(Guid id)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        
         var result = await ctx.ChatMembers
             .AsNoTracking()
             .Where(x => x.ChatId == id)
@@ -84,24 +85,12 @@ public class ChatRepository(IDbContextFactory<RealEstateContext> dbContextFactor
     {
         try
         {
-            await using var ctx = await dbContextFactory.CreateDbContextAsync();
             var res =  await ctx.Chats.AddAsync(chat);
-            await ctx.SaveChangesAsync();
             return chat.Id;
         }
         catch
         {
             return null;
         }
-    }
-
-    public async Task<bool> DeleteChatByIdAsync(Guid id)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        var res = await ctx.Chats
-            .Where(x => x.Id == id)
-            .ExecuteDeleteAsync();
-
-        return res > 0;
     }
 }

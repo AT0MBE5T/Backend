@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using RealEstateAgency.Core.Models;
+using RealEstateAgency.Core.Entities;
 
 namespace RealEstateAgency.Infrastructure.Configurations;
 

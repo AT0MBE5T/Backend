@@ -1,9 +1,9 @@
-﻿using RealEstateAgency.Application.Dto;
+﻿using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
-using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Core.Models;
+using RealEstateAgency.Core.Dtos;
+using RealEstateAgency.Core.Entities;
 
 namespace RealEstateAgency.Application.Services;
 
@@ -16,7 +16,7 @@ public class ChatService(
 {
     public async Task<Guid?> GetOrCreateChat(Guid userId, Guid announcementId)
     {
-        var command = new AnnouncementInfoCommand(announcementId, userId);
+        var command = new AnnouncementInfoCommandDto(announcementId, userId);
         var announcement = await announcementsService.GetAnnouncementFullById(command);
 
         if (announcement is null || announcement.ClosedAt != null)
@@ -135,7 +135,7 @@ public class ChatService(
         return result;
     }
 
-    public async Task<List<MessageGrid>> GetMessagesGrid()
+    public async Task<List<MessageGridDto>> GetMessagesGrid()
     {
         var result = await  messageRepository.GetMessagesGridAsync();
         return result;

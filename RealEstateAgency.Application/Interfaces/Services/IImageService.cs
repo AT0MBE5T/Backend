@@ -1,19 +1,16 @@
 ﻿using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
-using RealEstateAgency.API.Dto;
-using RealEstateAgency.Application.Dto;
-using RealEstateAgency.Core.DTO;
+using RealEstateAgency.Application.Dtos;
+using RealEstateAgency.Core.Dtos;
 
 namespace RealEstateAgency.Application.Interfaces.Services;
 
 public interface IImageService
 {
     Task<Guid> InsertAsync(ImageDto imageDto);
-    Task<bool> UpdateAsync(Guid imageId, byte[] bytes);
     Task<bool> UpdateOrderAsync(Guid imageId, int currentIndex);
     Task<bool> DeleteAsync(Guid imageId);
     Task<DeletionResult> DeleteImageAsync(string publicId);
     Task<List<PhotoDto>> GetPhotosByPropertyIdAsync(Guid propertyId);
-    Task<ImageUploadResponse> UploadImageAsync(Stream fileStream, string fileName);
-    Task<bool> DeleteAvatarAsync(Guid userId);
+    Task<ImageUploadResponseDto> UploadImageAsync(Stream fileStream, string fileName);
 }

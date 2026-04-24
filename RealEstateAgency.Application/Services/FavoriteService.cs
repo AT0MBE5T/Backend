@@ -1,9 +1,8 @@
-﻿using RealEstateAgency.Application.Dto;
+﻿using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Application.Mapper;
-using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Infrastructure.Repositories;
+using RealEstateAgency.Core.Dtos;
+using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper;
 
 namespace RealEstateAgency.Application.Services;
 
@@ -12,14 +11,7 @@ public class FavoriteService(
     IPaymentService paymentService,
     ApplicationMapper applicationMapper) : IFavoriteService
 {
-    public async Task<AnnouncementsShortAndPages> GetSearchDataAsync(Guid userId, string text, List<string> filtersId,
-        int sortId, int pageNumber, int pageSize)
-    {
-        var result = await favoriteRepository.GetSearchDataAsync(userId, text, filtersId, sortId, pageNumber, pageSize);
-        return result;
-    }
-
-    public async Task<AnnouncementsShortAndPages> GetFavoritesByUserId(Guid userId, int page, int limit)
+    public async Task<AnnouncementsShortAndPagesDto> GetFavoritesByUserId(Guid userId, int page, int limit)
     {
         var result = await  favoriteRepository.GetFavoritesByUserId(userId, page, limit);
         return result;

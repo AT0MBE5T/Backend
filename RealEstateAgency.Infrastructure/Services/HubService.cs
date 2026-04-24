@@ -1,19 +1,19 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Core.DTO;
+using RealEstateAgency.Core.Dtos;
 using RealEstateAgency.Infrastructure.Hubs;
 
 namespace RealEstateAgency.Infrastructure.Services;
 
 public class HubService(IHubContext<MessageHub> hubContext) : IHubService
 {
-    public async Task NotifyNewOfferAsync(AnnouncementShort? offerDto)
+    public async Task NotifyNewOfferAsync(AnnouncementShortDto? offerDto)
     {
         await hubContext.Clients.Group("offers_global")
             .SendAsync("ReceiveOffer", offerDto);
     }
     
-    public async Task NotifyUpdateOfferAsync(AnnouncementShort? offerDto)
+    public async Task NotifyUpdateOfferAsync(AnnouncementShortDto? offerDto)
     {
         await hubContext.Clients.Group("offers_global")
             .SendAsync("UpdateOffer", offerDto);

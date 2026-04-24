@@ -1,12 +1,10 @@
 ﻿using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
-using RealEstateAgency.Application.Dto;
-using RealEstateAgency.Application.Interfaces.Repositories;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
-using RealEstateAgency.Core.DTO;
+using RealEstateAgency.Core.Dtos;
 
 namespace RealEstateAgency.Infrastructure.Hubs;
 
@@ -17,8 +15,8 @@ public interface IChatClient
     public Task ReceiveQuestion(Guid announcementId, Guid questionId, string userName, string message);
     public Task ReceiveAnswer(Guid answerId, Guid questionId, string userName, string message);
     public Task UpdateChatList(Guid chatId, Guid offerId, string userName, string message);
-    public Task ReceiveOffer(AnnouncementShort offer);
-    public Task UpdateOffer(AnnouncementShort offer);
+    public Task ReceiveOffer(AnnouncementShortDto offer);
+    public Task UpdateOffer(AnnouncementShortDto offer);
     public Task DeleteOffer(Guid offerId);
     public Task DeleteAnswer(Guid answerId);
     public Task DeleteQuestion(Guid questionId);
@@ -27,31 +25,30 @@ public interface IChatClient
 
 public record UserConnection(string ChatRoom, string UserName);
 
-//[Authorize]
 public class MessageHub: Hub<IChatClient>
 {
     private readonly IDistributedCache _cache;
     private readonly IChatService _chatService;
-    private readonly ICommentsService _commentsService;
-    private readonly IQuestionsService _questionsService;
-    private readonly IAnswersService _answersService;
+    private readonly ICommentService _commentService;
+    private readonly IQuestionService _questionService;
+    private readonly IAnswerService _answerService;
     private readonly IAnnouncementsService _announcementsService;
     private readonly WebPushService _webPushService;
     
     public MessageHub(
         IDistributedCache cache,
         IChatService chatService,
-        ICommentsService commentsService,
-        IAnswersService answersService,
-        IQuestionsService questionsService,
+        ICommentService commentService,
+        IAnswerService answerService,
+        IQuestionService questionService,
         IAnnouncementsService announcementsService,
         WebPushService webPushService)
     {
         _cache = cache;
         _chatService = chatService;
-        _commentsService = commentsService;
-        _answersService = answersService;
-        _questionsService = questionsService;
+        _commentService = commentService;
+        _answerService = answerService;
+        _questionService = questionService;
         _announcementsService = announcementsService;
         _webPushService = webPushService;
     }
@@ -157,7 +154,7 @@ public class MessageHub: Hub<IChatClient>
             CreatedAt = DateTime.UtcNow
         };
         
-        var success = await _commentsService.InsertCommentAsync(objForAdding);
+        var success = await _commentService.InsertCommentAsync(objForAdding);
 
         if (success is not null)
             await Clients.Group(chatId.ToString()).ReceiveComment(success.Value, chatId, userName, message);
@@ -182,7 +179,7 @@ public class MessageHub: Hub<IChatClient>
             Id = Guid.NewGuid()
         };
         
-        var questionId = await _questionsService.InsertQuestionAsync(questionDto);
+        var questionId = await _questionService.InsertQuestionAsync(questionDto);
 
         if (questionId is null)
             return;
@@ -197,9 +194,6 @@ public class MessageHub: Hub<IChatClient>
 
         if (activeRoom is not null)
             return;
-        
-        // if (activeRoom == chatId.ToString())
-        //     return; 
         
         await _webPushService.SendNotificationToUserAsync(authorId, $"[{userName}] {message}", $"/offers/{chatId}/questions","New answer");
     }
@@ -223,13 +217,13 @@ public class MessageHub: Hub<IChatClient>
             Id = Guid.NewGuid()
         };
     
-        var answerId = await _answersService.InsertAnswerAsync(answerDto);
+        var answerId = await _answerService.InsertAnswerAsync(answerDto);
         if (answerId is null)
             return;
         
         await Clients.Group(chatId.ToString()).ReceiveAnswer(answerId.Value, questionId, userName, message);
 
-        var questionUserId = await _questionsService.GetQuestionUserIdByAnswerId(answerId.Value);
+        var questionUserId = await _questionService.GetQuestionUserIdByAnswerId(answerId.Value);
         if (questionUserId == Guid.Empty)
             return;
         
@@ -238,13 +232,10 @@ public class MessageHub: Hub<IChatClient>
         if (activeRoom is not null)
             return;
         
-        // if (activeRoom == chatId.ToString())
-        //     return; 
-        
         await _webPushService.SendNotificationToUserAsync(questionUserId, $"[{userName}] {message}", $"/offers/{chatId}/questions", "New answer");
     }
     
-    public async Task AddOffer(Guid chatId, AnnouncementShort offer)
+    public async Task AddOffer(Guid chatId, AnnouncementShortDto offer)
     {
         var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
         if (connectionJson is null) return;
@@ -264,7 +255,7 @@ public class MessageHub: Hub<IChatClient>
         }
     }
     
-    public async Task UpdateOffer(Guid chatId, AnnouncementShort offer)
+    public async Task UpdateOffer(Guid chatId, AnnouncementShortDto offer)
     {
         var userId = Context.User.GetUserId();
         
@@ -319,7 +310,7 @@ public class MessageHub: Hub<IChatClient>
         if (connection is null) return;
 
 
-        var res = await _commentsService.DeleteByCommentIdAsync(commentId);
+        var res = await _commentService.DeleteByCommentIdAsync(commentId, userId);
         
         if (res)
             await Clients.Group(chatId.ToString()).DeleteComment(commentId);
@@ -336,7 +327,7 @@ public class MessageHub: Hub<IChatClient>
         if (connection is null) return;
 
 
-        var res = await _answersService.DeleteByAnswerIdAsync(answerId, userId);
+        var res = await _answerService.DeleteByAnswerIdAsync(answerId, userId);
         
         if (res)
             await Clients.Group(chatId.ToString()).DeleteAnswer(answerId);
@@ -353,7 +344,7 @@ public class MessageHub: Hub<IChatClient>
         if (connection is null) return;
 
 
-        var res = await _questionsService.DeleteByQuestionIdAsync(questionId, userId);
+        var res = await _questionService.DeleteByQuestionIdAsync(questionId, userId);
         
         if (res)
             await Clients.Group(chatId.ToString()).DeleteQuestion(questionId);

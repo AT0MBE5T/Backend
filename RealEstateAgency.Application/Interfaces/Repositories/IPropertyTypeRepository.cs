@@ -1,5 +1,5 @@
-﻿using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Core.Models;
+﻿using RealEstateAgency.Core.Dtos;
+using RealEstateAgency.Core.Entities;
 
 namespace RealEstateAgency.Application.Interfaces.Repositories;
 

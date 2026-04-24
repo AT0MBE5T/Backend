@@ -1,23 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstateAgency.Application.Interfaces.Repositories;
-using RealEstateAgency.Core.Models;
-using RealEstateAgency.Infrastructure.Context;
+using RealEstateAgency.Core.Entities;
+using RealEstateAgency.Infrastructure.Contexts;
 
 namespace RealEstateAgency.Infrastructure.Repositories;
 
-public class PaymentRepository(IDbContextFactory<RealEstateContext> dbContextFactory) : IPaymentRepository
+public class PaymentRepository(RealEstateContext ctx) : IPaymentRepository
 {
     public async Task<Guid> Insert(Payment payment)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
         await ctx.Payments.AddAsync(payment);
-        await ctx.SaveChangesAsync();
         return payment.Id;
     }
 
     public async Task<bool> IsExistByAnnouncementId(Guid announcementId)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
         var result = await ctx.Payments.AnyAsync(p => p.AnnouncementId == announcementId);
         return result;
     }

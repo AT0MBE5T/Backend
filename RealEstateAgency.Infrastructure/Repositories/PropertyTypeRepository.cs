@@ -1,85 +1,71 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstateAgency.Application.Interfaces.Repositories;
-using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Core.Models;
-using RealEstateAgency.Infrastructure.Context;
+using RealEstateAgency.Core.Dtos;
+using RealEstateAgency.Core.Entities;
+using RealEstateAgency.Infrastructure.Contexts;
 
 namespace RealEstateAgency.Infrastructure.Repositories;
 
-public class PropertyTypeRepository(IDbContextFactory<RealEstateContext> dbContextFactory) : IPropertyTypeRepository
+public class PropertyTypeRepository(RealEstateContext ctx) : IPropertyTypeRepository
 {
-    public async Task<Guid> GetIdByNameAsync(string name)
-    {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        return await ctx.PropertyTypes
-            .Where(p => p.Name == name)
-            .Select(p => p.Id)
-            .FirstOrDefaultAsync();
-    }
-    
     public async Task<List<PropertyType>> GetAllAsync()
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        return await ctx.PropertyTypes.ToListAsync();
+        var result = await ctx.PropertyTypes.AsNoTracking().ToListAsync();
+        return result;
     }
 
     public async Task<int> GetTotalPlacedAnnouncementsDate(Guid propertyTypeId, DateTime date)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = date.ToUniversalTime().AddDays(1).Date;
         var end = start.AddDays(1);
 
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(x => x.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId && x.PublishedAt.Date >= start && x.PublishedAt.Date < end)
             .CountAsync();
+        return result;
     }
 
     public async Task<int> GetTotalDealsDate(Guid propertyTypeId, DateTime date)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = date.ToUniversalTime().AddDays(1).Date;
         var end = start.AddDays(1);
         
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(x =>
                 x.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId
                 && x.ClosedAt!.Value.Date >= start
                 && x.ClosedAt.Value.Date < end)
             .CountAsync();
+        return result;
     }
 
     public async Task<decimal> GetTotalIncomeDate(Guid propertyTypeId, DateTime date)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = date.ToUniversalTime().AddDays(1).Date;
         var end = start.AddDays(1);
         
-        return await ctx.Payments
+        var result = await ctx.Payments
             .Where(x =>
-                        x.AnnouncementNavigation!.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId
-                        && x.AnnouncementNavigation.ClosedAt!.Value.Date >= start
-                        && x.AnnouncementNavigation.ClosedAt.Value.Date < end)
+                x.AnnouncementNavigation!.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId
+                && x.AnnouncementNavigation.ClosedAt!.Value.Date >= start
+                && x.AnnouncementNavigation.ClosedAt.Value.Date < end)
             .Select(x => x.AnnouncementNavigation!.StatementNavigation!.Price)
             .SumAsync();
+        return result;
     }
     
     public async Task<int> GetViewsByPropertyIdDate(Guid propertyTypeId, DateTime date)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = date.ToUniversalTime().AddDays(1).Date;
         var end = start.AddDays(1);
         
         var result = await ctx.Views
             .Where(x => x.CreatedAt >= start
                         && x.CreatedAt < end
-                        && x.AnnouncementNavigation
+                        && x.AnnouncementNavigation!
                             .StatementNavigation
-                            .PropertyNavigation
-                            .PropertyTypeId == propertyTypeId)
+                            !.PropertyNavigation
+                            !.PropertyTypeId == propertyTypeId)
             .CountAsync();
 
         return result;
@@ -87,18 +73,16 @@ public class PropertyTypeRepository(IDbContextFactory<RealEstateContext> dbConte
     
     public async Task<int> GetViewsByPropertyIdDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTo.ToUniversalTime().Date.AddDays(2);
         
         var result = await ctx.Views
             .Where(x => x.CreatedAt >= start
                         && x.CreatedAt < end
-                        && x.AnnouncementNavigation
+                        && x.AnnouncementNavigation!
                             .StatementNavigation
-                            .PropertyNavigation
-                            .PropertyTypeId == propertyTypeId)
+                            !.PropertyNavigation
+                            !.PropertyTypeId == propertyTypeId)
             .CountAsync();
 
         return result;
@@ -106,58 +90,54 @@ public class PropertyTypeRepository(IDbContextFactory<RealEstateContext> dbConte
 
     public async Task<int> GetTotalPlacedAnnouncementsDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTo.ToUniversalTime().Date.AddDays(2);
         
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(x =>
-                        x.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId
-                        && x.PublishedAt.Date >= start
-                        && x.PublishedAt.Date < end)
+                x.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId
+                && x.PublishedAt.Date >= start
+                && x.PublishedAt.Date < end)
             .CountAsync();
+        return result;
     }
 
     public async Task<int> GetTotalDealsDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTo.ToUniversalTime().Date.AddDays(2);
         
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(x =>
-                        x.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId
-                        && x.ClosedAt!.Value.Date >= start
-                        && x.ClosedAt.Value.Date < end)
+                x.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId
+                && x.ClosedAt!.Value.Date >= start
+                && x.ClosedAt.Value.Date < end)
             .CountAsync();
+        return result;
     }
 
     public async Task<decimal> GetTotalIncomeDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTo.ToUniversalTime().Date.AddDays(2);
         
-        return await ctx.Payments
+        var result = await ctx.Payments
             .Where(x =>
                 x.AnnouncementNavigation!.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId
                 && x.AnnouncementNavigation.ClosedAt!.Value.Date >= start
                 && x.AnnouncementNavigation.ClosedAt.Value.Date < end)
             .Select(x => x.AnnouncementNavigation!.StatementNavigation!.Price)
             .SumAsync();
+
+        return result;
     }
 
     public async Task<PropertyTypeTopDealCoreDto?> GetTopDealDate(Guid propertyTypeId, DateTime date)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = date.ToUniversalTime().AddDays(1).Date;
         var end = start.AddDays(1);
 
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(x => x.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId &&
                         x.ClosedAt!.Value.Date >= start && x.ClosedAt.Value.Date < end)
             .OrderByDescending(x => x.StatementNavigation!.Price)
@@ -171,16 +151,15 @@ public class PropertyTypeRepository(IDbContextFactory<RealEstateContext> dbConte
                 TopDealPrice = x.StatementNavigation.Price,
             })
             .FirstOrDefaultAsync();
+        return result;
     }
 
     public async Task<PropertyTypeTopDealCoreDto?> GetTopDealDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTo.ToUniversalTime().Date.AddDays(2);
         
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(x => x.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId &&
                         x.ClosedAt!.Value.Date >= start && x.ClosedAt.Value.Date < end)
             .OrderByDescending(x => x.StatementNavigation!.Price)
@@ -194,16 +173,15 @@ public class PropertyTypeRepository(IDbContextFactory<RealEstateContext> dbConte
                 TopDealPrice = x.StatementNavigation.Price,
             })
             .FirstOrDefaultAsync();
+        return result;
     }
     
     public async Task<PropertyTypeTopRealtorCoreDto?> GetTopRealtorDate(Guid propertyTypeId, DateTime date)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = date.ToUniversalTime().AddDays(1).Date;
         var end = start.AddDays(1);
         
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(a => a.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId && a.ClosedAt >= start && a.ClosedAt < end)
             .GroupBy(a => new { a.StatementNavigation!.UserId, a.StatementNavigation.UserNavigation!.Name,  a.StatementNavigation.UserNavigation.Surname})
             .Select(g => new PropertyTypeTopRealtorCoreDto
@@ -214,16 +192,15 @@ public class PropertyTypeRepository(IDbContextFactory<RealEstateContext> dbConte
             })
             .OrderByDescending(x => x.TopRealtorIncome)
             .FirstOrDefaultAsync();
+        return result;
     }
     
     public async Task<PropertyTypeTopRealtorCoreDto?> GetTopRealtorDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTo.ToUniversalTime().Date.AddDays(2);
         
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(a => a.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId && a.ClosedAt >= start && a.ClosedAt < end)
             .GroupBy(a => new { a.StatementNavigation!.UserId, a.StatementNavigation!.UserNavigation!.Name,  a.StatementNavigation.UserNavigation.Surname})
             .Select(g => new PropertyTypeTopRealtorCoreDto
@@ -234,16 +211,15 @@ public class PropertyTypeRepository(IDbContextFactory<RealEstateContext> dbConte
             })
             .OrderByDescending(x => x.TopRealtorIncome)
             .FirstOrDefaultAsync();
+        return result;
     }
     
     public async Task<PropertyTypeTopClientCoreDto?> GetTopClientDate(Guid propertyTypeId, DateTime date)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = date.ToUniversalTime().AddDays(1).Date;
         var end = start.AddDays(1);
         
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(a => a.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId && a.ClosedAt >= start && a.ClosedAt < end)
             .GroupBy(a => new { a.PaymentNavigation!.CustomerId, a.PaymentNavigation.CustomerNavigation!.Name, a.PaymentNavigation.CustomerNavigation.Surname})
             .Select(g => new PropertyTypeTopClientCoreDto
@@ -254,16 +230,15 @@ public class PropertyTypeRepository(IDbContextFactory<RealEstateContext> dbConte
             })
             .OrderByDescending(x => x.TopClientSpent)
             .FirstOrDefaultAsync();
+        return result;
     }
 
     public async Task<PropertyTypeTopClientCoreDto?> GetTopClientDateSpan(Guid propertyTypeId, DateTime dateFrom, DateTime dateTo)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync();
-        
         var start = dateFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTo.ToUniversalTime().Date.AddDays(2);
-        
-        return await ctx.Announcements
+
+        var result = await ctx.Announcements
             .Where(a => a.StatementNavigation!.PropertyNavigation!.PropertyTypeId == propertyTypeId && a.ClosedAt >= start && a.ClosedAt < end)
             .GroupBy(a => new { a.PaymentNavigation!.CustomerId, a.PaymentNavigation.CustomerNavigation!.Name, a.PaymentNavigation.CustomerNavigation.Surname})
             .Select(g => new PropertyTypeTopClientCoreDto
@@ -274,5 +249,6 @@ public class PropertyTypeRepository(IDbContextFactory<RealEstateContext> dbConte
             })
             .OrderByDescending(x => x.TopClientSpent)
             .FirstOrDefaultAsync();
+        return result;
     }
 }

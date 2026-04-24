@@ -1,13 +1,9 @@
-﻿using RealEstateAgency.Core.Models;
+﻿using RealEstateAgency.Core.Entities;
 
-namespace RealEstateAgency.Infrastructure.Repositories;
+namespace RealEstateAgency.Application.Interfaces.Repositories;
 
 public interface IViewRepository
 {
     Task<bool> IsUserWatchedAsync(Guid userId, Guid announcementId);
-    Task<int> GetCntByUserIdAsync(Guid userId);
-    Task<int> GetCntByOfferIdAsync(Guid announcementId);
-    Task<View?> GetDataByUserOfferId(Guid userId, Guid offerId);
     Task<Guid> InsertAsync(View view);
-    Task<bool> DeleteByIdAsync(Guid id);
 }

@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using RealEstateAgency.Core.Models;
 
 namespace RealEstateAgency.Application.Utils;
 

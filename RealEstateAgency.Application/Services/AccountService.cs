@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using RealEstateAgency.Application.Dto;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
-using RealEstateAgency.Application.Mapper;
 using RealEstateAgency.Application.Utils;
-using RealEstateAgency.Core.DTO;
-using RealEstateAgency.Core.Models;
+using RealEstateAgency.Core.Dtos;
+using RealEstateAgency.Core.Entities;
+using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper;
 
 namespace RealEstateAgency.Application.Services;
 
@@ -162,23 +162,9 @@ public class AccountService(
         };
     }
     
-    // public async Task<bool> UpdateUserAvatarAsync(Guid userId, string avatarUrl, string avatarPublicId)
-    // {
-    //     var user = await userManager.FindByIdAsync(userId.ToString());
-    //
-    //     if (user is null)
-    //         return false;
-    //     
-    //     user.PublicAvatarId = avatarPublicId;
-    //     user.Avatar =  avatarUrl;
-    //
-    //     var res = await repository.UpdateAsync(user);
-    //     return res;
-    // }
-    
-    public async Task<string> ChangeUserAvatarAsync(ChangeAvatarCommand command)
+    public async Task<string> ChangeUserAvatarAsync(ChangeAvatarCommandDto commandDto)
     {
-        var user = await userManager.FindByIdAsync(command.UserId.ToString());
+        var user = await userManager.FindByIdAsync(commandDto.UserId.ToString());
         if (user == null) throw new Exception("User not found");
         
         if (!string.IsNullOrEmpty(user.PublicAvatarId))
@@ -186,7 +172,7 @@ public class AccountService(
             await imageService.DeleteImageAsync(user.PublicAvatarId);
         }
 
-        var uploadResult = await imageService.UploadImageAsync(command.FileStream, command.FileName);
+        var uploadResult = await imageService.UploadImageAsync(commandDto.FileStream, commandDto.FileName);
         
         user.Avatar = uploadResult.Url;
         user.PublicAvatarId = uploadResult.PublicId;
@@ -196,53 +182,53 @@ public class AccountService(
         return user.Avatar;
     }
 
-    public async Task<List<string>> ChangePasswordAsync(ChangePasswordCommand command)
+    public async Task<List<string>> ChangePasswordAsync(ChangePasswordCommandDto commandDto)
     {
-        var result = await identityService.ChangePasswordAsync(command.UserId.ToString(), command.OldPassword, command.NewPassword);
+        var result = await identityService.ChangePasswordAsync(commandDto.UserId.ToString(), commandDto.OldPassword, commandDto.NewPassword);
         return result.Count != 0
             ? result
             : [];
     }
     
-    public async Task<List<string>> ChangeEmailAsync(ChangeEmailCommand command)
+    public async Task<List<string>> ChangeEmailAsync(ChangeEmailCommandDto commandDto)
     {
-        var result = await identityService.ChangeEmailAsync(command.UserId.ToString(), command.Email);
+        var result = await identityService.ChangeEmailAsync(commandDto.UserId.ToString(), commandDto.Email);
         return result.Count != 0
             ? result
             : [];
     }
     
-    public async Task<List<string>> ChangePhoneAsync(ChangePhoneCommand command)
+    public async Task<List<string>> ChangePhoneAsync(ChangePhoneCommandDto commandDto)
     {
-        var result = await identityService.ChangePhoneAsync(command.UserId.ToString(), command.Phone);
+        var result = await identityService.ChangePhoneAsync(commandDto.UserId.ToString(), commandDto.Phone);
         return result.Count != 0
             ? result
             : [];
     }
     
-    public async Task<RegistrationResponseDto> RegisterAsync(RegisterCommand command)
+    public async Task<RegistrationResponseDto> RegisterAsync(RegisterCommandDto commandDto)
     {
-        if (await identityService.UserExistsAsync(command.Login))
+        if (await identityService.UserExistsAsync(commandDto.Login))
             return new RegistrationResponseDto(Guid.Empty, string.Empty, string.Empty, ["User already exists"], StatusCodes.Status401Unauthorized);
         
-        var imageResponse = await imageService.UploadImageAsync(command.AvatarStream, command.AvatarFileName);
+        var imageResponse = await imageService.UploadImageAsync(commandDto.AvatarStream, commandDto.AvatarFileName);
 
         var userId = Guid.NewGuid();
         
         var user = new User {
             Id = userId,
-            UserName = command.Login, 
+            UserName = commandDto.Login, 
             Avatar = imageResponse.Url,
             PublicAvatarId = imageResponse.PublicId,
-            Age = command.Age,
-            Name = command.Name,
-            Surname =  command.Surname,
-            PhoneNumber = command.PhoneNumber,
+            Age = commandDto.Age,
+            Name = commandDto.Name,
+            Surname =  commandDto.Surname,
+            PhoneNumber = commandDto.PhoneNumber,
             CreatedAt = DateTime.UtcNow,
-            Email = command.Email
+            Email = commandDto.Email
         };
 
-        var createResult = await identityService.CreateUserAsync(user, command.Password);
+        var createResult = await identityService.CreateUserAsync(user, commandDto.Password);
         if (createResult.Count != 0)
             return new RegistrationResponseDto(Guid.Empty, string.Empty, string.Empty, createResult, StatusCodes.Status400BadRequest);
         
@@ -261,12 +247,12 @@ public class AccountService(
         return new RegistrationResponseDto(userId, accessToken, refreshToken, [], StatusCodes.Status201Created);
     }
     
-    public async Task<RegistrationResponseDto> LoginAsync(LoginCommand command)
+    public async Task<RegistrationResponseDto> LoginAsync(LoginCommandDto commandDto)
     {
-        var user = await userManager.FindByNameAsync(command.Login);
+        var user = await userManager.FindByNameAsync(commandDto.Login);
         if (user == null) return new RegistrationResponseDto(Guid.Empty, string.Empty, string.Empty, ["User not found"], StatusCodes.Status404NotFound);
         
-        var result = await signInManager.CheckPasswordSignInAsync(user, command.Password, false);
+        var result = await signInManager.CheckPasswordSignInAsync(user, commandDto.Password, false);
         if (!result.Succeeded)
         {
             return new RegistrationResponseDto(Guid.Empty, string.Empty, string.Empty, ["Incorrect password"], StatusCodes.Status401Unauthorized);
@@ -309,7 +295,7 @@ public class AccountService(
         await userManager.SetLockoutEndDateAsync(user, lockoutContent);
     }
     
-    public async Task<List<UserGrid>> GetAll()
+    public async Task<List<UserGridDto>> GetAll()
     {
         var result = await repository.GetAllAsync();
         return result;

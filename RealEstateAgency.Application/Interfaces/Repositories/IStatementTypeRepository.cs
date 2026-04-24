@@ -1,4 +1,4 @@
-﻿using RealEstateAgency.Core.Models;
+﻿using RealEstateAgency.Core.Entities;
 
 namespace RealEstateAgency.Application.Interfaces.Repositories;
 
