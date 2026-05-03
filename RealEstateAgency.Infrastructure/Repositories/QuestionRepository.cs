@@ -79,18 +79,11 @@ public class QuestionRepository(RealEstateContext ctx) : IQuestionRepository
     
     public async Task<bool> DeleteByIdAsync(Guid id)
     {
-        try
-        {
-            var entity = await ctx.Questions.FindAsync(id);
-            if (entity is null)
-                return false;
-            
-            ctx.Questions.Remove(entity);
-            return true;
-        }
-        catch
-        {
+        var entity = await ctx.Questions.FindAsync(id);
+        if (entity is null)
             return false;
-        }
+        
+        ctx.Questions.Remove(entity);
+        return true;
     }
 }

@@ -1,4 +1,5 @@
-﻿using RealEstateAgency.Application.Dtos;
+﻿using Microsoft.Extensions.Logging;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
@@ -7,7 +8,7 @@ using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper
 namespace RealEstateAgency.Application.Services;
 
 public class AnswerService(IAnswerRepository answerRepository, ApplicationMapper mapper, IAuditService auditService,
-    IUnitOfWork unitOfWork) : IAnswerService
+    IUnitOfWork unitOfWork, ILogger<AnswerService> logger) : IAnswerService
 {
     public async Task<Guid?> InsertAnswerAsync(AnswerDto answerDto)
     {
@@ -29,8 +30,9 @@ public class AnswerService(IAnswerRepository answerRepository, ApplicationMapper
             await unitOfWork.CommitAsync();
             return answerId;
         }
-        catch
+        catch(Exception ex)
         {
+            logger.LogError("Failed to create an answer: {ex}", ex);
             await unitOfWork.RollbackAsync();
             return null;
         }
@@ -68,8 +70,9 @@ public class AnswerService(IAnswerRepository answerRepository, ApplicationMapper
             
             return res;
         }
-        catch
+        catch(Exception ex)
         {
+            logger.LogError("Failed to delete an answer: {ex}", ex);
             await unitOfWork.RollbackAsync();
             return false;
         }

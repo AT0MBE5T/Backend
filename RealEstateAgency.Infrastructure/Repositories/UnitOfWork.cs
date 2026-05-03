@@ -6,7 +6,7 @@ namespace RealEstateAgency.Infrastructure.Repositories;
 
 public class UnitOfWork : IUnitOfWork
 {
-    private readonly RealEstateContext _context;
+    public readonly RealEstateContext _context;
     private IDbContextTransaction? _currentTransaction;
 
     public UnitOfWork(RealEstateContext context) => _context = context;

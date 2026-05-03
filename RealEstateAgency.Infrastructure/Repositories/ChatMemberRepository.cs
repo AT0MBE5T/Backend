@@ -9,14 +9,7 @@ public class ChatMemberRepository(RealEstateContext ctx) : IChatMemberRepository
 {
     public async Task<bool> AddChatMemberAsync(ChatMember chatMember)
     {
-        try
-        {
-            await ctx.ChatMembers.AddAsync(chatMember);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        await ctx.ChatMembers.AddAsync(chatMember);
+        return true;
     }
 }

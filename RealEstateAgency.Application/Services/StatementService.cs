@@ -1,4 +1,5 @@
-﻿using RealEstateAgency.Application.Dtos;
+﻿using Microsoft.Extensions.Logging;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
@@ -7,7 +8,7 @@ using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper
 namespace RealEstateAgency.Application.Services;
 
 public class StatementService(IStatementRepository repository, ApplicationMapper mapper,
-    IAuditService auditService, IUnitOfWork unitOfWork) : IStatementService
+    IAuditService auditService, ILogger<StatementService> logger) : IStatementService
 {
     public async Task<Guid?> AddStatementAsync(StatementDto statementDto)
     {
@@ -17,15 +18,15 @@ public class StatementService(IStatementRepository repository, ApplicationMapper
             var statementId = await repository.InsertAsync(statementEntity);
             return statementId;
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError("Failed to create a statement: {ex}", ex);
             return null;
         }
     }
     
     public async Task<bool> UpdateStatementAsync(Guid statementId, Guid userId, StatementDto statementDto)
     {
-        await unitOfWork.BeginTransactionAsync();
         try
         {
             var statementEntity = mapper.StatementDtoToStatementEntity(statementDto);
@@ -33,7 +34,6 @@ public class StatementService(IStatementRepository repository, ApplicationMapper
             
             if (!result)
             {
-                await unitOfWork.RollbackAsync();
                 return false;
             }
 
@@ -45,12 +45,11 @@ public class StatementService(IStatementRepository repository, ApplicationMapper
             };
             
             await auditService.InsertAudit(auditDto);
-            await unitOfWork.CommitAsync();
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            await unitOfWork.RollbackAsync();
+            logger.LogError("Failed to update a statement: {ex}", ex);
             return false;
         }
     }

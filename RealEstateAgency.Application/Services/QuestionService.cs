@@ -1,14 +1,16 @@
-﻿using RealEstateAgency.Application.Dtos;
+﻿using Microsoft.Extensions.Logging;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
 using RealEstateAgency.Core.Dtos;
+using RealEstateAgency.Core.Entities;
 using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper;
 
 namespace RealEstateAgency.Application.Services;
 
 public class QuestionService(IQuestionRepository questionRepository, ApplicationMapper mapper,
-    IAuditService auditService, IUnitOfWork unitOfWork) : IQuestionService
+    IAuditService auditService, IUnitOfWork unitOfWork, ILogger<QuestionService> logger) : IQuestionService
 {
     public async Task<List<QuestionAnswerModelDto>> GetQuestionsAnswersByAnnouncementId(Guid id)
     {
@@ -49,8 +51,9 @@ public class QuestionService(IQuestionRepository questionRepository, Application
             await unitOfWork.CommitAsync();
             return questionId;
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError("Failed to ask a question: {ex}", ex);
             await unitOfWork.RollbackAsync();
             return null;
         }
@@ -86,8 +89,9 @@ public class QuestionService(IQuestionRepository questionRepository, Application
             await unitOfWork.CommitAsync();
             return res;
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError("Failed to delete a question: {ex}", ex);
             await unitOfWork.RollbackAsync();
             return false;
         }

@@ -2,6 +2,7 @@
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
@@ -14,8 +15,9 @@ public class ImageService : IImageService
 {
     private readonly Cloudinary _cloudinary;
     private readonly IImageRepository _repository;
+    private readonly ILogger<ImageService> _logger;
 
-    public ImageService(IImageRepository repository, IConfiguration config)
+    public ImageService(IImageRepository repository, IConfiguration config, ILogger<ImageService> logger)
     {
         _repository = repository;
         
@@ -25,6 +27,7 @@ public class ImageService : IImageService
             config["CloudinarySettings:ApiSecret"]
         );
         _cloudinary = new Cloudinary(acc);
+        _logger = logger;
     }
     
     public async Task<ImageUploadResponseDto> UploadImageAsync(Stream fileStream, string fileName)
@@ -77,8 +80,9 @@ public class ImageService : IImageService
             await _repository.InsertAsync(image);
             return newId;
         }
-        catch
+        catch(Exception ex)
         {
+            _logger.LogError("Failed to insert an image: {ex}", ex);
             return Guid.Empty;
         }
     }
@@ -96,8 +100,9 @@ public class ImageService : IImageService
             var res = await _repository.DeleteAsync(imageId);
             return res;
         }
-        catch
+        catch(Exception ex)
         {
+            _logger.LogError("Failed to delete an image: {ex}", ex);
             return false;
         }
     }

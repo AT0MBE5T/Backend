@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.Extensions.Logging;
 using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
@@ -12,7 +13,7 @@ namespace RealEstateAgency.Application.Services;
 public class AnnouncementService(IAnnouncementRepository announcementRepository, IStatementService statementService,
     IAuditService auditService, IPropertyService propertyService, IImageService imageService,
     ApplicationMapper mapper, IVerificationRepository verificationRepository, IUnitOfWork unitOfWork,
-    IHubService hubService, IPaymentService paymentService) : IAnnouncementsService
+    IHubService hubService, IPaymentService paymentService, ILogger<AnnouncementService> logger) : IAnnouncementsService
 {
     public async Task<AnnouncementGetEditRequest?> GetAnnouncementForEditByIdAsync(Guid announcementId)
     {
@@ -51,6 +52,7 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
         };
 
         await verificationRepository.Insert(data);
+        
         var auditDto = new AuditDto
         {
             ActionId = Guid.Parse(AuditAction.Verify),
@@ -95,10 +97,15 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
             }
 
             await unitOfWork.CommitAsync();
+            
+            var offerDto = await GetAnnouncementShortByOfferId(commandDto.AnnouncementId, commandDto.UserId);
+            await hubService.NotifyUpdateOfferAsync(offerDto);
+            
             return string.Empty;
         }
         catch(Exception ex)
         {
+            logger.LogError("Failed to verify announcement {ex}", ex);
             await unitOfWork.RollbackAsync();
             return ex.Message;
         }
@@ -124,29 +131,19 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
 
     private async Task<Guid?> AddAnnouncement(Guid userId, AnnouncementDto announcementDto)
     {
-        await unitOfWork.BeginTransactionAsync();
-        try
+        var entity = mapper.AnnouncementDtoToAnnouncementEntity(announcementDto);
+        await announcementRepository.InsertAsync(entity);
+        
+        var auditDto = new AuditDto
         {
-            var entity = mapper.AnnouncementDtoToAnnouncementEntity(announcementDto);
-            await announcementRepository.InsertAsync(entity);
-            
-            var auditDto = new AuditDto
-            {
-                ActionId = Guid.Parse(AuditAction.CreateAnnouncement),
-                UserId = userId,
-                Details = $"Announcement {entity.Id} created by {userId}"
-            };
-            
-            await auditService.InsertAudit(auditDto);
-            await unitOfWork.CommitAsync();
-            
-            return announcementDto.Id;
-        }
-        catch
-        {
-            await unitOfWork.RollbackAsync();
-            return null;
-        }
+            ActionId = Guid.Parse(AuditAction.CreateAnnouncement),
+            UserId = userId,
+            Details = $"Announcement {entity.Id} created by {userId}"
+        };
+        
+        await auditService.InsertAudit(auditDto);
+
+        return announcementDto.Id;
     }
     
     public async Task<AddAnnouncementResponseDto> CreateAnnouncementAsync(CreateAnnouncementCommandDto commandDto)
@@ -206,6 +203,7 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
         }
         catch(Exception ex)
         {
+            logger.LogError("Failed to create an announcement: {ex}", ex);
             await unitOfWork.RollbackAsync();
             return new AddAnnouncementResponseDto((int)HttpStatusCode.BadRequest, ex.Message, Guid.Empty);
         }
@@ -213,25 +211,9 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
     
     private async Task<bool> UpdateAsync(Guid announcementId, AnnouncementDto announcementDto)
     {
-        await unitOfWork.BeginTransactionAsync();
-        try
-        {
-            var announcement = mapper.AnnouncementDtoToAnnouncementEntity(announcementDto);
-            var isUpdated = await announcementRepository.UpdateAsync(announcementId, announcement);
-            if (!isUpdated)
-            {
-                await unitOfWork.RollbackAsync();
-                return false;
-            }
-    
-            await unitOfWork.CommitAsync();
-            return true;
-        }
-        catch
-        {
-            await unitOfWork.RollbackAsync();
-            return false;
-        }
+        var announcement = mapper.AnnouncementDtoToAnnouncementEntity(announcementDto);
+        var isUpdated = await announcementRepository.UpdateAsync(announcementId, announcement);
+        return isUpdated;
     }
     
     public async Task<string> UpdateAnnouncementAsync(AnnouncementUpdateCommandDto commandDto)
@@ -328,6 +310,8 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
             var announcement = mapper.AnnouncementEditRequestToAnnouncementDto(request, (Guid)statementId, true);
             var response = await UpdateAsync(commandDto.AnnouncementId, announcement);
             
+            await unitOfWork.CommitAsync();
+            
             var offerDto = await GetAnnouncementShortByOfferId(commandDto.AnnouncementId, commandDto.UserId);
 
             await hubService.NotifyUpdateOfferAsync(offerDto);
@@ -336,6 +320,7 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
         }
         catch (Exception ex)
         {
+            logger.LogError("Failed to update an announcement: {ex}", ex);
             await unitOfWork.RollbackAsync();
             return ex.Message;
         }
@@ -344,53 +329,52 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
     private async Task<bool> DeleteAsync(Guid announcementId, Guid userId)
     {
         await unitOfWork.BeginTransactionAsync();
-        try
+        var announcement = await announcementRepository.GetAnnouncementById(announcementId);
+        if (announcement == null)
         {
-            var announcement = await announcementRepository.GetAnnouncementById(announcementId);
-            if (announcement == null)
-            {
-                await unitOfWork.RollbackAsync();
-                return false;
-            }
-
-            if (await announcementRepository.DeleteAsync(announcementId))
-            {
-                var auditDto = new AuditDto
-                {
-                    ActionId = Guid.Parse(AuditAction.DeleteAnnouncement),
-                    UserId = userId,
-                    Details = $"Announcement {announcementId} deleted by {userId}"
-                };
-                
-                await auditService.InsertAudit(auditDto);
-
-                await unitOfWork.CommitAsync();
-                return true;
-            }
-            
             await unitOfWork.RollbackAsync();
             return false;
         }
-        catch
-        {
-            await unitOfWork.RollbackAsync();
-        }
 
+        if (await announcementRepository.DeleteAsync(announcementId))
+        {
+            var auditDto = new AuditDto
+            {
+                ActionId = Guid.Parse(AuditAction.DeleteAnnouncement),
+                UserId = userId,
+                Details = $"Announcement {announcementId} deleted by {userId}"
+            };
+            
+            await auditService.InsertAudit(auditDto);
+
+            await unitOfWork.CommitAsync();
+            return true;
+        }
+        
+        await unitOfWork.RollbackAsync();
         return false;
     }
         
     public async Task<string> DeleteAnnouncementAsync(DeleteAnnouncementCommandDto commandDto)
     {
-        var isPaid = await paymentService.IsExistByAnnouncementIdAsync(commandDto.AnnouncementId);
+        try
+        {
+            var isPaid = await paymentService.IsExistByAnnouncementIdAsync(commandDto.AnnouncementId);
 
-        if (isPaid)
-            return "Announcement already paid";
+            if (isPaid)
+                return "Announcement already paid";
 
-        var result = await DeleteAsync(commandDto.AnnouncementId, commandDto.UserId);
+            var result = await DeleteAsync(commandDto.AnnouncementId, commandDto.UserId);
 
-        await hubService.DeleteOfferAsync(commandDto.AnnouncementId);
+            await hubService.DeleteOfferAsync(commandDto.AnnouncementId);
 
-        return string.Empty;
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Failed to delete an announcement: {ex}", ex);
+            return ex.Message;
+        }
     }
 
     public async Task<Guid> GetAuthorOfferIdByQuestionId(Guid questionId)

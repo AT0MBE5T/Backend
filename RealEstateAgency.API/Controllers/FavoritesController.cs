@@ -62,7 +62,7 @@ public class FavoritesController(
             CreatedAt = DateTime.UtcNow,
             UserId = userId
         };
-        var error = await favoriteService.AddComplaintAsync(favoriteDto);
+        var error = await favoriteService.AddFavoriteAsync(favoriteDto);
         
         return error == string.Empty
             ? Created()

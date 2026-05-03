@@ -19,13 +19,14 @@ public class UserPushSubscription
     public required string Auth { get; set; }
     
     [Required]
-    [Column("endpint")]
+    [Column("endpoint")]
     public required string Endpoint { get; set; }
     
     [Required]
     [Column("p256dh")]
     public required string P256DH { get; set; }
     
+    [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public User? UserNavigation { get; set; }

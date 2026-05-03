@@ -18,33 +18,17 @@ public class AnswerRepository(RealEstateContext ctx) : IAnswerRepository
     
     public async Task<Guid> InsertAsync(Answer answer)
     {
-        try
-        {
-            
-            await ctx.Answers
-                .AddAsync(answer);
-            return answer.Id;
-        }
-        catch
-        {
-            return Guid.Empty;
-        }
+        await ctx.Answers.AddAsync(answer);
+        return answer.Id;
     }
 
     public async Task<bool> DeleteByIdAsync(Guid id)
     {
-        try
-        {
-            var entity = await ctx.Answers.FindAsync(id);
-            if (entity == null)
-                return false;
-            
-            ctx.Answers.Remove(entity);
-            return true;
-        }
-        catch
-        {
+        var entity = await ctx.Answers.FindAsync(id);
+        if (entity == null)
             return false;
-        }
+        
+        ctx.Answers.Remove(entity);
+        return true;
     }
 }

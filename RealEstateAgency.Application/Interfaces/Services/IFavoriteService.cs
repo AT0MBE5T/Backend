@@ -7,6 +7,6 @@ public interface IFavoriteService
 {
     Task<bool> IsInFavoriteAsync(FavoriteDto dto);
     Task<AnnouncementsShortAndPagesDto> GetFavoritesByUserId(Guid userId, int page, int limit);
-    Task<string> AddComplaintAsync(FavoriteDto dto);
+    Task<string> AddFavoriteAsync(FavoriteDto dto);
     Task<string> DeleteByDtoAsync(FavoriteDto dto);
 }

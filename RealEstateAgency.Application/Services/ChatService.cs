@@ -1,4 +1,5 @@
-﻿using RealEstateAgency.Application.Dtos;
+﻿using Microsoft.Extensions.Logging;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
@@ -12,7 +13,8 @@ public class ChatService(
     IMessageRepository messageRepository,
     IChatMemberRepository chatMemberRepository,
     IUnitOfWork unitOfWork,
-    IAnnouncementsService announcementsService): IChatService
+    IAnnouncementsService announcementsService,
+    ILogger<ChatService> logger): IChatService
 {
     public async Task<Guid?> GetOrCreateChat(Guid userId, Guid announcementId)
     {
@@ -64,8 +66,9 @@ public class ChatService(
 
             await unitOfWork.CommitAsync();
         }
-        catch
+        catch(Exception ex)
         {
+            logger.LogError("Failed to get or create chat: {ex}", ex);
             await unitOfWork.RollbackAsync();
             throw;
         }

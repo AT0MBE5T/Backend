@@ -16,36 +16,22 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
     
     public async Task<bool> UpdateAsync(Guid id, Announcement announcement)
     {
-        try
-        {
-            var announcementToUpdate = await ctx.Announcements.FindAsync(id);
-            if (announcementToUpdate == null) return false;
-            announcementToUpdate.StatementId = announcement.StatementId;
-            announcementToUpdate.UpdatedAt = DateTime.UtcNow;
-            announcementToUpdate.UpdatedBy = announcement.StatementNavigation?.UserId;
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        var announcementToUpdate = await ctx.Announcements.FindAsync(id);
+        if (announcementToUpdate == null) return false;
+        announcementToUpdate.StatementId = announcement.StatementId;
+        announcementToUpdate.UpdatedAt = DateTime.UtcNow;
+        announcementToUpdate.UpdatedBy = announcement.StatementNavigation?.UserId;
+        return true;
     }
     
     public async Task<bool> DeleteAsync(Guid id)
     {
-        try
-        {
-            var entity = await ctx.Announcements.FindAsync(id);
-            if (entity is null)
-                return false;
-            
-            ctx.Announcements.Remove(entity);
-            return true;
-        }
-        catch
-        {
+        var entity = await ctx.Announcements.FindAsync(id);
+        if (entity is null)
             return false;
-        }
+        
+        ctx.Announcements.Remove(entity);
+        return true;
     }
     
     public async Task<Announcement?> GetAnnouncementById(Guid id)
@@ -59,7 +45,6 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
     
     public async Task<List<AnnouncementGridDto>> GetAnnouncementsGridAsync()
     {
-        
         var result = await ctx.Announcements
             .Select(x => new AnnouncementGridDto
             {
@@ -93,8 +78,7 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
     
     public async Task<AnnouncementFullDto?> GetAnnouncementFullById(Guid id, Guid? userId)
     {
-        
-        return await ctx.Announcements
+        var result = await ctx.Announcements
             .Where(x => x.Id == id)
             .Select(x => new AnnouncementFullDto
             {
@@ -120,6 +104,7 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
                 ClosedAt = x.ClosedAt
             })
             .FirstOrDefaultAsync();
+        return result;
     }
 
     private static IQueryable<Announcement> GetTextSearchQuery(IQueryable<Announcement> query, string text)
@@ -138,7 +123,7 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
         var statementTypeIds = filtersId
             .Select(Guid.Parse)
             .Where(id => ctx.StatementTypes.Any(st => st.Id == id))
-            .ToList();
+                .ToList();
 
         query = query.Where(x =>
             propertyTypeIds.Contains(x.StatementNavigation!.PropertyNavigation!.PropertyTypeId) ||
@@ -178,7 +163,6 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
     
     public async Task<AnnouncementsShortAndPagesDto> GetSearchData(string text, List<string> filtersId, int sortId, int pageNumber, int pageSize, Guid userId)
     {
-        
         var query = ctx.Announcements
             .AsNoTracking()
             .Where(x => x.ClosedAt == null);
@@ -220,7 +204,8 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
                 IsFavorite = ctx.Favorites
                     .Any(f => f.AnnouncementId == x.Id && f.UserId == userId),
                 ViewsCnt = ctx.Views.Count(v => v.AnnouncementId == x.Id),
-                ClosedAt = x.ClosedAt
+                ClosedAt = x.ClosedAt,
+                PublishedAt = x.PublishedAt
             }).ToListAsync();
 
         return new AnnouncementsShortAndPagesDto
@@ -261,7 +246,8 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
                 IsFavorite = ctx.Favorites
                     .Any(f => f.AnnouncementId == x.Id && f.UserId == userId),
                 ViewsCnt = ctx.Views.Count(v => v.AnnouncementId == x.Id),
-                ClosedAt = x.ClosedAt
+                ClosedAt = x.ClosedAt,
+                PublishedAt = x.PublishedAt
             }).FirstOrDefaultAsync();
 
         return data;
@@ -308,7 +294,8 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
                 IsFavorite = ctx.Favorites
                     .Any(f => f.AnnouncementId == x.Id && f.UserId == userId),
                 ViewsCnt = ctx.Views.Count(v => v.AnnouncementId == x.Id),
-                ClosedAt = x.ClosedAt
+                ClosedAt = x.ClosedAt,
+                PublishedAt = x.PublishedAt
             }).ToListAsync();
 
         return new AnnouncementsShortAndPagesDto
@@ -346,7 +333,8 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
                 IsFavorite = ctx.Favorites
                     .Any(f => f.AnnouncementId == x.Id && f.UserId == userId),
                 ViewsCnt = ctx.Views.Count(v => v.AnnouncementId == x.Id),
-                ClosedAt = x.ClosedAt
+                ClosedAt = x.ClosedAt,
+                PublishedAt = x.PublishedAt
             }).ToListAsync();
 
         return new AnnouncementsShortAndPagesDto
@@ -382,7 +370,8 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
                 IsFavorite = ctx.Favorites
                     .Any(f => f.AnnouncementId == x.Id && f.UserId == userId),
                 ViewsCnt = ctx.Views.Count(v => v.AnnouncementId == x.Id),
-                ClosedAt = x.ClosedAt
+                ClosedAt = x.ClosedAt,
+                PublishedAt = x.PublishedAt
             }).ToListAsync();
 
         return new AnnouncementsShortAndPagesDto

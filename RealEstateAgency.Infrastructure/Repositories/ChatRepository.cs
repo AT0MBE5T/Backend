@@ -12,7 +12,6 @@ public class ChatRepository(RealEstateContext ctx) : IChatRepository
 {
     public async Task<List<ChatSummaryDto>> GetChatsByUserIdAsync(Guid id)
     {
-        
         var query = await ctx.ChatMembers
             .AsNoTracking()
             .Where(cm => cm.UserId == id)
@@ -83,14 +82,7 @@ public class ChatRepository(RealEstateContext ctx) : IChatRepository
     
     public async Task<Guid?> AddChatAsync(Chat chat)
     {
-        try
-        {
-            var res =  await ctx.Chats.AddAsync(chat);
-            return chat.Id;
-        }
-        catch
-        {
-            return null;
-        }
+        var res = await ctx.Chats.AddAsync(chat);
+        return chat.Id;
     }
 }

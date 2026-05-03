@@ -1,4 +1,5 @@
-﻿using RealEstateAgency.Application.Dtos;
+﻿using Microsoft.Extensions.Logging;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
@@ -7,7 +8,8 @@ using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper
 namespace RealEstateAgency.Application.Services;
 
 public class PaymentService(IPaymentRepository repository,
-    IAuditService auditService, ApplicationMapper mapper, IUnitOfWork unitOfWork) : IPaymentService
+    IAuditService auditService, ApplicationMapper mapper, IUnitOfWork unitOfWork,
+    ILogger<PaymentService> logger) : IPaymentService
 {
     public async Task<Guid?> InsertPayment(PaymentDto paymentDto)
     {
@@ -28,8 +30,9 @@ public class PaymentService(IPaymentRepository repository,
             await unitOfWork.CommitAsync();
             return paymentId;
         }
-        catch
+        catch(Exception ex)
         {
+            logger.LogError("Failed to make a payment: {ex}", ex);
             await unitOfWork.RollbackAsync();
             return null;
         }

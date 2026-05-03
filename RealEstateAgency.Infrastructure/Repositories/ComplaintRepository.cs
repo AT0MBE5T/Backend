@@ -94,24 +94,17 @@ public class ComplaintRepository(RealEstateContext ctx) : IComplaintRepository
     
     public async Task<bool> UpdateAsync(Complaint complaint)
     {
-        try
-        {
-            var res = await ctx.Complaints.FindAsync(complaint.Id);
+        var res = await ctx.Complaints.FindAsync(complaint.Id);
 
-            if (res is null)
-                return false;
-        
-            res.AdminId = complaint.AdminId;
-            res.AdminNote = complaint.AdminNote;
-            res.StatusId = complaint.StatusId;
-            res.ProcessedAt = complaint.ProcessedAt;
-        
-            await ctx.SaveChangesAsync();
-            return true;
-        }
-        catch
-        {
+        if (res is null)
             return false;
-        }
+    
+        res.AdminId = complaint.AdminId;
+        res.AdminNote = complaint.AdminNote;
+        res.StatusId = complaint.StatusId;
+        res.ProcessedAt = complaint.ProcessedAt;
+    
+        await ctx.SaveChangesAsync();
+        return true;
     }
 }

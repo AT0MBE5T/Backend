@@ -1,4 +1,5 @@
-﻿using RealEstateAgency.Application.Dtos;
+﻿using Microsoft.Extensions.Logging;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
@@ -8,7 +9,7 @@ using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper
 namespace RealEstateAgency.Application.Services;
 
 public class CommentService(ICommentRepository commentRepository, IAuditService auditService,
-    ApplicationMapper mapper, IUnitOfWork unitOfWork) : ICommentService
+    ApplicationMapper mapper, IUnitOfWork unitOfWork, ILogger<CommentService> logger) : ICommentService
 {
     public async Task<List<CommentDto>> GetAllByAnnouncementId(Guid announcementId)
     {
@@ -40,8 +41,9 @@ public class CommentService(ICommentRepository commentRepository, IAuditService 
             await unitOfWork.CommitAsync();
             return commentId;
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError("Failed to create a comment: {ex}", ex);
             await unitOfWork.RollbackAsync();
             return null;
         }
@@ -78,8 +80,9 @@ public class CommentService(ICommentRepository commentRepository, IAuditService 
 
             return res;
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError("Failed to delete a comment: {ex}", ex);
             await unitOfWork.RollbackAsync();
             return false;
         }

@@ -15,28 +15,21 @@ public class StatementRepository(RealEstateContext ctx) : IStatementRepository
     
     public async Task<bool> UpdateAsync(Guid id, Statement newStatement)
     {
-        try
-        {
-            var statement =  await ctx.Statements.FindAsync(id);
+        var statement =  await ctx.Statements.FindAsync(id);
 
-            if (statement == null)
-            {
-                return false;
-            }
-        
-            statement.Content = newStatement.Content;
-            statement.CreatedAt = newStatement.CreatedAt;
-            statement.Price = newStatement.Price;
-            statement.PropertyId = newStatement.PropertyId;
-            statement.StatementTypeId = newStatement.StatementTypeId;
-            statement.Title = newStatement.Title;
-            
-            return true;
-        }
-        catch
+        if (statement == null)
         {
             return false;
         }
+    
+        statement.Content = newStatement.Content;
+        statement.CreatedAt = newStatement.CreatedAt;
+        statement.Price = newStatement.Price;
+        statement.PropertyId = newStatement.PropertyId;
+        statement.StatementTypeId = newStatement.StatementTypeId;
+        statement.Title = newStatement.Title;
+        
+        return true;
     }
     
     public async Task<Statement?> GetByIdAsync(Guid id)

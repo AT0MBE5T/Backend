@@ -34,7 +34,7 @@ public partial class ApiMapper
     );
     
     public partial List<AnnouncementResponse> ListAnnouncementsShortAndPagesToListAnnouncementResponse(List<AnnouncementShortDto> announcements);
-
+    
     private partial AnnouncementResponse AnnouncementsShortAndPagesToAnnouncementResponse(AnnouncementShortDto announcements);
     
     [MapProperty(nameof(ReportUserRequest.DateFrom), nameof(ReportUserDto.DateFrom), Use = nameof(MapDateFrom))]

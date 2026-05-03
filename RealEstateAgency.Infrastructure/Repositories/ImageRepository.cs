@@ -25,19 +25,12 @@ public class ImageRepository(RealEstateContext ctx) : IImageRepository
     
     public async Task<bool> DeleteAsync(Guid imageId)
     {
-        try
-        {
-            var entity = await ctx.Images.FindAsync(imageId);
-            if (entity is null)
-                return false;
-            
-            ctx.Images.Remove(entity);
-            return true;
-        }
-        catch
-        {
+        var entity = await ctx.Images.FindAsync(imageId);
+        if (entity is null)
             return false;
-        }
+        
+        ctx.Images.Remove(entity);
+        return true;
     }
     
     public async Task<List<Image>> GetPhotosByPropertyIdAsync(Guid propertyId)

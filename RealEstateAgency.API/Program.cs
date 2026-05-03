@@ -12,6 +12,7 @@ using RealEstateAgency.Core.Entities;
 using RealEstateAgency.Infrastructure.Contexts;
 using RealEstateAgency.Infrastructure.Hubs;
 using RealEstateAgency.Infrastructure.Services;
+using Serilog;
 using ApiMapper = RealEstateAgency.API.Mappers.ApiMapper;
 using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper;
 
@@ -24,6 +25,13 @@ CultureInfo.DefaultThreadCurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // builder.Services.AddDbContextFactory<RealEstateContext>(options =>
 //     options.UseNpgsql(builder.Configuration.GetConnectionString("RealEstateAgencyConnectionString")));

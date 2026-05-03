@@ -66,15 +66,7 @@ public class CommentRepository(RealEstateContext ctx) : ICommentRepository
     
     public async Task<Guid> InsertAsync(Comment comment)
     {
-        try
-        {
-            await ctx.Comments
-                .AddAsync(comment);
-            return comment.Id;
-        }
-        catch
-        {
-            return Guid.Empty;
-        }
+        await ctx.Comments.AddAsync(comment);
+        return comment.Id;
     }
 }

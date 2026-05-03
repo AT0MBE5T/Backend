@@ -15,27 +15,20 @@ public class PropertyRepository(RealEstateContext ctx) : IPropertyRepository
     
     public async Task<bool> UpdateAsync(Guid id, Property newProperty)
     {
-        try
-        {
-            var property = await ctx.Properties.FindAsync(id);
+        var property = await ctx.Properties.FindAsync(id);
 
-            if (property == null)
-            {
-                return false;
-            }
-            
-            property.Area = newProperty.Area;
-            property.Description = newProperty.Description;
-            property.Floors = newProperty.Floors;
-            property.Location = newProperty.Location;
-            property.PropertyTypeId = newProperty.PropertyTypeId;
-            property.Rooms = newProperty.Rooms;
-            return true;
-        }
-        catch
+        if (property == null)
         {
             return false;
         }
+        
+        property.Area = newProperty.Area;
+        property.Description = newProperty.Description;
+        property.Floors = newProperty.Floors;
+        property.Location = newProperty.Location;
+        property.PropertyTypeId = newProperty.PropertyTypeId;
+        property.Rooms = newProperty.Rooms;
+        return true;
     }
 
     public async Task<Property?> GetByIdAsync(Guid id)

@@ -1,4 +1,5 @@
-﻿using RealEstateAgency.Application.Dtos;
+﻿using Microsoft.Extensions.Logging;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Core.Dtos;
@@ -9,7 +10,8 @@ namespace RealEstateAgency.Application.Services;
 public class FavoriteService(
     IFavoriteRepository favoriteRepository,
     IPaymentService paymentService,
-    ApplicationMapper applicationMapper) : IFavoriteService
+    ApplicationMapper applicationMapper,
+    ILogger<FavoriteService> logger) : IFavoriteService
 {
     public async Task<AnnouncementsShortAndPagesDto> GetFavoritesByUserId(Guid userId, int page, int limit)
     {
@@ -23,40 +25,55 @@ public class FavoriteService(
         return result;
     }
 
-    public async Task<string> AddComplaintAsync(FavoriteDto dto)
+    public async Task<string> AddFavoriteAsync(FavoriteDto dto)
     {
-        var isPaid = await paymentService.IsExistByAnnouncementIdAsync(dto.AnnouncementId);
-        
-        if (isPaid)
-            return "Announcement already paid";
-        
-        var favoriteDto = new FavoriteDto
+        try
         {
-            UserId = dto.UserId,
-            AnnouncementId = dto.AnnouncementId,
-            CreatedAt = DateTime.UtcNow
-        };
-        
-        var isInFavorite = await IsInFavoriteAsync(dto);
+            var isPaid = await paymentService.IsExistByAnnouncementIdAsync(dto.AnnouncementId);
 
-        if (isInFavorite)
-            return "Already in favorite";
-        
-        var model = applicationMapper.MapFavoriteDtoToEntity(dto);
-        var result = await favoriteRepository.AddAsync(model);
-        return result
-            ? string.Empty
-            : "Addition failed";
+            if (isPaid)
+                return "Announcement already paid";
+
+            var favoriteDto = new FavoriteDto
+            {
+                UserId = dto.UserId,
+                AnnouncementId = dto.AnnouncementId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var isInFavorite = await IsInFavoriteAsync(dto);
+
+            if (isInFavorite)
+                return "Already in favorite";
+
+            var model = applicationMapper.MapFavoriteDtoToEntity(dto);
+            var result = await favoriteRepository.AddAsync(model);
+            return result
+                ? string.Empty
+                : "Addition failed";
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Failed to add to favorite: {ex}", ex);
+            return "Failed to add to favorite";
+        }
     }
 
     public async Task<string> DeleteByDtoAsync(FavoriteDto dto)
     {
-        var isPaid = await paymentService.IsExistByAnnouncementIdAsync(dto.AnnouncementId);
-        
-        if (isPaid)
-            return "Announcement already paid";
-        
-        var result = await favoriteRepository.DeleteByIdAsync(dto.UserId, dto.AnnouncementId);
-        return string.Empty;
+        try{
+            var isPaid = await paymentService.IsExistByAnnouncementIdAsync(dto.AnnouncementId);
+            
+            if (isPaid)
+                return "Announcement already paid";
+            
+            var result = await favoriteRepository.DeleteByIdAsync(dto.UserId, dto.AnnouncementId);
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Failed to remove from favorite: {ex}", ex);
+            return "Failed to remove from favorite";
+        }
     }
 }

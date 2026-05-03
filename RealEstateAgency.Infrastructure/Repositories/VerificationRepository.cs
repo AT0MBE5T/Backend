@@ -15,14 +15,7 @@ public class VerificationRepository(RealEstateContext ctx) : IVerificationReposi
     
     public async Task<bool> Delete(Verification verification)
     {
-        try
-        {
-            ctx.Verifications.Remove(verification);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        ctx.Verifications.Remove(verification);
+        return true;
     }
 }

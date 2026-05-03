@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.8" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Riok.Mapperly" Version="4.1.1" />
+    <PackageReference Include="Serilog.AspNetCore.Plus" Version="10.1.0" />
   </ItemGroup>
 
   <ItemGroup>

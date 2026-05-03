@@ -121,7 +121,7 @@ public class MessageHub: Hub<IChatClient>
             if (activeRoom is not null)
                 continue;
 
-            _ = _webPushService.SendNotificationToUserAsync(receiverId, $"[{userName}] {message}", $"/chats/{chatId}", "New message");
+            await _webPushService.SendNotificationToUserAsync(receiverId, $"[{userName}] {message}", $"/chats/{chatId}", "New message");
         }
         
         foreach (var participantId in participants)
@@ -281,11 +281,11 @@ public class MessageHub: Hub<IChatClient>
     {
         var userId = Context.User.GetUserId();
         
-        var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
-        if (connectionJson is null) return;
-        var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-        
-        if (connection is null) return;
+        // var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
+        // if (connectionJson is null) return;
+        // var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
+        //
+        // if (connection is null) return;
 
         await Clients.Group(chatId.ToString())
             .DeleteOffer(offerId);
@@ -303,11 +303,11 @@ public class MessageHub: Hub<IChatClient>
     {
         var userId = Context.User.GetUserId();
         
-        var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
-        if (connectionJson is null) return;
-        var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-        
-        if (connection is null) return;
+        // var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
+        // if (connectionJson is null) return;
+        // var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
+        //
+        // if (connection is null) return;
 
 
         var res = await _commentService.DeleteByCommentIdAsync(commentId, userId);
@@ -320,11 +320,11 @@ public class MessageHub: Hub<IChatClient>
     {
         var userId = Context.User.GetUserId();
         
-        var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
-        if (connectionJson is null) return;
-        var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-        
-        if (connection is null) return;
+        // var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
+        // if (connectionJson is null) return;
+        // var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
+        //
+        // if (connection is null) return;
 
 
         var res = await _answerService.DeleteByAnswerIdAsync(answerId, userId);
@@ -337,11 +337,11 @@ public class MessageHub: Hub<IChatClient>
     {
         var userId = Context.User.GetUserId();
         
-        var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
-        if (connectionJson is null) return;
-        var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-        
-        if (connection is null) return;
+        // var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
+        // if (connectionJson is null) return;
+        // var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
+        //
+        // if (connection is null) return;
 
 
         var res = await _questionService.DeleteByQuestionIdAsync(questionId, userId);

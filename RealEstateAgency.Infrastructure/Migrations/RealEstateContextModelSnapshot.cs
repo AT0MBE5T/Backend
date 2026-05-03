@@ -174,7 +174,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_user_token", (string)null);
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Announcement", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Announcement", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -211,7 +211,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_announcement");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Answer", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Answer", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -246,7 +246,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_answer");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.AuAction", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.AuAction", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -264,7 +264,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_au_action");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.AuHistory", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.AuHistory", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -298,7 +298,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_au_history");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Chat", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Chat", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -326,7 +326,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_chat");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.ChatMember", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.ChatMember", b =>
                 {
                     b.Property<Guid>("ChatId")
                         .HasColumnType("uuid")
@@ -347,7 +347,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_chat_member");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.ChatType", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.ChatType", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -364,7 +364,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_chat_type");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Comment", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Comment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -398,7 +398,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_comment");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Complaint", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Complaint", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -457,7 +457,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_complaint");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.ComplaintStatus", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.ComplaintStatus", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -474,7 +474,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_complaint_status");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.ComplaintType", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.ComplaintType", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -491,7 +491,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_complaint_type");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Favorite", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Favorite", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
@@ -512,7 +512,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_favorite");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Image", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Image", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -544,7 +544,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_image");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Message", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Message", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -581,7 +581,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_message");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Payment", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Payment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -606,7 +606,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_payment");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Property", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Property", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -648,7 +648,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_property");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.PropertyType", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.PropertyType", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -666,7 +666,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_property_type");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Question", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Question", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -700,7 +700,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_question");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.RefreshToken", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -735,7 +735,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_refresh_token");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Statement", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Statement", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -786,7 +786,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_statement");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.StatementType", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.StatementType", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -804,7 +804,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_statement_type");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.User", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -914,7 +914,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_user", (string)null);
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.UserPushSubscription", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.UserPushSubscription", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -927,12 +927,13 @@ namespace RealEstateAgency.Infrastructure.Migrations
                         .HasColumnName("auth");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Endpoint")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("endpint");
+                        .HasColumnName("endpoint");
 
                     b.Property<string>("P256DH")
                         .IsRequired()
@@ -950,7 +951,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_user_push_subscription");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Verification", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Verification", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -979,7 +980,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_verification");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.View", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.View", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1018,7 +1019,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.User", null)
+                    b.HasOne("RealEstateAgency.Core.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1027,7 +1028,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.User", null)
+                    b.HasOne("RealEstateAgency.Core.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1042,7 +1043,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", null)
+                    b.HasOne("RealEstateAgency.Core.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1051,22 +1052,22 @@ namespace RealEstateAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.User", null)
+                    b.HasOne("RealEstateAgency.Core.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Announcement", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Announcement", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Statement", "StatementNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Statement", "StatementNavigation")
                         .WithOne("AnnouncementNavigation")
-                        .HasForeignKey("RealEstateAgency.Core.Models.Announcement", "StatementId")
+                        .HasForeignKey("RealEstateAgency.Core.Entities.Announcement", "StatementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("AnnouncementsNavigation")
                         .HasForeignKey("UpdatedBy");
 
@@ -1075,15 +1076,15 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Answer", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Answer", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Question", "QuestionNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Question", "QuestionNavigation")
                         .WithOne("AnswerNavigation")
-                        .HasForeignKey("RealEstateAgency.Core.Models.Answer", "QuestionId")
+                        .HasForeignKey("RealEstateAgency.Core.Entities.Answer", "QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("AnswersNavigation")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1094,15 +1095,15 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.AuHistory", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.AuHistory", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.AuAction", "ActionNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.AuAction", "ActionNavigation")
                         .WithMany("AuHistoriesNavigation")
                         .HasForeignKey("ActionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("AuHistoriesNavigation")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1113,13 +1114,13 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Chat", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Chat", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Announcement", "AnnouncementNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Announcement", "AnnouncementNavigation")
                         .WithMany("ChatsNavigation")
                         .HasForeignKey("AnnouncementId");
 
-                    b.HasOne("RealEstateAgency.Core.Models.ChatType", "ChatTypeNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.ChatType", "ChatTypeNavigation")
                         .WithMany("ChatsNavigation")
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1130,15 +1131,15 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("ChatTypeNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.ChatMember", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.ChatMember", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Chat", "ChatNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Chat", "ChatNavigation")
                         .WithMany("ChatMembersNavigation")
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("ChatMembersNavigation")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1149,15 +1150,15 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Comment", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Comment", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Announcement", "AnnouncementNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Announcement", "AnnouncementNavigation")
                         .WithMany("CommentsNavigation")
                         .HasForeignKey("AnnouncementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("CommentsNavigation")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1168,32 +1169,32 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Complaint", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Complaint", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.User", "AdminNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "AdminNavigation")
                         .WithMany()
                         .HasForeignKey("AdminId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("RealEstateAgency.Core.Models.Announcement", "AnnouncementNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Announcement", "AnnouncementNavigation")
                         .WithMany("ComplaintsNavigation")
                         .HasForeignKey("AnnouncementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.ComplaintStatus", "ComplaintStatusNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.ComplaintStatus", "ComplaintStatusNavigation")
                         .WithMany("ComplaintsNavigation")
                         .HasForeignKey("StatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.ComplaintType", "ComplaintTypeNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.ComplaintType", "ComplaintTypeNavigation")
                         .WithMany("ComplaintsNavigation")
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("ComplaintsNavigation")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1210,15 +1211,15 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Favorite", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Favorite", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Announcement", "AnnouncementNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Announcement", "AnnouncementNavigation")
                         .WithMany("FavoritesNavigation")
                         .HasForeignKey("AnnouncementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("FavoritesNavigation")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1229,24 +1230,24 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Image", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Image", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Property", "Property")
+                    b.HasOne("RealEstateAgency.Core.Entities.Property", "Property")
                         .WithMany("ImagesNavigation")
                         .HasForeignKey("PropertyId");
 
                     b.Navigation("Property");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Message", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Message", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Chat", "ChatNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Chat", "ChatNavigation")
                         .WithMany("MessagesNavigation")
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("MessagesNavigation")
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1257,15 +1258,15 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Payment", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Payment", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Announcement", "AnnouncementNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Announcement", "AnnouncementNavigation")
                         .WithOne("PaymentNavigation")
-                        .HasForeignKey("RealEstateAgency.Core.Models.Payment", "AnnouncementId")
+                        .HasForeignKey("RealEstateAgency.Core.Entities.Payment", "AnnouncementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "CustomerNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "CustomerNavigation")
                         .WithMany("PaymentsNavigation")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1276,9 +1277,9 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("CustomerNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Property", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Property", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.PropertyType", "PropertyTypeNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.PropertyType", "PropertyTypeNavigation")
                         .WithMany("PropertiesNavigation")
                         .HasForeignKey("PropertyTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1287,15 +1288,15 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("PropertyTypeNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Question", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Question", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Announcement", "AnnouncementNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Announcement", "AnnouncementNavigation")
                         .WithMany("QuestionsNavigation")
                         .HasForeignKey("AnnouncementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("QuestionsNavigation")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1306,9 +1307,9 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.RefreshToken", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.RefreshToken", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.User", "User")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1317,21 +1318,21 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Statement", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Statement", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Property", "PropertyNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Property", "PropertyNavigation")
                         .WithOne("StatementNavigation")
-                        .HasForeignKey("RealEstateAgency.Core.Models.Statement", "PropertyId")
+                        .HasForeignKey("RealEstateAgency.Core.Entities.Statement", "PropertyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.StatementType", "StatementTypeNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.StatementType", "StatementTypeNavigation")
                         .WithMany("StatementsNavigation")
                         .HasForeignKey("StatementTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("StatementsNavigation")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1344,9 +1345,9 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.UserPushSubscription", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.UserPushSubscription", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("UserPushSubscriptionsNavigation")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1355,15 +1356,15 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Verification", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Verification", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Announcement", "AnnouncementNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Announcement", "AnnouncementNavigation")
                         .WithOne("VerificationNavigation")
-                        .HasForeignKey("RealEstateAgency.Core.Models.Verification", "AnnouncementId")
+                        .HasForeignKey("RealEstateAgency.Core.Entities.Verification", "AnnouncementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("VerificationsNavigation")
                         .HasForeignKey("CreatedBy")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1374,15 +1375,15 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.View", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.View", b =>
                 {
-                    b.HasOne("RealEstateAgency.Core.Models.Announcement", "AnnouncementNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.Announcement", "AnnouncementNavigation")
                         .WithMany("ViewsNavigation")
                         .HasForeignKey("AnnouncementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstateAgency.Core.Models.User", "UserNavigation")
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
                         .WithMany("ViewsNavigation")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1393,7 +1394,7 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Announcement", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Announcement", b =>
                 {
                     b.Navigation("ChatsNavigation");
 
@@ -1412,61 +1413,61 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("ViewsNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.AuAction", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.AuAction", b =>
                 {
                     b.Navigation("AuHistoriesNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Chat", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Chat", b =>
                 {
                     b.Navigation("ChatMembersNavigation");
 
                     b.Navigation("MessagesNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.ChatType", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.ChatType", b =>
                 {
                     b.Navigation("ChatsNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.ComplaintStatus", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.ComplaintStatus", b =>
                 {
                     b.Navigation("ComplaintsNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.ComplaintType", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.ComplaintType", b =>
                 {
                     b.Navigation("ComplaintsNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Property", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Property", b =>
                 {
                     b.Navigation("ImagesNavigation");
 
                     b.Navigation("StatementNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.PropertyType", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.PropertyType", b =>
                 {
                     b.Navigation("PropertiesNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Question", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Question", b =>
                 {
                     b.Navigation("AnswerNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.Statement", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Statement", b =>
                 {
                     b.Navigation("AnnouncementNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.StatementType", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.StatementType", b =>
                 {
                     b.Navigation("StatementsNavigation");
                 });
 
-            modelBuilder.Entity("RealEstateAgency.Core.Models.User", b =>
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.User", b =>
                 {
                     b.Navigation("AnnouncementsNavigation");
 

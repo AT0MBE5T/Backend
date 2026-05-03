@@ -43,7 +43,8 @@ public class FavoriteRepository(RealEstateContext ctx) : IFavoriteRepository
                 IsFavorite = ctx.Favorites
                     .Any(f => f.AnnouncementId == x.a.Id && f.UserId == userId),
                 ViewsCnt = ctx.Views.Count(v => v.AnnouncementId == x.a.Id),
-                ClosedAt = x.a.ClosedAt
+                ClosedAt = x.a.ClosedAt,
+                PublishedAt = x.a.PublishedAt
             }).ToListAsync();
         return new AnnouncementsShortAndPagesDto
         {
@@ -96,30 +97,16 @@ public class FavoriteRepository(RealEstateContext ctx) : IFavoriteRepository
     
     public async Task<bool> AddAsync(Favorite entity)
     {
-        try
-        {
-            var res = await ctx.Favorites.AddAsync(entity);
-            await ctx.SaveChangesAsync();
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        var res = await ctx.Favorites.AddAsync(entity);
+        await ctx.SaveChangesAsync();
+        return true;
     }
     
     public async Task<bool> DeleteByIdAsync(Guid userId, Guid offerId)
     {
-        try
-        {
-            var res = await ctx.Favorites
-                .Where(x => x.UserId == userId && x.AnnouncementId == offerId)
-                .ExecuteDeleteAsync();
-            return res != 0;
-        }
-        catch
-        {
-            return false;
-        }
+        var res = await ctx.Favorites
+            .Where(x => x.UserId == userId && x.AnnouncementId == offerId)
+            .ExecuteDeleteAsync();
+        return res != 0;
     }
 }

@@ -14,4 +14,5 @@ public class AnnouncementShortDto
     public bool IsFavorite { get; set; }
     public required int ViewsCnt { get; set; }
     public required DateTime? ClosedAt { get; set; }
+    public required DateTime PublishedAt { get; set; }
 }

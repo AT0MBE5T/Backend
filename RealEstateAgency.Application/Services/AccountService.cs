@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
@@ -19,7 +20,8 @@ public class AccountService(
     IJwtService jwtService,
     IRefreshService refreshService,
     IAuditService auditService,
-    SignInManager<User> signInManager) : IAccountService
+    SignInManager<User> signInManager,
+    ILogger<AccountService> logger) : IAccountService
 {
     public async Task<string> GetNameSurnameById(Guid userId)
     {
@@ -314,6 +316,7 @@ public class AccountService(
         }
         catch
         {
+            logger.LogError("Failed to delete user {userId}", userId);
             return false;
         }
     }
