@@ -5,7 +5,6 @@ using RealEstateAgency.API.Dtos.Requests;
 using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
-using AnnouncementRequest = RealEstateAgency.API.Dtos.Requests.AnnouncementRequest;
 using ApiMapper = RealEstateAgency.API.Mappers.ApiMapper;
 
 namespace RealEstateAgency.API.Controllers;
@@ -22,6 +21,9 @@ public class AnnouncementsController(
     public async Task<IActionResult> GetAnnouncementFullById(Guid announcementId)
     {
         var userId = User.GetUserId();
+
+        if (userId == Guid.Empty)
+            return Unauthorized();
         
         var command = new AnnouncementInfoCommandDto(announcementId, userId);
         

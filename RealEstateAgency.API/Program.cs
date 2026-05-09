@@ -21,6 +21,9 @@ var culture = (CultureInfo)CultureInfo.CurrentCulture.Clone();
 culture.DateTimeFormat.ShortDatePattern = "dd.MM.yyyy";
 culture.DateTimeFormat.LongDatePattern = "dd.MM.yyyy HH:mm:ss";
 
+culture.NumberFormat.NumberDecimalSeparator = ".";
+culture.NumberFormat.NumberGroupSeparator = " ";
+
 CultureInfo.DefaultThreadCurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
 

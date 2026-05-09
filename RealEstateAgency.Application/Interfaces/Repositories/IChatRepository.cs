@@ -10,4 +10,5 @@ public interface IChatRepository
     Task<Chat?> GetChatByIdAsync(Guid id);
     Task<List<ChatMember>> GetMembersByChatIdAsync(Guid id);
     Task<Guid?> GetChatByBothIdsAsync(Guid firstId, Guid secondId);
+    Task<ChatSummaryDto?> GetCommonChatAsync();
 }

@@ -9,5 +9,6 @@ public record ChatSummaryDto(
     string? AvatarUrl,
     DateTime? ClosedAt,
     Guid? OfferId,
-    Guid? RealtorId
+    Guid? RealtorId,
+    string? LastMessageBy
 );

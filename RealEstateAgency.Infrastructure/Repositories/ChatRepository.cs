@@ -43,10 +43,43 @@ public class ChatRepository(RealEstateContext ctx) : IChatRepository
                 x.OtherMember?.Avatar,
                 x.ClosedAt,
                 x.OfferId,
-                x.RealtorId
+                x.RealtorId,
+                null
             ))
             .OrderByDescending(x => x.LastMessageAt)
             .ToList();
+    }
+    
+    public async Task<ChatSummaryDto?> GetCommonChatAsync()
+    {
+        var query = await ctx.Chats
+            .AsNoTracking()
+            .Where(c => c.Id == new Guid("74679c97-aa14-444e-b3ae-9a6d8d01399f"))
+            .Select(cm => new
+            {
+                LastMessage = ctx.Messages
+                    .Where(m => m.ChatId == cm.Id)
+                    .OrderByDescending(m => m.CreatedAt)
+                    .Include(x => x.UserNavigation)
+                    .FirstOrDefault()
+            })
+            .ToListAsync();
+            
+        var res = query.Select(x => new ChatSummaryDto(
+                new Guid("74679c97-aa14-444e-b3ae-9a6d8d01399f"),
+                "COMMON",
+                x.LastMessage?.Content ?? string.Empty,
+                x.LastMessage?.CreatedAt ?? DateTime.UtcNow,
+                0,
+                string.Empty,
+                null,
+                null,
+                null,
+                $"{x.LastMessage?.UserNavigation?.Name} {x.LastMessage?.UserNavigation?.Surname}"
+            ))
+            .FirstOrDefault();
+
+        return res;
     }
     
     public async Task<Guid?> GetChatByBothIdsAsync(Guid firstId, Guid secondId)

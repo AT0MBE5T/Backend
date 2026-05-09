@@ -14,7 +14,7 @@ public interface IChatClient
     public Task ReceiveComment(Guid commentId, Guid offerId, string userName, string message);
     public Task ReceiveQuestion(Guid announcementId, Guid questionId, string userName, string message);
     public Task ReceiveAnswer(Guid answerId, Guid questionId, string userName, string message);
-    public Task UpdateChatList(Guid chatId, Guid offerId, string userName, string message);
+    public Task UpdateChatList(Guid chatId, Guid? offerId, string userName, string message);
     public Task ReceiveOffer(AnnouncementShortDto offer);
     public Task UpdateOffer(AnnouncementShortDto offer);
     public Task DeleteOffer(Guid offerId);
@@ -64,6 +64,19 @@ public class MessageHub: Hub<IChatClient>
         };
 
         await _cache.SetStringAsync($"user_conn_{userId}", JsonSerializer.Serialize(connection), options);
+    }
+    
+    public async Task JoinCommonChat(string userName)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, "common_chat");
+        var userId = Context.User.GetUserId();
+        
+        var options = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+        };
+
+        await _cache.SetStringAsync($"common_chat_{userId}", JsonSerializer.Serialize(userName), options);
     }
     
     public async Task JoinChatGeneral(UserConnection connection)
@@ -134,6 +147,30 @@ public class MessageHub: Hub<IChatClient>
                         message
                     );
         }
+    }
+    
+    public async Task SendMessageInCommon(string message, string userName)
+    {
+        var userId = Context.User.GetUserId();
+
+        var chatId = new Guid("74679c97-aa14-444e-b3ae-9a6d8d01399f");
+
+        var success = await _chatService.AddMessage(userId, chatId, message);
+        if (!success) return;
+        
+        await Clients.Group(chatId.ToString())
+            .ReceiveMessage(userId,
+                userName,
+                message,
+                chatId);
+        
+        await Clients.Group("common_chat")
+            .UpdateChatList(
+                chatId,
+                null,
+                userName,
+                message
+            );
     }
     
     public async Task LeaveComment(Guid chatId, string message, string userName)

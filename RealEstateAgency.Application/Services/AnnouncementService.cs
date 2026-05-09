@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
@@ -13,7 +14,7 @@ namespace RealEstateAgency.Application.Services;
 public class AnnouncementService(IAnnouncementRepository announcementRepository, IStatementService statementService,
     IAuditService auditService, IPropertyService propertyService, IImageService imageService,
     ApplicationMapper mapper, IVerificationRepository verificationRepository, IUnitOfWork unitOfWork,
-    IHubService hubService, IPaymentService paymentService, ILogger<AnnouncementService> logger) : IAnnouncementsService
+    IHubService hubService, IPaymentService paymentService, UserManager<User> userManager, ILogger<AnnouncementService> logger) : IAnnouncementsService
 {
     public async Task<AnnouncementGetEditRequest?> GetAnnouncementForEditByIdAsync(Guid announcementId)
     {
@@ -185,6 +186,9 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
             }
             
             var statement = mapper.AnnouncementRequestToStatementDto(announcementRequest, propertyId, DateTime.UtcNow);
+
+            statement.UserId = commandDto.UserId;
+            
             var statementId = await statementService.AddStatementAsync(statement);
             
             if (statementId is null)
@@ -195,6 +199,8 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
 
             if (announcementId is null)
                 return new AddAnnouncementResponseDto((int)HttpStatusCode.BadRequest, "Announcement not created", Guid.Empty);
+            
+            await unitOfWork.CommitAsync();
             
             var offerDto = await announcementRepository.GetAnnouncementShortByOfferId((Guid)announcementId, commandDto.UserId);
             await hubService.NotifyNewOfferAsync(offerDto);

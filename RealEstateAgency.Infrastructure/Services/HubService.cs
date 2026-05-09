@@ -9,8 +9,8 @@ public class HubService(IHubContext<MessageHub> hubContext) : IHubService
 {
     public async Task NotifyNewOfferAsync(AnnouncementShortDto? offerDto)
     {
-        await hubContext.Clients.Group("offers_global")
-            .SendAsync("ReceiveOffer", offerDto);
+        // await hubContext.Clients.Group("offers_global")
+        //     .SendAsync("ReceiveOffer", offerDto);
     }
     
     public async Task NotifyUpdateOfferAsync(AnnouncementShortDto? offerDto)
@@ -21,7 +21,7 @@ public class HubService(IHubContext<MessageHub> hubContext) : IHubService
     
     public async Task DeleteOfferAsync(Guid announcementId)
     {
-        await hubContext.Clients.Group("offers_global")
-            .SendAsync("DeleteOffer", announcementId);
+        // await hubContext.Clients.Group("offers_global")
+        //     .SendAsync("DeleteOffer", announcementId);
     }
 }
