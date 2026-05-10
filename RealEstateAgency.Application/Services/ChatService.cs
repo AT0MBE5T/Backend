@@ -125,9 +125,9 @@ public class ChatService(
         if (chat is null)
             return false;
         
-        var userChats = await chatRepository.GetChatsByUserIdAsync(userId);
+        var chatMembers = await chatRepository.GetMembersByChatIdAsync(chatId);
 
-        if (!userChats.Select(x => x.ChatId).Contains(chatId) && chatId != new Guid("74679c97-aa14-444e-b3ae-9a6d8d01399f"))
+        if (!chatMembers.Select(x => x.UserId).Contains(userId) && chatId != new Guid("74679c97-aa14-444e-b3ae-9a6d8d01399f"))
             return false;
 
         var newMessage = new Message

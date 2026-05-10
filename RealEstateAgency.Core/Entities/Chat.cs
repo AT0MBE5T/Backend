@@ -21,8 +21,12 @@ public class Chat
     [Column("announcement_id")]
     public Guid? AnnouncementId { get; set; }
     
+    [Column("support_id")]
+    public Guid? SupportId { get; set; }
+    
     public ChatType? ChatTypeNavigation { get; set; }
     public Announcement? AnnouncementNavigation { get; set; }
+    public Support? SupportNavigation { get; set; }
     public ICollection<ChatMember> ChatMembersNavigation { get; set; } = [];
     public ICollection<Message> MessagesNavigation { get; set; } = [];
 }

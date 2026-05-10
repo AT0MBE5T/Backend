@@ -10,5 +10,7 @@ public record ChatSummaryDto(
     DateTime? ClosedAt,
     Guid? OfferId,
     Guid? RealtorId,
-    string? LastMessageBy
+    string? LastMessageBy,
+    Guid? SupportId,
+    Guid ChatTypeId
 );

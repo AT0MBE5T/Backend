@@ -25,6 +25,15 @@ public class StatementService(IStatementRepository repository, ApplicationMapper
         }
     }
     
+    public async Task<bool> DeleteStatement(Guid statementId)
+    {
+        if (statementId.Equals(Guid.Empty))
+            return false;
+        
+        var res = await repository.DeleteAsync(statementId);
+        return res;
+    }
+    
     public async Task<bool> UpdateStatementAsync(Guid statementId, Guid userId, StatementDto statementDto)
     {
         try

@@ -7,4 +7,5 @@ public interface IStatementRepository
     Task<Guid> InsertAsync(Statement statement);
     Task<bool> UpdateAsync(Guid id, Statement newStatement);
     Task<Statement?> GetByIdAsync(Guid id);
+    Task<bool> DeleteAsync(Guid id);
 }

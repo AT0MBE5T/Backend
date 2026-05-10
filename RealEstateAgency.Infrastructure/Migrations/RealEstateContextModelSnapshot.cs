@@ -313,6 +313,10 @@ namespace RealEstateAgency.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("SupportId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("support_id");
+
                     b.Property<Guid>("TypeId")
                         .HasColumnType("uuid")
                         .HasColumnName("type_id");
@@ -320,6 +324,8 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AnnouncementId");
+
+                    b.HasIndex("SupportId");
 
                     b.HasIndex("TypeId");
 
@@ -804,6 +810,43 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.ToTable("t_statement_type");
                 });
 
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Support", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AdminId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("admin_id");
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("UserNote")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_note");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdminId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("t_support");
+                });
+
             modelBuilder.Entity("RealEstateAgency.Core.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1120,6 +1163,10 @@ namespace RealEstateAgency.Infrastructure.Migrations
                         .WithMany("ChatsNavigation")
                         .HasForeignKey("AnnouncementId");
 
+                    b.HasOne("RealEstateAgency.Core.Entities.Support", "SupportNavigation")
+                        .WithMany()
+                        .HasForeignKey("SupportId");
+
                     b.HasOne("RealEstateAgency.Core.Entities.ChatType", "ChatTypeNavigation")
                         .WithMany("ChatsNavigation")
                         .HasForeignKey("TypeId")
@@ -1129,6 +1176,8 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("AnnouncementNavigation");
 
                     b.Navigation("ChatTypeNavigation");
+
+                    b.Navigation("SupportNavigation");
                 });
 
             modelBuilder.Entity("RealEstateAgency.Core.Entities.ChatMember", b =>
@@ -1345,6 +1394,24 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("UserNavigation");
                 });
 
+            modelBuilder.Entity("RealEstateAgency.Core.Entities.Support", b =>
+                {
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "AdminNavigation")
+                        .WithMany()
+                        .HasForeignKey("AdminId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
+                        .WithMany("SupportsNavigation")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AdminNavigation");
+
+                    b.Navigation("UserNavigation");
+                });
+
             modelBuilder.Entity("RealEstateAgency.Core.Entities.UserPushSubscription", b =>
                 {
                     b.HasOne("RealEstateAgency.Core.Entities.User", "UserNavigation")
@@ -1490,6 +1557,8 @@ namespace RealEstateAgency.Infrastructure.Migrations
                     b.Navigation("QuestionsNavigation");
 
                     b.Navigation("StatementsNavigation");
+
+                    b.Navigation("SupportsNavigation");
 
                     b.Navigation("UserPushSubscriptionsNavigation");
 

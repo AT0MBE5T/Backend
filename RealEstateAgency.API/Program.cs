@@ -111,6 +111,7 @@ builder.Services.AddScoped<IFavoriteRepository, FavoriteRepository>();
 builder.Services.AddScoped<IViewRepository, ViewRepository>();
 builder.Services.AddScoped<IComplaintRepository, ComplaintRepository>();
 builder.Services.AddScoped<IAnalyticRepository, AnalyticRepository>();
+builder.Services.AddScoped<ISupportRepository, SupportRepository>();
 
 builder.Services.AddScoped<IUserPushSubscriptionRepository, UserPushSubscriptionRepository>();
 
@@ -133,11 +134,12 @@ builder.Services.AddScoped<IAnswerService, AnswerService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<IViewService, ViewService>();
 builder.Services.AddScoped<IComplaintService, ComplaintService>();
 builder.Services.AddScoped<IAnalyticService, AnalyticService>();
+builder.Services.AddScoped<ISupportService, SupportService>();
+builder.Services.AddScoped<IChatService, ChatService>();
 
 builder.Services.AddScoped<WebPushService>();
 builder.Services.AddScoped<IUserPushSubscriptionService, UserPushSubscriptionService>();

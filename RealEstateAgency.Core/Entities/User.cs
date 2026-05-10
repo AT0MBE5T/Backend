@@ -47,5 +47,6 @@ namespace RealEstateAgency.Core.Entities
         public ICollection<Complaint> ComplaintsNavigation { get; set; } = [];
         public ICollection<View> ViewsNavigation { get; set; } = [];
         public ICollection<UserPushSubscription> UserPushSubscriptionsNavigation { get; set; } = [];
+        public ICollection<Support> SupportsNavigation { get; set; } = [];
     }
 }

@@ -13,6 +13,15 @@ public class PropertyService(IPropertyRepository repository, ApplicationMapper a
         await repository.InsertAsync(entity);
         return announcementDto.Id;
     }
+    
+    public async Task<bool> DeleteProperty(Guid propertyId)
+    {
+        if (propertyId.Equals(Guid.Empty))
+            return false;
+        
+        var res = await repository.DeleteAsync(propertyId);
+        return res;
+    }
 
     public async Task<PropertyDto?> GetPropertyByIdAsync(Guid id)
     {

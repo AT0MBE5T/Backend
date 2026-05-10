@@ -30,6 +30,7 @@ namespace RealEstateAgency.Infrastructure.Contexts
         public DbSet<Favorite> Favorites { get; set; }
         public DbSet<View> Views { get; set; }
         public DbSet<Complaint> Complaints { get; set; }
+        public DbSet<Support> Supports { get; set; }
         public DbSet<ComplaintStatus> ComplaintStatus { get; set; }
         public DbSet<ComplaintType> ComplaintTypes { get; set; }
         public DbSet<UserPushSubscription> UserPushSubscriptions { get; set; }
@@ -60,6 +61,7 @@ namespace RealEstateAgency.Infrastructure.Contexts
             modelBuilder.ApplyConfiguration(new ComplaintConfiguration());
             modelBuilder.ApplyConfiguration(new ComplaintStatusConfiguration());
             modelBuilder.ApplyConfiguration(new ComplaintTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new SupportConfiguration());
 
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new RoleConfiguration());

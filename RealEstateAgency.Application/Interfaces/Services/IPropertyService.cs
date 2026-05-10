@@ -7,4 +7,5 @@ public interface IPropertyService
     Task<Guid> AddProperty(PropertyDto announcementDto);
     Task<PropertyDto?> GetPropertyByIdAsync(Guid id);
     Task<bool> UpdatePropertyAsync(Guid propertyId, PropertyDto propertyDto);
+    Task<bool> DeleteProperty(Guid propertyId);
 }

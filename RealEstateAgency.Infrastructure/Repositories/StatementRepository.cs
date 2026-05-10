@@ -40,4 +40,14 @@ public class StatementRepository(RealEstateContext ctx) : IStatementRepository
             .FirstOrDefaultAsync();
         return data;
     }
+    
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var entity = await ctx.Statements.FindAsync(id);
+        if (entity is null)
+            return false;
+        
+        ctx.Statements.Remove(entity);
+        return true;
+    }
 }

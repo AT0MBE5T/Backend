@@ -104,7 +104,7 @@ public class MessageHub: Hub<IChatClient>
         await base.OnDisconnectedAsync(exception);
     }
     
-    public async Task SendMessage(Guid chatId, string message, string userName, Guid offerId)
+    public async Task SendMessage(Guid chatId, string message, string userName, Guid? offerId)
     {
         var userId = Context.User.GetUserId();
 

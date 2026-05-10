@@ -455,6 +455,7 @@ public partial class ApplicationMapper
     [MapperIgnoreSource(nameof(User.StatementsNavigation))]
     [MapperIgnoreSource(nameof(User.VerificationsNavigation))]
     [MapperIgnoreSource(nameof(User.UserPushSubscriptionsNavigation))]
+    [MapperIgnoreSource(nameof(User.SupportsNavigation))]
     
     [MapperIgnoreTarget(nameof(UserDto.Roles))]
     
@@ -469,6 +470,14 @@ public partial class ApplicationMapper
     [MapperIgnoreSource(nameof(Complaint.ComplaintTypeNavigation))]
     [MapperIgnoreSource(nameof(Complaint.UserNavigation))]
     public partial ComplaintDto MapComplaintToDto(Complaint complaint);
+    
+    [MapperIgnoreSource(nameof(Support.AdminNavigation))]
+    [MapperIgnoreSource(nameof(Support.UserNavigation))]
+    public partial SupportDto MapSupportToDto(Support complaint);
+    
+    [MapperIgnoreTarget(nameof(Support.AdminNavigation))]
+    [MapperIgnoreTarget(nameof(Support.UserNavigation))]
+    public partial Support MapSupportDtoToEntity(SupportDto dto);
     
     [MapperIgnoreTarget(nameof(Complaint.AdminNavigation))]
     [MapperIgnoreTarget(nameof(Complaint.AnnouncementNavigation))]

@@ -40,4 +40,14 @@ public class PropertyRepository(RealEstateContext ctx) : IPropertyRepository
 
         return res;
     }
+    
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var entity = await ctx.Properties.FindAsync(id);
+        if (entity is null)
+            return false;
+        
+        ctx.Properties.Remove(entity);
+        return true;
+    }
 }

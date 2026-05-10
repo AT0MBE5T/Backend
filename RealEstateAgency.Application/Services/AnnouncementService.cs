@@ -341,8 +341,34 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
             await unitOfWork.RollbackAsync();
             return false;
         }
+        
+        var statement = await statementService.GetStatementByIdAsync(announcement.StatementId);
+        if (statement == null)
+        {
+            await unitOfWork.RollbackAsync();
+            return false;
+        }
+        
+        var property = await propertyService.GetPropertyByIdAsync(statement.PropertyId);
+        if (property == null)
+        {
+            await unitOfWork.RollbackAsync();
+            return false;
+        }
 
-        if (await announcementRepository.DeleteAsync(announcementId))
+        var image = await imageService.GetPhotosByPropertyIdAsync(property.Id);
+
+        foreach (var photo in image)
+        {
+            var deletionRes = await imageService.DeleteAsync(photo.Id);
+            if (deletionRes) continue;
+            await unitOfWork.RollbackAsync();
+            return false;
+        }
+        
+        if (await announcementRepository.DeleteAsync(announcementId)
+            && await statementService.DeleteStatement(statement.Id)
+            && await propertyService.DeleteProperty(property.Id))
         {
             var auditDto = new AuditDto
             {
@@ -391,6 +417,8 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
     
     public async Task<AnnouncementsShortAndPagesDto> GetSearchDataPaginated(string text, List<string> filters, int sortId, int page, int limit, Guid userId)
     {
+        if (page < 1)
+            page = 1;
         var data = await announcementRepository.GetSearchData(text, filters, sortId, page, limit, userId);
         return data;
     }

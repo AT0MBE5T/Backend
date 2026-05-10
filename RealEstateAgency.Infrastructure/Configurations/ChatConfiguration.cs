@@ -17,5 +17,9 @@ public class ChatConfiguration : IEntityTypeConfiguration<Chat>
         builder.HasOne(c => c.AnnouncementNavigation)
             .WithMany(u => u.ChatsNavigation)
             .HasForeignKey(c => c.AnnouncementId);
+        
+        builder.HasOne(c => c.SupportNavigation)
+            .WithMany()
+            .HasForeignKey(c => c.SupportId);
     }
 }

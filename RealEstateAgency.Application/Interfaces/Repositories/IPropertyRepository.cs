@@ -7,4 +7,5 @@ public interface IPropertyRepository
     Task<Guid> InsertAsync(Property property);
     Task<bool> UpdateAsync(Guid id, Property newProperty);
     Task<Property?> GetByIdAsync(Guid id);
+    Task<bool> DeleteAsync(Guid id);
 }

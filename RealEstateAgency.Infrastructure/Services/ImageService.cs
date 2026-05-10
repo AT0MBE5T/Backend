@@ -1,6 +1,5 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RealEstateAgency.Application.Dtos;
@@ -9,7 +8,7 @@ using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Core.Dtos;
 using RealEstateAgency.Core.Entities;
 
-namespace RealEstateAgency.Application.Services;
+namespace RealEstateAgency.Infrastructure.Services;
 
 public class ImageService : IImageService
 {
