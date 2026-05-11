@@ -232,7 +232,7 @@ public class MessageHub: Hub<IChatClient>
         if (activeRoom is not null)
             return;
         
-        await _webPushService.SendNotificationToUserAsync(authorId, $"[{userName}] {message}", $"/offers/{chatId}/questions","New answer");
+        await _webPushService.SendNotificationToUserAsync(authorId, $"[{userName}] {message}", $"/offers/{chatId}/questions","New question");
     }
     
     public async Task SendAnswer(Guid chatId, Guid questionId, string message, string userName)
