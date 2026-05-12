@@ -273,7 +273,7 @@ public class AccountService(
         return new RegistrationResponseDto(user.Id, accessToken, refreshToken, [], StatusCodes.Status200OK);
     }
     
-    public async Task SetRole(Guid userId, string roleName)
+    public async Task SetRole(Guid userId, string roleName, Guid adminId)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user is null)
@@ -282,9 +282,18 @@ public class AccountService(
         var oldRoles = await userManager.GetRolesAsync(user);
         await userManager.RemoveFromRolesAsync(user, oldRoles);
         await userManager.AddToRoleAsync(user, roleName);
+        
+        var auditDto = new AuditDto
+        {
+            ActionId = Guid.Parse(AuditAction.ChangeRole),
+            UserId = adminId,
+            Details = $"Admin {adminId} has changed {userId} role to {roleName}",
+        };
+            
+        await auditService.InsertAudit(auditDto);
     }
     
-    public async Task SetBan(Guid userId, DateTime? dateTime)
+    public async Task SetBan(Guid userId, Guid adminId, DateTime? dateTime)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user is null)
@@ -295,6 +304,15 @@ public class AccountService(
             : null;
         
         await userManager.SetLockoutEndDateAsync(user, lockoutContent);
+        
+        var auditDto = new AuditDto
+        {
+            ActionId = Guid.Parse(AuditAction.SetBanUser),
+            UserId = adminId,
+            Details = $"User {userId} is banned by {adminId}",
+        };
+            
+        await auditService.InsertAudit(auditDto);
     }
     
     public async Task<List<UserGridDto>> GetAll()
@@ -303,7 +321,7 @@ public class AccountService(
         return result;
     }
     
-    public async Task<bool> Delete(Guid userId)
+    public async Task<bool> Delete(Guid userId, Guid adminId)
     {
         try
         {
@@ -312,6 +330,15 @@ public class AccountService(
                 return false;
 
             await userManager.DeleteAsync(user);
+            
+            var auditDto = new AuditDto
+            {
+                ActionId = Guid.Parse(AuditAction.DeleteUser),
+                UserId = adminId,
+                Details = $"User {userId} is deleted by {adminId}",
+            };
+            
+            await auditService.InsertAudit(auditDto);
             return true;
         }
         catch

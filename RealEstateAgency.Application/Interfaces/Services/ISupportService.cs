@@ -11,5 +11,5 @@ public interface ISupportService
     Task<List<SupportGridDto>> GetAllOpenedSupports();
     Task<Guid> InsertAsync(SupportDto support);
     Task<Guid?> AdminJoinAsync(Guid supportId, Guid adminId);
-    Task<bool> CloseAsync(Guid supportId);
+    Task<bool> CloseAsync(Guid supportId, Guid userId);
 }

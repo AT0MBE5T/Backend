@@ -17,7 +17,8 @@ public class SupportService(
         IChatService chatService,
         IUnitOfWork unitOfWork,
         IChatRepository chatRepository,
-        IChatMemberRepository chatMemberRepository
+        IChatMemberRepository chatMemberRepository,
+        IAuditService auditService
     ) : ISupportService
 {
     private async Task<Guid?> GetOrCreateSupportChat(Guid supportId, Guid adminId)
@@ -68,6 +69,15 @@ public class SupportService(
             
             if (!chatMemberResult2)
                 throw new Exception("Could not create chat member");
+            
+            var auditDto = new AuditDto
+            {
+                ActionId = Guid.Parse(AuditAction.CreatedSupportChat),
+                UserId = userId,
+                Details = $"Support chat is created between {adminId} and {userId}",
+            };
+            
+            await auditService.InsertAudit(auditDto);
 
             await unitOfWork.CommitAsync();
             return chatId;
@@ -113,13 +123,22 @@ public class SupportService(
     {
         try
         {
-            var isAlreadyComplained = await IsUserHasUnclosedSupport(support.UserId);
+            var isAlreadySupported = await IsUserHasUnclosedSupport(support.UserId);
 
-            if (isAlreadyComplained)
+            if (isAlreadySupported)
                 return Guid.Empty;
         
             var model = applicationMapper.MapSupportDtoToEntity(support);
             var result = await supportRepository.InsertAsync(model);
+            if (result == Guid.Empty) return result;
+            var auditDto = new AuditDto
+            {
+                ActionId = Guid.Parse(AuditAction.CreateSupport),
+                UserId = support.UserId,
+                Details = $"Support is created by {support.UserId}",
+            };
+            
+            await auditService.InsertAudit(auditDto);
             return result;
         }
         catch (Exception ex)
@@ -150,11 +169,19 @@ public class SupportService(
         }
     }
     
-    public async Task<bool> CloseAsync(Guid supportId)
+    public async Task<bool> CloseAsync(Guid supportId, Guid userId)
     {
         try
         {
             var result = await supportRepository.CloseSupportAsync(supportId);
+            var auditDto = new AuditDto
+            {
+                ActionId = Guid.Parse(AuditAction.CloseSupport),
+                UserId = userId,
+                Details = $"Support {supportId} is closed",
+            };
+            
+            await auditService.InsertAudit(auditDto);
             return result;
         }
         catch (Exception ex)

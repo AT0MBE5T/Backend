@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
@@ -14,7 +13,7 @@ namespace RealEstateAgency.Application.Services;
 public class AnnouncementService(IAnnouncementRepository announcementRepository, IStatementService statementService,
     IAuditService auditService, IPropertyService propertyService, IImageService imageService,
     ApplicationMapper mapper, IVerificationRepository verificationRepository, IUnitOfWork unitOfWork,
-    IHubService hubService, IPaymentService paymentService, UserManager<User> userManager, ILogger<AnnouncementService> logger) : IAnnouncementsService
+    IHubService hubService, IPaymentService paymentService, ILogger<AnnouncementService> logger) : IAnnouncementsService
 {
     public async Task<AnnouncementGetEditRequest?> GetAnnouncementForEditByIdAsync(Guid announcementId)
     {
@@ -423,7 +422,7 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
         return data;
     }
 
-    public async Task<AnnouncementShortDto?> GetAnnouncementShortByOfferId(Guid offerId, Guid userId)
+    private async Task<AnnouncementShortDto?> GetAnnouncementShortByOfferId(Guid offerId, Guid userId)
     {
         var data = await announcementRepository.GetAnnouncementShortByOfferId(offerId, userId);
         return data;
@@ -435,7 +434,7 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
         return result;
     }
     
-    public async Task<bool> SetClosedAt(Guid id)
+    private async Task<bool> SetClosedAt(Guid id)
     {
         return await announcementRepository.SetClosedAt(id);
     }
@@ -455,13 +454,13 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
         return await announcementRepository.GetPlacedByUserId(userId, page, limit);
     }
     
-    public async Task<Guid?> GetPropertyIdByAnnouncementIdAsync(Guid announcementId)
+    private async Task<Guid?> GetPropertyIdByAnnouncementIdAsync(Guid announcementId)
     {
         var result = await announcementRepository.GetPropertyIdByAnnouncementIdAsync(announcementId);
         return result;
     }
     
-    public async Task<Guid?> GetStatementIdByAnnouncementIdAsync(Guid announcementId)
+    private async Task<Guid?> GetStatementIdByAnnouncementIdAsync(Guid announcementId)
     {
         var result = await announcementRepository.GetStatementIdByAnnouncementIdAsync(announcementId);
         return result;

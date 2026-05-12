@@ -2,6 +2,7 @@
 using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
+using RealEstateAgency.Application.Utils;
 using RealEstateAgency.Core.Dtos;
 using ApplicationMapper = RealEstateAgency.Application.Mappers.ApplicationMapper;
 
@@ -11,10 +12,11 @@ public class ComplaintService(
         IComplaintRepository complaintRepository,
         ApplicationMapper applicationMapper,
         IPaymentService paymentService,
-        ILogger<ComplaintService> logger
+        ILogger<ComplaintService> logger,
+        IAuditService auditService
     ): IComplaintService
 {
-    public async Task<bool> IsUserComplained(Guid userId, Guid offerId)
+    private async Task<bool> IsUserComplained(Guid userId, Guid offerId)
     {
         var result = await complaintRepository.IsUserComplainedByUserIdAsync(userId, offerId);
         return result;
@@ -65,6 +67,17 @@ public class ComplaintService(
         
             var model = applicationMapper.MapComplaintDtoToEntity(complaint);
             var result = await complaintRepository.InsertAsync(model);
+
+            if (result == Guid.Empty) return result;
+            var auditDto = new AuditDto
+            {
+                ActionId = Guid.Parse(AuditAction.CreateComplaint),
+                UserId = complaint.UserId,
+                Details = $"New complaint created from {complaint.UserId} about {complaint.AnnouncementId}",
+            };
+            
+            await auditService.InsertAudit(auditDto);
+
             return result;
         }
         catch (Exception ex)
@@ -80,6 +93,15 @@ public class ComplaintService(
         {
             var mapped = applicationMapper.MapComplaintDtoToEntity(complaint);
             var result = await complaintRepository.UpdateAsync(mapped);
+            if (!result) return result;
+            var auditDto = new AuditDto
+            {
+                ActionId = Guid.Parse(AuditAction.UpdateComplaint),
+                UserId = complaint.AdminId ?? Guid.Empty,
+                Details = $"Complaint {complaint.Id} updated by {complaint.AdminId}",
+            };
+            
+            await auditService.InsertAudit(auditDto);
             return result;
         }
         catch (Exception ex)

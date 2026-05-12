@@ -5,8 +5,8 @@ namespace RealEstateAgency.Application.Interfaces.Services;
 
 public interface IAccountService
 {
-    Task SetRole(Guid userId, string roleName);
-    Task SetBan(Guid userId, DateTime? dateTime);
+    Task SetRole(Guid userId, string roleName, Guid adminId);
+    Task SetBan(Guid userId, Guid adminId, DateTime? dateTime);
     Task<string> GetNameSurnameById(Guid userId);
     Task<UserDto?> GetUserDtoById(Guid userId);
     Task<PersonalStatsDto?> GetReportByUserLoginDate(ReportUserDto reportUserDto);
@@ -14,7 +14,7 @@ public interface IAccountService
     Task<PersonalStatsDto?> GetReportByUserId(Guid userId);
     Task<string> ChangeUserAvatarAsync(ChangeAvatarCommandDto commandDto);
     Task<List<UserGridDto>> GetAll();
-    Task<bool> Delete(Guid userId);
+    Task<bool> Delete(Guid userId, Guid adminId);
     Task<RegistrationResponseDto> RegisterAsync(RegisterCommandDto commandDto);
     Task<RegistrationResponseDto> LoginAsync(LoginCommandDto commandDto);
     Task<List<string>> ChangePasswordAsync(ChangePasswordCommandDto commandDto);

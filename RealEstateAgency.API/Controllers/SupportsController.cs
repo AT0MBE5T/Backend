@@ -67,7 +67,7 @@ public class SupportsController(ISupportService supportService): ControllerBase
         if (oldSupport is null)
             return NotFound();
         
-        var result = await supportService.CloseAsync(supportId);
+        var result = await supportService.CloseAsync(supportId, userId);
 
         return result
             ? Ok()

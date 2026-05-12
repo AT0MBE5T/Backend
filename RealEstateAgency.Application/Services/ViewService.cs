@@ -7,7 +7,7 @@ namespace RealEstateAgency.Application.Services;
 
 public class ViewService(IViewRepository viewRepository, ApplicationMapper applicationMapper) : IViewService
 {
-    public async Task<bool> IsUserWatchedAsync(Guid userId, Guid announcementId)
+    private async Task<bool> IsUserWatchedAsync(Guid userId, Guid announcementId)
     {
         var result =  await viewRepository.IsUserWatchedAsync(userId, announcementId);
         return result;

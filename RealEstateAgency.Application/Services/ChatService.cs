@@ -14,6 +14,7 @@ public class ChatService(
     IChatMemberRepository chatMemberRepository,
     IUnitOfWork unitOfWork,
     IAnnouncementsService announcementsService,
+    IAuditService auditService,
     ILogger<ChatService> logger): IChatService
 {
     public async Task<Guid?> GetOrCreateChat(Guid userId, Guid announcementId)
@@ -63,6 +64,15 @@ public class ChatService(
             
             if (!chatMemberResult2)
                 throw new Exception("Could not create chat member");
+            
+            var auditDto = new AuditDto
+            {
+                ActionId = Guid.Parse(AuditAction.CreateChat),
+                UserId = userId,
+                Details = $"New chat created between {announcement.AuthorId} and {userId}"
+            };
+            
+            await auditService.InsertAudit(auditDto);
 
             await unitOfWork.CommitAsync();
         }

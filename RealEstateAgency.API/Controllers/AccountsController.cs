@@ -139,7 +139,9 @@ public class AccountsController(
         if (!User.IsInRole(Roles.ADMIN))
             return Unauthorized();
         
-        await accountService.SetRole(request.UserId, request.RoleName);
+        var adminId = User.GetUserId();
+        
+        await accountService.SetRole(request.UserId, request.RoleName, adminId);
         return Ok();
     }
     
@@ -149,7 +151,9 @@ public class AccountsController(
         if (!User.IsInRole(Roles.ADMIN))
             return Unauthorized();
         
-        await accountService.SetBan(request.UserId, request.BanTime);
+        var adminId = User.GetUserId();
+        
+        await accountService.SetBan(request.UserId, adminId, request.BanTime);
         return Ok();
     }
     
@@ -158,8 +162,10 @@ public class AccountsController(
     {
         if (!User.IsInRole(Roles.ADMIN))
             return Unauthorized();
+
+        var adminId = User.GetUserId();
         
-        await accountService.Delete(userId);
+        await accountService.Delete(userId, adminId);
         return Ok();
     }
     

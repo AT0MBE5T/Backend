@@ -1,5 +1,4 @@
 ﻿using System.Security.Cryptography;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
@@ -16,13 +15,13 @@ public class RefreshService(
     IJwtService jwtService,
     IAuditService auditService) : IRefreshService
 {
-    public async Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
+    private async Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
     {
         var result = await refreshRepository.GetUserByRefreshTokenAsync(refreshToken);
         return result;
     }
     
-    public async Task<bool> DeleteRefreshTokenAsync(string refreshToken)
+    private async Task<bool> DeleteRefreshTokenAsync(string refreshToken)
     {
         var result = await refreshRepository.DeleteAsync(refreshToken);
         return result;
@@ -41,7 +40,7 @@ public class RefreshService(
         return result;
     }
 
-    public async Task<bool> CheckRefreshToken(string token)
+    private async Task<bool> CheckRefreshToken(string token)
     {
         var result = await refreshRepository.CheckRefreshToken(token);
         return result;
