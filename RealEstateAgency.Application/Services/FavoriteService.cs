@@ -34,13 +34,6 @@ public class FavoriteService(
             if (isPaid)
                 return "Announcement already paid";
 
-            var favoriteDto = new FavoriteDto
-            {
-                UserId = dto.UserId,
-                AnnouncementId = dto.AnnouncementId,
-                CreatedAt = DateTime.UtcNow
-            };
-
             var isInFavorite = await IsInFavoriteAsync(dto);
 
             if (isInFavorite)
@@ -67,7 +60,7 @@ public class FavoriteService(
             if (isPaid)
                 return "Announcement already paid";
             
-            var result = await favoriteRepository.DeleteByIdAsync(dto.UserId, dto.AnnouncementId);
+            _ = await favoriteRepository.DeleteByIdAsync(dto.UserId, dto.AnnouncementId);
             return string.Empty;
         }
         catch (Exception ex)

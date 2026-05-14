@@ -471,4 +471,21 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
         var result = await announcementRepository.GetAnnouncementsGridAsync();
         return result;
     }
+    
+    public decimal CalculateAgencyCommission(decimal propertyPrice, decimal percent)
+    {
+        return Math.Round(propertyPrice * percent / 100, 2);
+    }
+    
+    public decimal CalculateTotalPurchasePrice(
+        decimal propertyPrice,
+        decimal agencyCommission,
+        decimal taxes,
+        decimal notaryPrice)
+    {
+        return propertyPrice +
+               agencyCommission +
+               taxes +
+               notaryPrice;
+    }
 }

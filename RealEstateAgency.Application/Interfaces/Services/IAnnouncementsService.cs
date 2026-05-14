@@ -18,4 +18,10 @@ public interface IAnnouncementsService
     Task<AnnouncementsShortAndPagesDto> GetPlacedAnnouncementsByUserId(Guid userId, int page, int limit);
     Task<List<AnnouncementGridDto>> GetAnnouncementsGrid();
     Task<CloseAnnouncementResponseDto> CloseAnnouncement(CloseAnnouncementCommandDto commandDto);
+    decimal CalculateAgencyCommission(decimal propertyPrice, decimal percent);
+    decimal CalculateTotalPurchasePrice(
+        decimal propertyPrice,
+        decimal agencyCommission,
+        decimal taxes,
+        decimal notaryPrice);
 }
