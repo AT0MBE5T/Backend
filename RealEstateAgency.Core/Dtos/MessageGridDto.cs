@@ -9,4 +9,5 @@ public class MessageGridDto
     public Guid UserToId { get; set; }
     public required string UserToLogin { get; set; }
     public DateTime CreatedAt { get; set; }
+    public Guid ChatTypeId { get; set; }
 }

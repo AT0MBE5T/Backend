@@ -37,7 +37,8 @@ public class MessageRepository(RealEstateContext ctx) : IMessageRepository
                 UserFromLogin = x.UserNavigation!.UserName!,
                 UserFromId = x.UserNavigation.Id,
                 UserToId = x.ChatNavigation!.ChatMembersNavigation.Where(y => y.UserId != x.UserNavigation.Id).Select(y => y.UserNavigation!.Id).FirstOrDefault(),
-                UserToLogin = x.ChatNavigation.ChatMembersNavigation.Where(y => y.UserId != x.UserNavigation.Id).Select(y => y.UserNavigation!.UserName).FirstOrDefault()!
+                UserToLogin = x.ChatNavigation.ChatMembersNavigation.Where(y => y.UserId != x.UserNavigation.Id).Select(y => y.UserNavigation!.UserName).FirstOrDefault()!,
+                ChatTypeId = x.ChatNavigation.TypeId
             })
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
