@@ -171,20 +171,20 @@ app.MapControllers();
 
 app.MapHub<MessageHub>("/messageHub");
 
-app.UseCors(x =>
-{
-    x.WithHeaders().AllowAnyHeader();
-    x.WithOrigins("http://localhost:5173");
-    x.WithMethods().AllowAnyMethod();
-    x.AllowCredentials();
-});
-
 // app.UseCors(x =>
 // {
-//     x.WithOrigins("https://diplompwa.netlify.app")
-//         .AllowAnyMethod()
-//         .AllowAnyHeader()
-//         .AllowCredentials();
+//     x.WithHeaders().AllowAnyHeader();
+//     x.WithOrigins("http://localhost:5173");
+//     x.WithMethods().AllowAnyMethod();
+//     x.AllowCredentials();
 // });
+
+app.UseCors(x =>
+{
+    x.WithOrigins("https://diplompwa.netlify.app")
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
+});
 
 app.Run();
