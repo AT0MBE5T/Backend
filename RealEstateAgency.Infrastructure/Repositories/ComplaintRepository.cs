@@ -11,7 +11,7 @@ public class ComplaintRepository(RealEstateContext ctx) : IComplaintRepository
     public async Task<bool> IsUserComplainedByUserIdAsync(Guid userId, Guid offerId)
     {
         var res = await ctx.Complaints
-            .AnyAsync(x  => x.UserId == userId && x.AnnouncementId  == offerId);
+            .AnyAsync(x  => x.UserId == userId && x.AnnouncementId  == offerId && x.ProcessedAt == null);
         return res;
     }
     
@@ -82,6 +82,27 @@ public class ComplaintRepository(RealEstateContext ctx) : IComplaintRepository
                 StatusName = x.ComplaintStatusNavigation!.Name,
                 UserNote = x.UserNote,
             }).ToListAsync();
+        return res;
+    }
+    
+    public async Task<ComplaintGridDto?> GetComplaintGridByIdAsync(Guid complaintId)
+    {
+        var res = await ctx.Complaints
+            .Where(x => x.Id == complaintId)
+            .Select(x => new ComplaintGridDto
+            {
+                Id = x.Id,
+                AnnouncementId = x.AnnouncementId,
+                AnnouncementName = x.AnnouncementNavigation!.StatementNavigation!.Title,
+                TypeName = x.ComplaintTypeNavigation!.Name,
+                UserName = x.UserNavigation!.UserName!,
+                AdminName = x.AdminNavigation!.UserName,
+                AdminNote = x.AdminNote,
+                CreatedAt = x.CreatedAt,
+                ProcessedAt = x.ProcessedAt,
+                StatusName = x.ComplaintStatusNavigation!.Name,
+                UserNote = x.UserNote,
+            }).FirstOrDefaultAsync();
         return res;
     }
     

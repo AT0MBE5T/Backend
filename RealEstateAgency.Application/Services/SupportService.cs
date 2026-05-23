@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
@@ -18,8 +19,9 @@ public class SupportService(
         IUnitOfWork unitOfWork,
         IChatRepository chatRepository,
         IChatMemberRepository chatMemberRepository,
-        IAuditService auditService
-    ) : ISupportService
+        IAuditService auditService,
+        IHubService hubService,
+        UserManager<User> userManager) : ISupportService
 {
     private async Task<Guid?> GetOrCreateSupportChat(Guid supportId, Guid adminId)
     {
@@ -139,6 +141,14 @@ public class SupportService(
             };
             
             await auditService.InsertAudit(auditDto);
+
+            var supportModel = await supportRepository.GetSupportGridByIdAsync(result);
+
+            if (supportModel is null)
+                return Guid.Empty;
+            
+            await hubService.NotifyNewSupportAsync(supportModel);
+            
             return result;
         }
         catch (Exception ex)
@@ -160,6 +170,14 @@ public class SupportService(
                 return null;
             
             await chatService.AddMessage(support.UserId, chatId.Value, support.UserNote);
+            
+            var supportModel = await supportRepository.GetSupportGridByIdAsync(supportId);
+
+            if (supportModel is null)
+                return Guid.Empty;
+            
+            await hubService.NotifyUpdateSupportAsync(supportModel);
+            
             return chatId;
         }
         catch (Exception ex)
@@ -182,6 +200,14 @@ public class SupportService(
             };
             
             await auditService.InsertAudit(auditDto);
+            
+            var supportModel = await supportRepository.GetSupportGridByIdAsync(supportId);
+
+            if (supportModel is null)
+                return false;
+            
+            await hubService.NotifyUpdateSupportAsync(supportModel);
+            
             return result;
         }
         catch (Exception ex)

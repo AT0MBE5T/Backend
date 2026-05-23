@@ -13,7 +13,8 @@ public class ComplaintService(
         ApplicationMapper applicationMapper,
         IPaymentService paymentService,
         ILogger<ComplaintService> logger,
-        IAuditService auditService
+        IAuditService auditService,
+        IHubService hubService
     ): IComplaintService
 {
     private async Task<bool> IsUserComplained(Guid userId, Guid offerId)
@@ -77,6 +78,13 @@ public class ComplaintService(
             };
             
             await auditService.InsertAudit(auditDto);
+            
+            var supportModel = await complaintRepository.GetComplaintGridByIdAsync(result);
+
+            if (supportModel is null)
+                return Guid.Empty;
+            
+            await hubService.NotifyNewComplaintAsync(supportModel);
 
             return result;
         }
@@ -102,6 +110,14 @@ public class ComplaintService(
             };
             
             await auditService.InsertAudit(auditDto);
+            
+            var supportModel = await complaintRepository.GetComplaintGridByIdAsync(complaint.Id);
+
+            if (supportModel is null)
+                return false;
+            
+            await hubService.NotifyUpdateComplaintAsync(supportModel);
+            
             return result;
         }
         catch (Exception ex)

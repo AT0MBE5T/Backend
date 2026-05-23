@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using RealEstateAgency.Application.Interfaces;
 using RealEstateAgency.Application.Services;
 using RealEstateAgency.Infrastructure.Repositories;
 using RealEstateAgency.Application.Interfaces.Repositories;
@@ -171,20 +172,20 @@ app.MapControllers();
 
 app.MapHub<MessageHub>("/messageHub");
 
-// app.UseCors(x =>
-// {
-//     x.WithHeaders().AllowAnyHeader();
-//     x.WithOrigins("http://localhost:5173");
-//     x.WithMethods().AllowAnyMethod();
-//     x.AllowCredentials();
-// });
-
 app.UseCors(x =>
 {
-    x.WithOrigins("https://diplompwa.netlify.app")
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials();
+    x.WithHeaders().AllowAnyHeader();
+    x.WithOrigins("http://localhost:5173");
+    x.WithMethods().AllowAnyMethod();
+    x.AllowCredentials();
 });
+
+// app.UseCors(x =>
+// {
+//     x.WithOrigins("https://diplompwa.netlify.app")
+//         .AllowAnyMethod()
+//         .AllowAnyHeader()
+//         .AllowCredentials();
+// });
 
 app.Run();

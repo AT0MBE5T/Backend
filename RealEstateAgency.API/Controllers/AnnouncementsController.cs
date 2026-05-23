@@ -112,6 +112,11 @@ public class AnnouncementsController(
         {
             return Unauthorized();
         }
+
+        var isAlreadyUpdated = await announcementService.IsAlreadyUpdated(request.AnnouncementId, request.UpdatedAt);
+
+        if (isAlreadyUpdated)
+            return BadRequest("An announcement already changed");
         
         var newPhotos = request.NewPhotos.Select(p => 
             new FileSourceDto(p.OpenReadStream(), p.FileName)).ToList();
@@ -131,7 +136,8 @@ public class AnnouncementsController(
             request.Price,
             request.Content,
             request.Description,
-            userId
+            userId,
+            request.UpdatedAt
         );
 
         var result = await announcementService.UpdateAnnouncementAsync(command);

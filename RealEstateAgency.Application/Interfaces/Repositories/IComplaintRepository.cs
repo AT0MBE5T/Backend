@@ -12,4 +12,5 @@ public interface IComplaintRepository
     Task<List<ComplaintGridDto>> GetAllOpenedComplaintsAsync();
     Task<Guid> InsertAsync(Complaint complaint);
     Task<bool> UpdateAsync(Complaint complaint);
+    Task<ComplaintGridDto?> GetComplaintGridByIdAsync(Guid complaintId);
 }

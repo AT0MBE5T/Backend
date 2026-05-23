@@ -14,6 +14,13 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
         return announcement.Id;
     }
     
+    public async Task<bool> IsEqualUpdateDates(Guid id, DateTime? updatedAt)
+    {
+        var announcementToUpdate = await ctx.Announcements.FindAsync(id);
+        if (announcementToUpdate == null) return false;
+        return announcementToUpdate.UpdatedAt == updatedAt;
+    }
+    
     public async Task<bool> UpdateAsync(Guid id, Announcement announcement)
     {
         var announcementToUpdate = await ctx.Announcements.FindAsync(id);
@@ -95,13 +102,16 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
                 Price = x.StatementNavigation.Price,
                 Rooms = x.StatementNavigation.PropertyNavigation.Rooms,
                 Title = x.StatementNavigation.Title,
+                PropertyTypeId = x.StatementNavigation.PropertyNavigation.PropertyTypeId,
+                StatementTypeId = x.StatementNavigation.StatementTypeId,
                 PropertyTypeName = x.StatementNavigation.PropertyNavigation.PropertyTypeNavigation!.Name,
                 StatementTypeName = x.StatementNavigation.StatementTypeNavigation!.Name,
                 IsVerified = x.VerificationNavigation != null,
                 IsFavorite = ctx.Favorites
                     .Any(f => f.AnnouncementId == x.Id && f.UserId == userId),
                 ViewsCnt = ctx.Views.Count(y => y.AnnouncementId == id),
-                ClosedAt = x.ClosedAt
+                ClosedAt = x.ClosedAt,
+                UpdatedAt = x.UpdatedAt
             })
             .FirstOrDefaultAsync();
         return result;

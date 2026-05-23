@@ -75,7 +75,8 @@ public partial class ApplicationMapper
     public AnnouncementGetEditRequest ToAnnouncementGetEditRequest(
         PropertyDto propertyDto, 
         StatementDto statementDto, 
-        List<PhotoDto> photos)
+        List<PhotoDto> photos,
+        DateTime? updatedAt)
     {
         var target = MapPropertyToRequest(propertyDto);
         
@@ -85,6 +86,7 @@ public partial class ApplicationMapper
         target.StatementTypeId = statementDto.StatementTypeId;
         target.UserId = statementDto.UserId;
         target.Photos = photos;
+        target.UpdatedAt = updatedAt;
         
         return target;
     }

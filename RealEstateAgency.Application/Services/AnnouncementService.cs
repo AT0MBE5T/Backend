@@ -1,6 +1,8 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using RealEstateAgency.Application.Dtos;
+using RealEstateAgency.Application.Interfaces;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
@@ -13,7 +15,7 @@ namespace RealEstateAgency.Application.Services;
 public class AnnouncementService(IAnnouncementRepository announcementRepository, IStatementService statementService,
     IAuditService auditService, IPropertyService propertyService, IImageService imageService,
     ApplicationMapper mapper, IVerificationRepository verificationRepository, IUnitOfWork unitOfWork,
-    IHubService hubService, IPaymentService paymentService, ILogger<AnnouncementService> logger) : IAnnouncementsService
+    IHubService hubService, IPaymentService paymentService, ILogger<AnnouncementService> logger, IAccountService accountService) : IAnnouncementsService
 {
     public async Task<AnnouncementGetEditRequest?> GetAnnouncementForEditByIdAsync(Guid announcementId)
     {
@@ -36,7 +38,7 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
         }
 
         var photos = await imageService.GetPhotosByPropertyIdAsync(statement.PropertyId);
-        var res = mapper.ToAnnouncementGetEditRequest(property, statement, photos);
+        var res = mapper.ToAnnouncementGetEditRequest(property, statement, photos, announcement.UpdatedAt);
         
         return res;
     }
@@ -99,7 +101,37 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
             await unitOfWork.CommitAsync();
             
             var offerDto = await GetAnnouncementShortByOfferId(commandDto.AnnouncementId, commandDto.UserId);
+            
+            var offerFull = await GetAnnouncementFullById(new AnnouncementInfoCommandDto(offerDto.Id, null));
+
+            if (offerFull is null)
+                return "Not found";
+
+            var user = await accountService.GetUserDtoById(offerFull.AuthorId);
+
+            if (user is null)
+                return "User not found";
+        
+            var model = new AnnouncementGridDto
+            {
+                Title = offerFull.Title,
+                Author = user.Login,
+                CreatedAt = offerFull.CreatedAt,
+                PropertyTypeName = offerFull.PropertyTypeName,
+                StatementTypeName = offerFull.StatementTypeName,
+                AuthorId = offerFull.AuthorId,
+                ClosedAt = offerFull.ClosedAt,
+                Id = offerFull.Id,
+                IsVerified = offerFull.IsVerified,
+                Price = offerFull.Price,
+                PropertyTypeId = offerFull.PropertyTypeId,
+                StatementTypeId = offerFull.StatementTypeId,
+                ViewsCnt = offerFull.ViewsCnt
+            };
+            
             await hubService.NotifyUpdateOfferAsync(offerDto);
+            await hubService.NotifyUpdateFullOfferAsync(commandDto.UserId, offerFull!);
+            await hubService.NotifyUpdateOfferWPFAsync(model);
             
             return string.Empty;
         }
@@ -145,7 +177,21 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
 
         return announcementDto.Id;
     }
-    
+
+    public async Task<bool> IsAlreadyUpdated(Guid offerId, DateTime? updatedAt)
+    {
+        try
+        {
+            var result = await announcementRepository.IsEqualUpdateDates(offerId, updatedAt);
+            return !result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Failed to update announcement {ex}", ex);
+            return true;
+        }
+    }
+
     public async Task<AddAnnouncementResponseDto> CreateAnnouncementAsync(CreateAnnouncementCommandDto commandDto)
     {
         await unitOfWork.BeginTransactionAsync();
@@ -202,7 +248,31 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
             await unitOfWork.CommitAsync();
             
             var offerDto = await announcementRepository.GetAnnouncementShortByOfferId((Guid)announcementId, commandDto.UserId);
+            
+            var offerFull = await GetAnnouncementFullById(new AnnouncementInfoCommandDto(offerDto.Id, null));
+
+            if (offerFull is null)
+                return new AddAnnouncementResponseDto((int)HttpStatusCode.NotFound, "Announcement not found", Guid.Empty);
+        
+            var model = new AnnouncementGridDto
+            {
+                Title = offerFull.Title,
+                Author = offerFull.Author,
+                CreatedAt = offerFull.CreatedAt,
+                PropertyTypeName = offerFull.PropertyTypeName,
+                StatementTypeName = offerFull.StatementTypeName,
+                AuthorId = offerFull.AuthorId,
+                ClosedAt = offerFull.ClosedAt,
+                Id = offerFull.Id,
+                IsVerified = offerFull.IsVerified,
+                Price = offerFull.Price,
+                PropertyTypeId = offerFull.PropertyTypeId,
+                StatementTypeId = offerFull.StatementTypeId,
+                ViewsCnt = offerFull.ViewsCnt
+            };
+            
             await hubService.NotifyNewOfferAsync(offerDto);
+            await hubService.NotifyNewOfferWPFAsync(model);
 
             return new AddAnnouncementResponseDto((int)HttpStatusCode.Created, string.Empty, (Guid)announcementId);
         }
@@ -318,8 +388,33 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
             await unitOfWork.CommitAsync();
             
             var offerDto = await GetAnnouncementShortByOfferId(commandDto.AnnouncementId, commandDto.UserId);
-
             await hubService.NotifyUpdateOfferAsync(offerDto);
+
+            var offerFull = await GetAnnouncementFullById(new AnnouncementInfoCommandDto(commandDto.AnnouncementId, commandDto.UserId));
+
+            if (offerFull is null)
+                return "Offer not found";
+            
+            await hubService.NotifyUpdateFullOfferAsync(commandDto.UserId, offerFull!);
+        
+            var model = new AnnouncementGridDto
+            {
+                Title = offerFull.Title,
+                Author = offerFull.Author,
+                CreatedAt = offerFull.CreatedAt,
+                PropertyTypeName = offerFull.PropertyTypeName,
+                StatementTypeName = offerFull.StatementTypeName,
+                AuthorId = offerFull.AuthorId,
+                ClosedAt = offerFull.ClosedAt,
+                Id = offerFull.Id,
+                IsVerified = offerFull.IsVerified,
+                Price = offerFull.Price,
+                PropertyTypeId = offerFull.PropertyTypeId,
+                StatementTypeId = offerFull.StatementTypeId,
+                ViewsCnt = offerFull.ViewsCnt
+            };
+            
+            await hubService.NotifyUpdateOfferWPFAsync(model);
 
             return string.Empty;
         }

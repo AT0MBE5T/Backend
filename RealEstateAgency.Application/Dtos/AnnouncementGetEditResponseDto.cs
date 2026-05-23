@@ -16,4 +16,5 @@ public class AnnouncementGetEditRequest
     public string Content { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public Guid UserId { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }

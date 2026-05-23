@@ -5,6 +5,7 @@ namespace RealEstateAgency.Application.Interfaces.Repositories;
 
 public interface IAnnouncementRepository
 {
+    Task<bool> IsEqualUpdateDates(Guid id, DateTime? updatedAt);
     Task<int> GetTotalViews();
     Task<Guid> GetAuthorOfferIdByQuestionIdAsync(Guid id);
     Task<List<AnnouncementGridDto>> GetAnnouncementsGridAsync();

@@ -8,11 +8,11 @@ namespace RealEstateAgency.Infrastructure.Repositories;
 
 public class MessageRepository(RealEstateContext ctx) : IMessageRepository
 {
-    public async Task<bool> AddMessageAsync(Message message)
+    public async Task<Guid> AddMessageAsync(Message message)
     {
         await ctx.Messages.AddAsync(message);
         await ctx.SaveChangesAsync();
-        return true;
+        return message.Id;
     }
     
     public async Task<List<Message>> GetMessagesByChatIdAsync(Guid chatId)
@@ -23,6 +23,26 @@ public class MessageRepository(RealEstateContext ctx) : IMessageRepository
             .OrderBy(x => x.CreatedAt)
             .Include(x => x.UserNavigation)
             .ToListAsync();
+        return result;
+    }
+    
+    public async Task<MessageGridDto?> GetByIdAsync(Guid messageId)
+    {
+        var result = await ctx.Messages
+            .Where(x => x.Id == messageId)
+            .Select(x => new MessageGridDto
+            {
+                Id = x.Id,
+                Text = x.Content,
+                CreatedAt = x.CreatedAt,
+                UserFromLogin = x.UserNavigation!.UserName!,
+                UserFromId = x.UserNavigation.Id,
+                UserToId = x.ChatNavigation!.ChatMembersNavigation.Where(y => y.UserId != x.UserNavigation.Id).Select(y => y.UserNavigation!.Id).FirstOrDefault(),
+                UserToLogin = x.ChatNavigation.ChatMembersNavigation.Where(y => y.UserId != x.UserNavigation.Id).Select(y => y.UserNavigation!.UserName).FirstOrDefault()!,
+                ChatTypeId = x.ChatNavigation.TypeId
+            })
+            .FirstOrDefaultAsync();
+
         return result;
     }
     

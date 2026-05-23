@@ -118,7 +118,13 @@ public class ChatService(
 
         return res;
     }
-    
+
+    public async Task<MessageGridDto?> GetMessageById(Guid messageId)
+    {
+        var result = await messageRepository.GetByIdAsync(messageId);
+        return result;
+    }
+
     public async Task<List<Guid>> GetChatParticipants(Guid chatId)
     {
         var chatMembers = await chatRepository.GetMembersByChatIdAsync(chatId);
@@ -128,17 +134,17 @@ public class ChatService(
             .ToList();
     }
 
-    public async Task<bool> AddMessage(Guid userId, Guid chatId, string message)
+    public async Task<Guid> AddMessage(Guid userId, Guid chatId, string message)
     {
         var chat = await chatRepository.GetChatByIdAsync(chatId);
 
         if (chat is null)
-            return false;
+            return Guid.Empty;
         
         var chatMembers = await chatRepository.GetMembersByChatIdAsync(chatId);
 
         if (!chatMembers.Select(x => x.UserId).Contains(userId) && chatId != new Guid("74679c97-aa14-444e-b3ae-9a6d8d01399f"))
-            return false;
+            return Guid.Empty;
 
         var newMessage = new Message
         {

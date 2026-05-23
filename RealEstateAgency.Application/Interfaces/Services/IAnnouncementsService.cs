@@ -17,6 +17,7 @@ public interface IAnnouncementsService
     Task<AnnouncementsShortAndPagesDto> GetSoldAnnouncementsByUserId(Guid userId, int page, int limit);
     Task<AnnouncementsShortAndPagesDto> GetPlacedAnnouncementsByUserId(Guid userId, int page, int limit);
     Task<List<AnnouncementGridDto>> GetAnnouncementsGrid();
+    Task<bool> IsAlreadyUpdated(Guid offerId, DateTime? updatedAt);
     Task<CloseAnnouncementResponseDto> CloseAnnouncement(CloseAnnouncementCommandDto commandDto);
     decimal CalculateAgencyCommission(decimal propertyPrice, decimal percent);
     decimal CalculateTotalPurchasePrice(

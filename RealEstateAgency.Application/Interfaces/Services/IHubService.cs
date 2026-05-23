@@ -6,5 +6,12 @@ public interface IHubService
 {
     Task NotifyNewOfferAsync(AnnouncementShortDto? offerDto);
     Task NotifyUpdateOfferAsync(AnnouncementShortDto? offerDto);
+    Task NotifyNewOfferWPFAsync(AnnouncementGridDto model);
+    Task NotifyUpdateOfferWPFAsync(AnnouncementGridDto model);
+    Task NotifyUpdateFullOfferAsync(Guid changedById, AnnouncementFullDto offerDto);
     Task DeleteOfferAsync(Guid announcementId);
+    Task NotifyUpdateComplaintAsync(ComplaintGridDto complaint);
+    Task NotifyNewComplaintAsync(ComplaintGridDto complaint);
+    Task NotifyUpdateSupportAsync(SupportGridDto support);
+    Task NotifyNewSupportAsync(SupportGridDto support);
 }

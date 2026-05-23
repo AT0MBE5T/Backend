@@ -9,7 +9,8 @@ public interface IChatService
     Task<List<ChatSummaryDto>> GetChatsAsyncByUserId(Guid id);
     Task<List<MessageDto>> GetMessagesByChatId(Guid chatId);
     Task<bool> IsUserInThisChat(Guid userId, Guid chatId);
-    Task<bool> AddMessage(Guid userId, Guid chatId, string message);
+    Task<Guid> AddMessage(Guid userId, Guid chatId, string message);
+    Task<MessageGridDto?> GetMessageById(Guid messageId);
     Task<List<Guid>> GetChatParticipants(Guid chatId);
     Task<List<MessageGridDto>> GetMessagesGrid();
 }

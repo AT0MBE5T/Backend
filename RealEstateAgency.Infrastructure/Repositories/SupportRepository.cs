@@ -53,6 +53,22 @@ public class SupportRepository (RealEstateContext ctx) : ISupportRepository
         return res;
     }
     
+    public async Task<SupportGridDto?> GetSupportGridByIdAsync(Guid supportId)
+    {
+        var res = await ctx.Supports
+            .Where(x => x.Id == supportId)
+            .Select(x => new SupportGridDto
+            {
+                Id = x.Id,
+                UserName = x.UserNavigation!.UserName!,
+                AdminName = x.AdminNavigation!.UserName,
+                CreatedAt = x.CreatedAt,
+                ClosedAt = x.ClosedAt,
+                UserNote = x.UserNote,
+            }).FirstOrDefaultAsync();
+        return res;
+    }
+    
     public async Task<Guid> InsertAsync(Support support)
     {
         var res = await ctx.Supports.AddAsync(support);

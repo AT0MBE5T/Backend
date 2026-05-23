@@ -6,6 +6,7 @@ namespace RealEstateAgency.Application.Interfaces.Services;
 public interface IMessageRepository
 {
     Task<List<Message>> GetMessagesByChatIdAsync(Guid chatId);
-    Task<bool> AddMessageAsync(Message message);
+    Task<Guid> AddMessageAsync(Message message);
     Task<List<MessageGridDto>> GetMessagesGridAsync();
+    Task<MessageGridDto?> GetByIdAsync(Guid messageId);
 }

@@ -16,5 +16,6 @@ public record AnnouncementUpdateCommandDto
     decimal Price,
     string Content,
     string Description,
-    Guid UserId
+    Guid UserId,
+    DateTime? UpdatedAt
 );

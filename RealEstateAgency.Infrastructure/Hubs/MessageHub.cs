@@ -1,29 +1,16 @@
 ﻿using System.Text.Json;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 using RealEstateAgency.Application.Dtos;
+using RealEstateAgency.Application.Interfaces;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
 using RealEstateAgency.Core.Dtos;
+using RealEstateAgency.Core.Entities;
+using RealEstateAgency.Infrastructure.Models;
 
 namespace RealEstateAgency.Infrastructure.Hubs;
-
-public interface IChatClient
-{
-    public Task ReceiveMessage(Guid userId, string userName, string message, Guid chatId);
-    public Task ReceiveComment(Guid commentId, Guid offerId, string userName, string message);
-    public Task ReceiveQuestion(Guid announcementId, Guid questionId, string userName, string message);
-    public Task ReceiveAnswer(Guid answerId, Guid questionId, string userName, string message);
-    public Task UpdateChatList(Guid chatId, Guid? offerId, string userName, string message);
-    public Task ReceiveOffer(AnnouncementShortDto offer);
-    public Task UpdateOffer(AnnouncementShortDto offer);
-    public Task DeleteOffer(Guid offerId);
-    public Task DeleteAnswer(Guid answerId);
-    public Task DeleteQuestion(Guid questionId);
-    public Task DeleteComment(Guid commentId);
-}
-
-public record UserConnection(string ChatRoom, string UserName);
 
 public class MessageHub: Hub<IChatClient>
 {
@@ -34,23 +21,26 @@ public class MessageHub: Hub<IChatClient>
     private readonly IAnswerService _answerService;
     private readonly IAnnouncementsService _announcementsService;
     private readonly WebPushService _webPushService;
+    private readonly UserManager<User> _userManager;
     
     public MessageHub(
         IDistributedCache cache,
-        IChatService chatService,
         ICommentService commentService,
         IAnswerService answerService,
         IQuestionService questionService,
+        WebPushService webPushService,
+        UserManager<User> userManager,
         IAnnouncementsService announcementsService,
-        WebPushService webPushService)
+        IChatService chatService)
     {
         _cache = cache;
-        _chatService = chatService;
         _commentService = commentService;
         _answerService = answerService;
         _questionService = questionService;
-        _announcementsService = announcementsService;
         _webPushService = webPushService;
+        _userManager = userManager;
+        _announcementsService = announcementsService;
+        _chatService = chatService;
     }
 
     public async Task JoinChat(UserConnection connection)
@@ -104,6 +94,20 @@ public class MessageHub: Hub<IChatClient>
         await base.OnDisconnectedAsync(exception);
     }
     
+    public async Task NotifyUpdateFullOfferAsync(AnnouncementFullDto offerDto)
+    {
+        var userId = Context.User.GetUserId();
+
+        var connectionJson = await _cache.GetStringAsync($"active_question_room{userId}");
+        if (connectionJson is null) return;
+
+        var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
+        if (connection is null) return;
+
+        // await Clients.Group(offerDto.Id.ToString())
+        //     .UpdateFullOffer(offerDto);
+    }
+    
     public async Task SendMessage(Guid chatId, string message, string userName, Guid? offerId)
     {
         var userId = Context.User.GetUserId();
@@ -114,14 +118,21 @@ public class MessageHub: Hub<IChatClient>
         var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
         if (connection is null) return;
 
-        var success = await _chatService.AddMessage(userId, chatId, message);
-        if (!success) return;
+        var messageId = await _chatService.AddMessage(userId, chatId, message);
+        if (messageId == Guid.Empty) return;
         
         await Clients.Group(chatId.ToString())
             .ReceiveMessage(userId,
                 connection.UserName,
                 message,
                 chatId);
+
+        var obj = await _chatService.GetMessageById(messageId);
+
+        if (obj is null)
+            return;
+        
+        await Clients.Group("messages_global").ReceiveMessageWPF(obj);
         
         var participants = await _chatService.GetChatParticipants(chatId);
         
@@ -155,8 +166,8 @@ public class MessageHub: Hub<IChatClient>
 
         var chatId = new Guid("74679c97-aa14-444e-b3ae-9a6d8d01399f");
 
-        var success = await _chatService.AddMessage(userId, chatId, message);
-        if (!success) return;
+        var messageId = await _chatService.AddMessage(userId, chatId, message);
+        if (messageId == Guid.Empty) return;
         
         await Clients.Group(chatId.ToString())
             .ReceiveMessage(userId,
@@ -171,6 +182,13 @@ public class MessageHub: Hub<IChatClient>
                 userName,
                 message
             );
+        
+        var obj = await _chatService.GetMessageById(messageId);
+
+        if (obj is null)
+            return;
+        
+        await Clients.Group("messages_global").ReceiveMessageWPF(obj);
     }
     
     public async Task LeaveComment(Guid chatId, string message, string userName)
@@ -193,8 +211,27 @@ public class MessageHub: Hub<IChatClient>
         
         var success = await _commentService.InsertCommentAsync(objForAdding);
 
+        var offer = await _announcementsService.GetAnnouncementFullById(new AnnouncementInfoCommandDto(chatId, userId));
+
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        
+        if (offer is null || user is null)
+            return;
+        
         if (success is not null)
+        {
             await Clients.Group(chatId.ToString()).ReceiveComment(success.Value, chatId, userName, message);
+            var commentWpf = new CommentGridDto()
+            {
+                Id = success.Value,
+                Text = message,
+                Author = user.UserName ?? string.Empty,
+                CreatedAt = DateTime.UtcNow,
+                AnnouncementId = chatId,
+                StatementTitle = offer.Title
+            };
+            await Clients.Group("comments_global").ReceiveCommentWPF(commentWpf);
+        }
     }
     
     public async Task SendQuestion(Guid chatId, string message, string userName)
@@ -221,7 +258,29 @@ public class MessageHub: Hub<IChatClient>
         if (questionId is null)
             return;
         
+        var offer = await _announcementsService.GetAnnouncementFullById(new AnnouncementInfoCommandDto(chatId, userId));
+
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        
+        if (offer is null || user is null)
+            return;
+
+        var questionAnswerDto = new QuestionAnswerGridDto
+        {
+            AnnouncementId = chatId,
+            QuestionId = questionId.Value,
+            AnnouncementName = offer.Title,
+            CreatedAtQuestion = DateTime.UtcNow,
+            CreatedByQuestion = user.UserName ?? string.Empty,
+            TextQuestion = message,
+            AnswerId = null,
+            CreatedAtAnswer = null,
+            CreatedByAnswer = string.Empty,
+            TextAnswer = string.Empty
+        };
+        
         await Clients.Group(chatId.ToString()).ReceiveQuestion(chatId, questionId.Value, userName, message);
+        await Clients.Group("questions_global").ReceiveQuestionWPF(questionAnswerDto);
         
         var authorId = await _announcementsService.GetAuthorOfferIdByQuestionId(questionId.Value);
         if (authorId == Guid.Empty)
@@ -258,7 +317,29 @@ public class MessageHub: Hub<IChatClient>
         if (answerId is null)
             return;
         
+        var offer = await _announcementsService.GetAnnouncementFullById(new AnnouncementInfoCommandDto(chatId, userId));
+
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        
+        if (offer is null || user is null)
+            return;
+
+        var questionAnswerDto = new QuestionAnswerGridDto
+        {
+            AnnouncementId = chatId,
+            QuestionId = questionId,
+            AnnouncementName = offer.Title,
+            CreatedAtQuestion = DateTime.UtcNow,
+            CreatedByQuestion = user.UserName ?? string.Empty,
+            TextQuestion = message,
+            AnswerId = answerId.Value,
+            CreatedAtAnswer = DateTime.UtcNow,
+            CreatedByAnswer = userName,
+            TextAnswer = message
+        };
+        
         await Clients.Group(chatId.ToString()).ReceiveAnswer(answerId.Value, questionId, userName, message);
+        await Clients.Group("questions_global").ReceiveAnswerWPF(questionAnswerDto);
 
         var questionUserId = await _questionService.GetQuestionUserIdByAnswerId(answerId.Value);
         if (questionUserId == Guid.Empty)
@@ -270,70 +351,6 @@ public class MessageHub: Hub<IChatClient>
             return;
         
         await _webPushService.SendNotificationToUserAsync(questionUserId, $"[{userName}] {message}", $"/offers/{chatId}/questions", "New answer");
-    }
-    
-    public async Task AddOffer(Guid chatId, AnnouncementShortDto offer)
-    {
-        var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
-        if (connectionJson is null) return;
-        var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-        
-        if (connection is null) return;
-
-        await Clients.Group(chatId.ToString())
-            .ReceiveOffer(offer);
-        
-        var participants = await _chatService.GetChatParticipants(chatId);
-        
-        foreach (var participantId in participants)
-        {
-            await Clients.Group(participantId.ToString())
-                .UpdateOffer(offer);
-        }
-    }
-    
-    public async Task UpdateOffer(Guid chatId, AnnouncementShortDto offer)
-    {
-        var userId = Context.User.GetUserId();
-        
-        var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
-        if (connectionJson is null) return;
-        var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-        
-        if (connection is null) return;
-
-        await Clients.Group(chatId.ToString())
-            .UpdateOffer(offer);
-        
-        var participants = await _chatService.GetChatParticipants(chatId);
-        
-        foreach (var participantId in participants)
-        {
-            await Clients.Group(participantId.ToString())
-                .UpdateOffer(offer);
-        }
-    }
-    
-    public async Task DeleteOffer(Guid chatId, Guid offerId)
-    {
-        var userId = Context.User.GetUserId();
-        
-        // var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
-        // if (connectionJson is null) return;
-        // var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-        //
-        // if (connection is null) return;
-
-        await Clients.Group(chatId.ToString())
-            .DeleteOffer(offerId);
-        
-        var participants = await _chatService.GetChatParticipants(chatId);
-        
-        foreach (var participantId in participants)
-        {
-            await Clients.Group(participantId.ToString())
-                .DeleteOffer(offerId);
-        }
     }
     
     public async Task DeleteComment(Guid chatId, Guid commentId)
@@ -348,9 +365,12 @@ public class MessageHub: Hub<IChatClient>
 
 
         var res = await _commentService.DeleteByCommentIdAsync(commentId, userId);
-        
+
         if (res)
+        {
             await Clients.Group(chatId.ToString()).DeleteComment(commentId);
+            await Clients.Group("comments_global").DeleteCommentWPF(commentId);
+        }
     }
     
     public async Task DeleteAnswer(Guid chatId, Guid answerId)
@@ -365,9 +385,12 @@ public class MessageHub: Hub<IChatClient>
 
 
         var res = await _answerService.DeleteByAnswerIdAsync(answerId, userId);
-        
+
         if (res)
+        {
             await Clients.Group(chatId.ToString()).DeleteAnswer(answerId);
+            await Clients.Group("questions_global").DeleteAnswerWPF(answerId);
+        }
     }
     
     public async Task DeleteQuestion(Guid chatId, Guid questionId)
@@ -382,8 +405,18 @@ public class MessageHub: Hub<IChatClient>
 
 
         var res = await _questionService.DeleteByQuestionIdAsync(questionId, userId);
-        
+
         if (res)
+        {
             await Clients.Group(chatId.ToString()).DeleteQuestion(questionId);
+            await Clients.Group("questions_global").DeleteQuestionWPF(questionId);
+        }
+    }
+    
+    public async Task LeaveGroup(string groupName)
+    {
+        await _cache.RemoveAsync(Context.ConnectionId);
+        await _cache.RemoveAsync("active_question_room_" + Guid.Empty);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
     }
 }

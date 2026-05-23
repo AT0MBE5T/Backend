@@ -25,6 +25,7 @@ public class TestAnnouncementService
         var loggerRepo = new Mock<ILogger<AnnouncementService>>();
         var hub = new Mock<IHubService>();
         var paymentService = new Mock<IPaymentService>();
+        var accountService = new Mock<IAccountService>();
 
         var service = new AnnouncementService(
             mockRepo.Object,
@@ -37,7 +38,8 @@ public class TestAnnouncementService
             unitOfWorkRepo.Object,
             hub.Object,
             paymentService.Object,
-            loggerRepo.Object);
+            loggerRepo.Object,
+            accountService.Object);
 
         var propertyPrice = 123456.99m;
         var agencyPercent = 2m;
@@ -61,6 +63,7 @@ public class TestAnnouncementService
         var loggerRepo = new Mock<ILogger<AnnouncementService>>();
         var hub = new Mock<IHubService>();
         var paymentService = new Mock<IPaymentService>();
+        var accountService = new  Mock<IAccountService>();
 
         var service = new AnnouncementService(
             mockRepo.Object,
@@ -73,7 +76,8 @@ public class TestAnnouncementService
             unitOfWorkRepo.Object,
             hub.Object,
             paymentService.Object,
-            loggerRepo.Object);
+            loggerRepo.Object,
+            accountService.Object);
 
         var propertyPrice = 123456.99m;
         var agencyCommission = 2469.14m;

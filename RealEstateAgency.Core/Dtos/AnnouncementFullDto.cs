@@ -6,6 +6,8 @@ public class AnnouncementFullDto
     public required string Title { get; set; }
     public required string StatementTypeName { get; set; }
     public required string PropertyTypeName { get; set; }
+    public required Guid StatementTypeId { get; set; }
+    public required Guid PropertyTypeId { get; set; }
     public required decimal Price { get; set; }
     public required string Location { get; set; }
     public required double Area { get; set; }
@@ -21,4 +23,5 @@ public class AnnouncementFullDto
     public bool IsFavorite { get; set; }
     public required int ViewsCnt { get; set; }
     public required DateTime? ClosedAt { get; set; }
+    public required DateTime? UpdatedAt { get; set; }
 }
