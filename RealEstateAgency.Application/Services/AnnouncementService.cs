@@ -1,8 +1,6 @@
 ﻿using System.Net;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using RealEstateAgency.Application.Dtos;
-using RealEstateAgency.Application.Interfaces;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
@@ -102,6 +100,9 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
             
             var offerDto = await GetAnnouncementShortByOfferId(commandDto.AnnouncementId, commandDto.UserId);
             
+            if (offerDto is null)
+                return "Not found";
+            
             var offerFull = await GetAnnouncementFullById(new AnnouncementInfoCommandDto(offerDto.Id, null));
 
             if (offerFull is null)
@@ -131,7 +132,7 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
             
             await hubService.NotifyUpdateOfferAsync(offerDto);
             await hubService.NotifyUpdateFullOfferAsync(commandDto.UserId, offerFull!);
-            await hubService.NotifyUpdateOfferWPFAsync(model);
+            await hubService.NotifyUpdateOfferWpfAsync(model);
             
             return string.Empty;
         }
@@ -249,6 +250,9 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
             
             var offerDto = await announcementRepository.GetAnnouncementShortByOfferId((Guid)announcementId, commandDto.UserId);
             
+            if (offerDto is null)
+                return new AddAnnouncementResponseDto((int)HttpStatusCode.NotFound, "Announcement not found", Guid.Empty);
+            
             var offerFull = await GetAnnouncementFullById(new AnnouncementInfoCommandDto(offerDto.Id, null));
 
             if (offerFull is null)
@@ -272,7 +276,7 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
             };
             
             await hubService.NotifyNewOfferAsync(offerDto);
-            await hubService.NotifyNewOfferWPFAsync(model);
+            await hubService.NotifyNewOfferWpfAsync(model);
 
             return new AddAnnouncementResponseDto((int)HttpStatusCode.Created, string.Empty, (Guid)announcementId);
         }
@@ -414,7 +418,7 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
                 ViewsCnt = offerFull.ViewsCnt
             };
             
-            await hubService.NotifyUpdateOfferWPFAsync(model);
+            await hubService.NotifyUpdateOfferWpfAsync(model);
 
             return string.Empty;
         }

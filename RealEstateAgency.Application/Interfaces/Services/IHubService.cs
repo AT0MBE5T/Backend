@@ -4,10 +4,10 @@ namespace RealEstateAgency.Application.Interfaces.Services;
 
 public interface IHubService
 {
-    Task NotifyNewOfferAsync(AnnouncementShortDto? offerDto);
-    Task NotifyUpdateOfferAsync(AnnouncementShortDto? offerDto);
-    Task NotifyNewOfferWPFAsync(AnnouncementGridDto model);
-    Task NotifyUpdateOfferWPFAsync(AnnouncementGridDto model);
+    Task NotifyNewOfferAsync(AnnouncementShortDto offerDto);
+    Task NotifyUpdateOfferAsync(AnnouncementShortDto offerDto);
+    Task NotifyNewOfferWpfAsync(AnnouncementGridDto model);
+    Task NotifyUpdateOfferWpfAsync(AnnouncementGridDto model);
     Task NotifyUpdateFullOfferAsync(Guid changedById, AnnouncementFullDto offerDto);
     Task DeleteOfferAsync(Guid announcementId);
     Task NotifyUpdateComplaintAsync(ComplaintGridDto complaint);

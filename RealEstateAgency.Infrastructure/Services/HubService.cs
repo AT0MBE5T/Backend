@@ -8,13 +8,13 @@ namespace RealEstateAgency.Infrastructure.Services;
 
 public class HubService(IHubContext<MessageHub, IChatClient> hubContext) : IHubService
 {
-    public async Task NotifyNewOfferAsync(AnnouncementShortDto? offerDto)
+    public async Task NotifyNewOfferAsync(AnnouncementShortDto offerDto)
     {
         await hubContext.Clients.Group("offers_global")
             .ReceiveOffer(offerDto);
     }
     
-    public async Task NotifyNewOfferWPFAsync(AnnouncementGridDto model)
+    public async Task NotifyNewOfferWpfAsync(AnnouncementGridDto model)
     {
         await hubContext.Clients.Group("offers_global")
             .ReceiveOfferWPF(model);
@@ -44,12 +44,12 @@ public class HubService(IHubContext<MessageHub, IChatClient> hubContext) : IHubS
             .UpdateComplaintWPF(complaint);
     }
     
-    public async Task NotifyUpdateOfferAsync(AnnouncementShortDto? offerDto)
+    public async Task NotifyUpdateOfferAsync(AnnouncementShortDto offerDto)
     {
         await hubContext.Clients.Group("offers_global").UpdateOffer(offerDto);
     }
     
-    public async Task NotifyUpdateOfferWPFAsync(AnnouncementGridDto model)
+    public async Task NotifyUpdateOfferWpfAsync(AnnouncementGridDto model)
     {
         await hubContext.Clients.Group("offers_global")
             .UpdateOfferWPF(model);

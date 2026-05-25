@@ -108,20 +108,6 @@ public class MessageHub: Hub<IChatClient>
         await base.OnDisconnectedAsync(exception);
     }
     
-    public async Task NotifyUpdateFullOfferAsync(AnnouncementFullDto offerDto)
-    {
-        var userId = Context.User.GetUserId();
-
-        var connectionJson = await _cache.GetStringAsync($"active_room{userId}");
-        if (connectionJson is null) return;
-
-        var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-        if (connection is null) return;
-
-        // await Clients.Group(offerDto.Id.ToString())
-        //     .UpdateFullOffer(offerDto);
-    }
-    
     public async Task SendMessage(Guid chatId, string message, string userName, Guid? offerId)
     {
         var userId = Context.User.GetUserId();
@@ -370,14 +356,6 @@ public class MessageHub: Hub<IChatClient>
     public async Task DeleteComment(Guid chatId, Guid commentId)
     {
         var userId = Context.User.GetUserId();
-        
-        // var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
-        // if (connectionJson is null) return;
-        // var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-        //
-        // if (connection is null) return;
-
-
         var res = await _commentService.DeleteByCommentIdAsync(commentId, userId);
 
         if (res)
@@ -390,14 +368,6 @@ public class MessageHub: Hub<IChatClient>
     public async Task DeleteAnswer(Guid chatId, Guid answerId)
     {
         var userId = Context.User.GetUserId();
-        
-        // var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
-        // if (connectionJson is null) return;
-        // var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-        //
-        // if (connection is null) return;
-
-
         var res = await _answerService.DeleteByAnswerIdAsync(answerId, userId);
 
         if (res)
@@ -410,14 +380,6 @@ public class MessageHub: Hub<IChatClient>
     public async Task DeleteQuestion(Guid chatId, Guid questionId)
     {
         var userId = Context.User.GetUserId();
-        
-        // var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
-        // if (connectionJson is null) return;
-        // var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
-        //
-        // if (connection is null) return;
-
-
         var res = await _questionService.DeleteByQuestionIdAsync(questionId, userId);
 
         if (res)
