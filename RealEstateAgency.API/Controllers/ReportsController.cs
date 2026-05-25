@@ -28,7 +28,7 @@ public class ReportsController(
     [HttpPost("get-report-by-property-type-id")]
     public async Task<IActionResult> GetReportByPropertyTypeId([FromBody] PropertyTypeStatsRequest request)
     {
-        if (!User.IsInRole(Roles.ADMIN))
+        if (!User.IsInRole(Roles.ADMIN) && !User.IsInRole(Roles.REALTOR))
             return Unauthorized();
         
         var mapped = new ReportPropertyTypeDto
@@ -49,7 +49,7 @@ public class ReportsController(
     [HttpPost("get-report-by-user-login")]
     public async Task<IActionResult> GetReportByUserLogin([FromBody] ReportUserRequest request)
     {
-        if (!User.IsInRole(Roles.ADMIN))
+        if (!User.IsInRole(Roles.ADMIN) && !User.IsInRole(Roles.REALTOR))
             return Unauthorized();
         
         var mapped = mapper.ReportUserRequestToReportUserDto(request);

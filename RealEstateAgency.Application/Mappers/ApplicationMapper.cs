@@ -98,6 +98,7 @@ public partial class ApplicationMapper
     [MapperIgnoreTarget(nameof(AnnouncementGetEditRequest.StatementTypeId))]
     [MapperIgnoreTarget(nameof(AnnouncementGetEditRequest.UserId))]
     [MapperIgnoreTarget(nameof(AnnouncementGetEditRequest.Photos))]
+    [MapperIgnoreTarget(nameof(AnnouncementGetEditRequest.UpdatedAt))]
     private partial AnnouncementGetEditRequest MapPropertyToRequest(PropertyDto propertyDto);
     
     public PropertyTypeStatsDto ToPropertyTypeStatsDto(

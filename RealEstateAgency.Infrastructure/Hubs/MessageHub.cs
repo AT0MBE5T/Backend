@@ -8,7 +8,6 @@ using RealEstateAgency.Application.Interfaces.Services;
 using RealEstateAgency.Application.Utils;
 using RealEstateAgency.Core.Dtos;
 using RealEstateAgency.Core.Entities;
-using RealEstateAgency.Infrastructure.Models;
 
 namespace RealEstateAgency.Infrastructure.Hubs;
 
@@ -53,7 +52,7 @@ public class MessageHub: Hub<IChatClient>
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
         };
 
-        await _cache.SetStringAsync($"user_conn_{userId}", JsonSerializer.Serialize(connection), options);
+        await _cache.SetStringAsync($"chat_{userId}", JsonSerializer.Serialize(connection), options);
     }
     
     public async Task JoinCommonChat(string userName)
@@ -69,7 +68,7 @@ public class MessageHub: Hub<IChatClient>
         await _cache.SetStringAsync($"common_chat_{userId}", JsonSerializer.Serialize(userName), options);
     }
     
-    public async Task JoinChatGeneral(UserConnection connection)
+    public async Task JoinRoom(UserConnection connection)
     {
         var userId = Context.User.GetUserId();
         await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
@@ -77,20 +76,34 @@ public class MessageHub: Hub<IChatClient>
         
         var options = new DistributedCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
         };
         
         await _cache.SetStringAsync(Context.ConnectionId, stringConnection, options);
-        await _cache.SetStringAsync($"active_question_room_{userId}", connection.ChatRoom,
+        await _cache.SetStringAsync($"active_room_{userId}", connection.ChatRoom,
             new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30) });
+    }
+    
+    public async Task JoinRoomWpf(UserConnection connection)
+    {
+        var userId = Context.User.GetUserId();
+        await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
+        var stringConnection = JsonSerializer.Serialize(connection);
+        
+        var options = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+        };
+        
+        await _cache.SetStringAsync(Context.ConnectionId, stringConnection, options);
     }
     
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var userId = Context.User.GetUserId();
         await _cache.RemoveAsync(Context.ConnectionId);
-        await _cache.RemoveAsync($"active_question_room_{userId}");
-        await _cache.RemoveAsync($"user_conn_{userId}");
+        await _cache.RemoveAsync($"active_room_{userId}");
+        await _cache.RemoveAsync($"chat_{userId}");
         await base.OnDisconnectedAsync(exception);
     }
     
@@ -98,7 +111,7 @@ public class MessageHub: Hub<IChatClient>
     {
         var userId = Context.User.GetUserId();
 
-        var connectionJson = await _cache.GetStringAsync($"active_question_room{userId}");
+        var connectionJson = await _cache.GetStringAsync($"active_room{userId}");
         if (connectionJson is null) return;
 
         var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
@@ -112,7 +125,7 @@ public class MessageHub: Hub<IChatClient>
     {
         var userId = Context.User.GetUserId();
 
-        var connectionJson = await _cache.GetStringAsync($"user_conn_{userId}");
+        var connectionJson = await _cache.GetStringAsync($"chat_{userId}");
         if (connectionJson is null) return;
 
         var connection = JsonSerializer.Deserialize<UserConnection>(connectionJson);
@@ -140,7 +153,7 @@ public class MessageHub: Hub<IChatClient>
         
         foreach (var receiverId in receiverIds)
         {
-            var activeRoom = await _cache.GetStringAsync($"user_conn_{receiverId}");
+            var activeRoom = await _cache.GetStringAsync($"chat_{receiverId}");
 
             if (activeRoom is not null)
                 continue;
@@ -286,7 +299,7 @@ public class MessageHub: Hub<IChatClient>
         if (authorId == Guid.Empty)
             return;
         
-        var activeRoom = await _cache.GetStringAsync($"active_question_room_{authorId}");
+        var activeRoom = await _cache.GetStringAsync($"active_room_{authorId}");
 
         if (activeRoom is not null)
             return;
@@ -345,7 +358,7 @@ public class MessageHub: Hub<IChatClient>
         if (questionUserId == Guid.Empty)
             return;
         
-        var activeRoom = await _cache.GetStringAsync($"active_question_room_{questionUserId}");
+        var activeRoom = await _cache.GetStringAsync($"active_room_{questionUserId}");
 
         if (activeRoom is not null)
             return;
@@ -416,7 +429,7 @@ public class MessageHub: Hub<IChatClient>
     public async Task LeaveGroup(string groupName)
     {
         await _cache.RemoveAsync(Context.ConnectionId);
-        await _cache.RemoveAsync("active_question_room_" + Guid.Empty);
+        await _cache.RemoveAsync("active_room_" + Guid.Empty);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
     }
 }

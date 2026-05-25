@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Core.Dtos;
-using RealEstateAgency.Infrastructure.Models;
 
 namespace RealEstateAgency.Application.Interfaces;
 
@@ -8,7 +8,8 @@ public interface IMessageHub
 {
     Task JoinChat(UserConnection connection);
     Task JoinCommonChat(string userName);
-    Task JoinChatGeneral(UserConnection connection);
+    Task JoinRoom(UserConnection connection);
+    Task JoinRoomWpf(UserConnection connection);
     Task OnDisconnectedAsync(Exception? exception);
     Task NotifyUpdateFullOfferAsync(AnnouncementFullDto offerDto);
     Task SendMessage(Guid chatId, string message, string userName, Guid? offerId);
