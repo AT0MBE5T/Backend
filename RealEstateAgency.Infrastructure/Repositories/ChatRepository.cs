@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstateAgency.Application.Dtos;
-using RealEstateAgency.Application.Interfaces;
 using RealEstateAgency.Application.Interfaces.Repositories;
 using RealEstateAgency.Application.Utils;
 using RealEstateAgency.Core.Entities;
@@ -32,6 +31,10 @@ public class ChatRepository(RealEstateContext ctx) : IChatRepository
             OfferId = cm.ChatNavigation.AnnouncementNavigation != null
                 ? cm.ChatNavigation.AnnouncementNavigation.Id
                 : (Guid?)null,
+            
+            OfferTitle = cm.ChatNavigation.AnnouncementNavigation!.StatementNavigation != null
+                ? cm.ChatNavigation.AnnouncementNavigation.StatementNavigation.Title
+                : null,
 
             RealtorId = cm.ChatNavigation.AnnouncementNavigation != null
                 ? cm.ChatNavigation.AnnouncementNavigation.StatementNavigation != null
@@ -68,6 +71,7 @@ public class ChatRepository(RealEstateContext ctx) : IChatRepository
             x.OtherMember?.Avatar,
             x.ClosedAt ?? x.ClosedAtSupport ?? null,
             x.OfferId,
+            x.OfferTitle,
             x.RealtorId,
             null,
             x.Support?.Id,
@@ -102,6 +106,7 @@ public class ChatRepository(RealEstateContext ctx) : IChatRepository
                 x.LastMessage?.CreatedAt ?? DateTime.UtcNow,
                 0,
                 string.Empty,
+                null,
                 null,
                 null,
                 null,

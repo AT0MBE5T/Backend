@@ -9,6 +9,7 @@ public record ChatSummaryDto(
     string? AvatarUrl,
     DateTime? ClosedAt,
     Guid? OfferId,
+    string? OfferTitle,
     Guid? RealtorId,
     string? LastMessageBy,
     Guid? SupportId,
