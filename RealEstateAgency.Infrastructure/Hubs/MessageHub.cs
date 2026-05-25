@@ -104,6 +104,7 @@ public class MessageHub: Hub<IChatClient>
         await _cache.RemoveAsync(Context.ConnectionId);
         await _cache.RemoveAsync($"active_room_{userId}");
         await _cache.RemoveAsync($"chat_{userId}");
+        await _cache.RemoveAsync($"common_chat_{userId}");
         await base.OnDisconnectedAsync(exception);
     }
     
@@ -428,8 +429,7 @@ public class MessageHub: Hub<IChatClient>
     
     public async Task LeaveGroup(string groupName)
     {
-        await _cache.RemoveAsync(Context.ConnectionId);
-        await _cache.RemoveAsync("active_room_" + Guid.Empty);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+        await _cache.RemoveAsync(Context.ConnectionId);
     }
 }
