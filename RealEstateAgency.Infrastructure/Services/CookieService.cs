@@ -21,7 +21,7 @@ public class CookieService : ICookieService
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddDays(Convert.ToDouble(_configuration["Refresh:ExpireDays"]))
         };
 
