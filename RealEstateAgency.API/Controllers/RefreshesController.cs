@@ -13,7 +13,6 @@ public class RefreshesController(
     {
         var refreshToken = Request.Cookies["refreshToken"];
         var result = await refreshService.RefreshTokenAsync(refreshToken ?? string.Empty);
-        Console.WriteLine(refreshToken);
 
         if (result.Error == string.Empty) return Ok(new { token = result.Value });
         Response.Cookies.Delete("refreshToken");
