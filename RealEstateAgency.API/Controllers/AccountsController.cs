@@ -200,11 +200,12 @@ public class AccountsController(
                 return BadRequest(result.Errors);
         }
 
-        refreshService.SetRefreshToken(result.RefreshToken);
+        //refreshService.SetRefreshToken(result.RefreshToken);
         
         var response = mapper.RegisterRequestToResponse(request);
         response.Id = result.UserId;
         response.AccessToken = result.AccessToken;
+        response.RefreshToken = result.RefreshToken;
     
         return Ok(response);
     }
@@ -226,8 +227,9 @@ public class AccountsController(
 
         var result = mapper.LoginRequestToResponse(loginRequest);
         result.Id = response.UserId;
-        refreshService.SetRefreshToken(response.RefreshToken);
+        //refreshService.SetRefreshToken(response.RefreshToken);
         result.AccessToken = response.AccessToken;
+        result.RefreshToken = response.RefreshToken;
         
         return Ok(result);
     }
