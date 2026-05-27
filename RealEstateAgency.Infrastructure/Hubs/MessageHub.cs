@@ -151,7 +151,7 @@ public class MessageHub: Hub<IChatClient>
 
             Console.WriteLine($"{_configuration["FrontendUrl"]}/chats/{chatId}");
 
-            await _webPushService.SendNotificationToUserAsync(receiverId, $"[{userName}] {message}", $"{_configuration["FrontendUrl"]}/chats/{chatId}", "New message");
+            await _webPushService.SendNotificationToUserAsync(receiverId, $"[{userName}] {message}", $"{_configuration["ConnectionStrings:FrontendUrl"]}/chats/{chatId}", "New message");
         }
         
         foreach (var participantId in participants)
