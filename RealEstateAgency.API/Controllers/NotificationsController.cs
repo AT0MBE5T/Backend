@@ -7,7 +7,6 @@ using RealEstateAgency.Core.Entities;
 
 namespace RealEstateAgency.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class NotificationsController : ControllerBase
@@ -22,25 +21,46 @@ public class NotificationsController : ControllerBase
     [HttpPost("subscribe")]
     public async Task<IActionResult> Subscribe([FromBody] PushSubscriptionRequest request)
     {
-        if (request?.Keys == null) 
+        if (request?.Keys == null || string.IsNullOrWhiteSpace(request.Endpoint))
         {
             return BadRequest("Invalid subscription data");
         }
 
         var userId = User.GetUserId();
-        var existingSubs = await _service.GetAllByUserIdAsync(userId);
-    
-        if (existingSubs.Any(s => s.Endpoint == request.Endpoint))
+        
+        var existingSubscription = await _service.GetByEndpointAsync(request.Endpoint);
+        
+        if (existingSubscription != null)
         {
-            return Ok(new { message = "Підписка вже існує" });
-        }
+            existingSubscription.UserId = userId;
+            existingSubscription.P256DH = request.Keys.P256dh;
+            existingSubscription.Auth = request.Keys.Auth;
 
-        await _service.AddAsync(new UserPushSubscription {
+            await _service.UpdateAsync(existingSubscription);
+
+            return Ok(new { message = "Subscription updated" });
+        }
+        
+        await _service.AddAsync(new UserPushSubscription
+        {
             UserId = userId,
             Endpoint = request.Endpoint,
             P256DH = request.Keys.P256dh,
             Auth = request.Keys.Auth
         });
+
+        return Ok(new { message = "Subscription created" });
+    }
+    
+    [HttpPost("unsubscribe")]
+    public async Task<IActionResult> Unsubscribe([FromBody] string endpoint)
+    {
+        var subscription = await _service.GetByEndpointAsync(endpoint);
+
+        if (subscription != null)
+        {
+            await _service.RemoveByIdAsync(subscription.Id);
+        }
 
         return Ok();
     }

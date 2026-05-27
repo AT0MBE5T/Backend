@@ -12,6 +12,17 @@ public class UserPushSubscriptionService(IUserPushSubscriptionRepository reposit
         return result;
     }
     
+    public async Task<UserPushSubscription?> GetByEndpointAsync(string endpoint)
+    {
+        var result = await repository.GetByEndpointAsync(endpoint);
+        return result;
+    }
+    
+    public async Task UpdateAsync(UserPushSubscription newData)
+    {
+        await repository.UpdateAsync(newData);
+    }
+    
     public async Task<Guid> AddAsync(UserPushSubscription model)
     {
         var result = await repository.Insert(model);
