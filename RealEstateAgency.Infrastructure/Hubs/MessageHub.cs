@@ -194,9 +194,6 @@ public class MessageHub: Hub<IChatClient>
     public async Task LeaveComment(Guid chatId, string message, string userName)
     {
         var userId = Context.User.GetUserId();
-
-        if (userId == Guid.Empty)
-            return;
         
         var connectionJson = await _cache.GetStringAsync(Context.ConnectionId);
         if (connectionJson is null) return;
