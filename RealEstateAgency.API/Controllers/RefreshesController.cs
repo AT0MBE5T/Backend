@@ -17,14 +17,12 @@ public class RefreshesController(
         if (result.Error == string.Empty) return Ok(new { token = result.Value });
         Response.Cookies.Delete("refreshToken");
         return Unauthorized(result.Error);
-
     }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.Cookies["refreshToken"];
-        Console.WriteLine($"Refresh token: {refreshToken}");
         if (string.IsNullOrEmpty(refreshToken)) return BadRequest();
 
         var result = await refreshService.LogoutAsync(refreshToken);
