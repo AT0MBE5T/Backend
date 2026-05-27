@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using RealEstateAgency.Application.Interfaces;
 using RealEstateAgency.Application.Services;
 using RealEstateAgency.Infrastructure.Repositories;
 using RealEstateAgency.Application.Interfaces.Repositories;
