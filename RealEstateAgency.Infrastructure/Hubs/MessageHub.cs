@@ -149,8 +149,6 @@ public class MessageHub: Hub<IChatClient>
             if (activeRoom is not null)
                 continue;
 
-            Console.WriteLine($"{_configuration["FrontendUrl"]}/chats/{chatId}");
-
             await _webPushService.SendNotificationToUserAsync(receiverId, $"[{userName}] {message}", $"{_configuration["ConnectionStrings:FrontendUrl"]}/chats/{chatId}", "New message");
         }
         

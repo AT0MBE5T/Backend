@@ -32,7 +32,7 @@ public class NotificationsController : ControllerBase
     
         if (existingSubs.Any(s => s.Endpoint == request.Endpoint))
         {
-            return Ok(new { message = "Подписка уже существует" });
+            return Ok(new { message = "Підписка вже існує" });
         }
 
         await _service.AddAsync(new UserPushSubscription {
