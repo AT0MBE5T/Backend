@@ -16,7 +16,6 @@ namespace RealEstateAgency.API.Controllers
         public async Task<IActionResult> GetAllByAnnouncementId(Guid chatId)
         {
             var res = await questionService.GetQuestionsAnswersByAnnouncementId(chatId);
-            Console.WriteLine($"!!!!!!!!!!!!!!! {res} !!!!!!!!!!!!!!");
             return Ok(res);
         }
         
