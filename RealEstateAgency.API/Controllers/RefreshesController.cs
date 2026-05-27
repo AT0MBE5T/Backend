@@ -24,13 +24,19 @@ public class RefreshesController(
     public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.Cookies["refreshToken"];
-        if (string.IsNullOrEmpty(refreshToken)) return BadRequest();
 
-        var result = await refreshService.LogoutAsync(refreshToken);
-        Response.Cookies.Delete("refreshToken");
+        if (string.IsNullOrEmpty(refreshToken))
+            return Ok();
 
-        return result == string.Empty
-            ? Ok()
-            : BadRequest(result);
+        await refreshService.LogoutAsync(refreshToken);
+
+        Response.Cookies.Delete("refreshToken", new CookieOptions
+        {
+            Path = "/",
+            Secure = true,
+            SameSite = SameSiteMode.None
+        });
+
+        return Ok();
     }
 }
