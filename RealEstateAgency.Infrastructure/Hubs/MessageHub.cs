@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using RealEstateAgency.Application.Dtos;
 using RealEstateAgency.Application.Interfaces;
 using RealEstateAgency.Application.Interfaces.Services;
@@ -21,6 +22,7 @@ public class MessageHub: Hub<IChatClient>
     private readonly IAnnouncementsService _announcementsService;
     private readonly WebPushService _webPushService;
     private readonly UserManager<User> _userManager;
+    private readonly IConfiguration _configuration;
     
     public MessageHub(
         IDistributedCache cache,
@@ -30,7 +32,8 @@ public class MessageHub: Hub<IChatClient>
         WebPushService webPushService,
         UserManager<User> userManager,
         IAnnouncementsService announcementsService,
-        IChatService chatService)
+        IChatService chatService,
+        IConfiguration configuration)
     {
         _cache = cache;
         _commentService = commentService;
@@ -40,6 +43,7 @@ public class MessageHub: Hub<IChatClient>
         _userManager = userManager;
         _announcementsService = announcementsService;
         _chatService = chatService;
+        _configuration = configuration;
     }
 
     public async Task JoinChat(UserConnection connection)
@@ -145,7 +149,7 @@ public class MessageHub: Hub<IChatClient>
             if (activeRoom is not null)
                 continue;
 
-            await _webPushService.SendNotificationToUserAsync(receiverId, $"[{userName}] {message}", $"/chats/{chatId}", "New message");
+            await _webPushService.SendNotificationToUserAsync(receiverId, $"[{userName}] {message}", $"{_configuration["FrontendUrl"]}/chats/{chatId}", "New message");
         }
         
         foreach (var participantId in participants)
@@ -291,7 +295,7 @@ public class MessageHub: Hub<IChatClient>
         if (activeRoom is not null)
             return;
         
-        await _webPushService.SendNotificationToUserAsync(authorId, $"[{userName}] {message}", $"/offers/{chatId}/questions","New question");
+        await _webPushService.SendNotificationToUserAsync(authorId, $"[{userName}] {message}", $"{_configuration["FrontendUrl"]}/offers/{chatId}/questions","New question");
     }
     
     public async Task SendAnswer(Guid chatId, Guid questionId, string message, string userName)
@@ -350,7 +354,7 @@ public class MessageHub: Hub<IChatClient>
         if (activeRoom is not null)
             return;
         
-        await _webPushService.SendNotificationToUserAsync(questionUserId, $"[{userName}] {message}", $"/offers/{chatId}/questions", "New answer");
+        await _webPushService.SendNotificationToUserAsync(questionUserId, $"[{userName}] {message}", $"{_configuration["FrontendUrl"]}/offers/{chatId}/questions", "New answer");
     }
     
     public async Task DeleteComment(Guid chatId, Guid commentId)

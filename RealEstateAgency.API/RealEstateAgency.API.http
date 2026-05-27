@@ -1,4 +1,4 @@
-@RealEstateAgency.API_HostAddress = https://pwa-production-37b8.up.railway.app
+@RealEstateAgency.API_HostAddress = http://localhost:5118
 @RealEstateAgency = variable value
 
 Accept: application/json
