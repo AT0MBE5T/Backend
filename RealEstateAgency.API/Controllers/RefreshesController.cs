@@ -24,6 +24,7 @@ public class RefreshesController(
     public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.Cookies["refreshToken"];
+        Console.WriteLine($"Refresh token: {refreshToken}");
         if (string.IsNullOrEmpty(refreshToken)) return BadRequest();
 
         var result = await refreshService.LogoutAsync(refreshToken);
