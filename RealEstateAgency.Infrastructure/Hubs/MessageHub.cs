@@ -297,7 +297,7 @@ public class MessageHub: Hub<IChatClient>
         if (activeRoom is not null)
             return;
         
-        await _webPushService.SendNotificationToUserAsync(authorId, $"[{userName}] {message}", $"{_configuration["FrontendUrl"]}/offers/{chatId}/questions","New question");
+        await _webPushService.SendNotificationToUserAsync(authorId, $"[{userName}] {message}", $"{_configuration["ConnectionStrings:FrontendUrl"]}/offers/{chatId}/questions","New question");
     }
     
     public async Task SendAnswer(Guid chatId, Guid questionId, string message, string userName)
@@ -356,7 +356,7 @@ public class MessageHub: Hub<IChatClient>
         if (activeRoom is not null)
             return;
         
-        await _webPushService.SendNotificationToUserAsync(questionUserId, $"[{userName}] {message}", $"{_configuration["FrontendUrl"]}/offers/{chatId}/questions", "New answer");
+        await _webPushService.SendNotificationToUserAsync(questionUserId, $"[{userName}] {message}", $"{_configuration["ConnectionStrings:FrontendUrl"]}/offers/{chatId}/questions", "New answer");
     }
     
     public async Task DeleteComment(Guid chatId, Guid commentId)
