@@ -167,6 +167,7 @@ public class AnnouncementsController(
             : BadRequest(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("search")]
     public async Task<IActionResult> Search([FromBody] SearchRequest request)
     {
