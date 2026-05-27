@@ -22,10 +22,10 @@ public class AnnouncementsController(
     {
         var userId = User.GetUserId();
 
-        if (userId == Guid.Empty)
-            return Unauthorized();
+        // if (userId == Guid.Empty)
+        //     return Unauthorized();
         
-        var command = new AnnouncementInfoCommandDto(announcementId, userId);
+        var command = new AnnouncementInfoCommandDto(announcementId, userId == Guid.Empty ? null : userId);
         
         var announcementFull = await announcementService.GetAnnouncementFullById(command);
 
