@@ -181,13 +181,13 @@ app.MapControllers();
 app.MapHub<MessageHub>("/messageHub");
 
 // LOCAL (CONTAINER)
-// app.UseCors(x =>
-// {
-//     x.WithHeaders().AllowAnyHeader();
-//     x.WithOrigins("http://localhost:5173");
-//     x.WithMethods().AllowAnyMethod();
-//     x.AllowCredentials();
-// });
+app.UseCors(x =>
+{
+    x.WithHeaders().AllowAnyHeader();
+    x.WithOrigins("http://localhost:5173");
+    x.WithMethods().AllowAnyMethod();
+    x.AllowCredentials();
+});
 
 // NETLIFY
 // app.UseCors(x =>
@@ -199,12 +199,12 @@ app.MapHub<MessageHub>("/messageHub");
 // });
 
 // RAILWAY
-app.UseCors(x =>
-{
-    x.WithOrigins("https://pwa-production-37b8.up.railway.app")
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials();
-});
+// app.UseCors(x =>
+// {
+//     x.WithOrigins("https://pwa-production-37b8.up.railway.app")
+//         .AllowAnyMethod()
+//         .AllowAnyHeader()
+//         .AllowCredentials();
+// });
 
 app.Run();

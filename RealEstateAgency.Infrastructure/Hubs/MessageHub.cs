@@ -48,6 +48,9 @@ public class MessageHub: Hub<IChatClient>
 
     public async Task JoinChat(UserConnection connection)
     {
+        if (string.IsNullOrEmpty(connection.ChatRoom))
+            return;
+        
         await Groups.AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
         var userId = Context.User.GetUserId();
         

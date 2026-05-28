@@ -6,8 +6,8 @@ public class AnnouncementEditRequest
     public List<IFormFile> NewPhotos { get; set; } = [];
     public List<Guid> DeletedImageIds { get; set; } = [];
     public List<string> ExistingImageOrder { get; set; } = [];
-    public Guid PropertyType { get; set; }
-    public Guid StatementType { get; set; }
+    public Guid PropertyTypeId { get; set; }
+    public Guid StatementTypeId { get; set; }
     public string Location { get; set; } = string.Empty;
     public double Area { get; set; }
     public int Floors { get; set; }

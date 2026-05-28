@@ -27,6 +27,9 @@ public class NotificationsController : ControllerBase
         }
 
         var userId = User.GetUserId();
+
+        if (userId == Guid.Empty)
+            return Unauthorized();
         
         var existingSubscription = await _service.GetByEndpointAsync(request.Endpoint);
         
