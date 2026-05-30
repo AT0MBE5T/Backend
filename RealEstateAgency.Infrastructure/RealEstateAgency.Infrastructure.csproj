@@ -27,8 +27,4 @@
     <ProjectReference Include="..\RealEstateAgency.Core\RealEstateAgency.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
 </Project>
