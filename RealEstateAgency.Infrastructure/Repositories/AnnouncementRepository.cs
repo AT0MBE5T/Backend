@@ -123,22 +123,26 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
             .Where(x => x.StatementNavigation!.Title.Contains(text) || x.StatementNavigation.PropertyNavigation!.Location.Contains(text));
     }
     
-    private IQueryable<Announcement> GetFilteredSearchQuery(RealEstateContext ctx, IQueryable<Announcement> query, List<string> filtersId)
+    private IQueryable<Announcement> ApplyFiltersQuery(
+        RealEstateContext ctx, 
+        IQueryable<Announcement> query, 
+        List<Guid> guidFilters, 
+        bool filterByFavorites, 
+        Guid userId)
     {
-        var propertyTypeIds = filtersId
-            .Select(Guid.Parse)
-            .Where(id => ctx.PropertyTypes.Any(pt => pt.Id == id))
-            .ToList();
+        if (!filterByFavorites && guidFilters.Count == 0)
+            return query;
 
-        var statementTypeIds = filtersId
-            .Select(Guid.Parse)
-            .Where(id => ctx.StatementTypes.Any(st => st.Id == id))
-                .ToList();
-
-        query = query.Where(x =>
-            propertyTypeIds.Contains(x.StatementNavigation!.PropertyNavigation!.PropertyTypeId) ||
-            statementTypeIds.Contains(x.StatementNavigation.StatementTypeId));
+        var propertyTypeIds = guidFilters.Where(id => ctx.PropertyTypes.Any(pt => pt.Id == id)).ToList();
+        var statementTypeIds = guidFilters.Where(id => ctx.StatementTypes.Any(st => st.Id == id)).ToList();
         
+        query = query.Where(x => 
+            (!filterByFavorites || x.FavoritesNavigation.Any(y => y.UserId == userId)) &&
+            (guidFilters.Count == 0 || 
+             propertyTypeIds.Contains(x.StatementNavigation!.PropertyNavigation!.PropertyTypeId) ||
+             statementTypeIds.Contains(x.StatementNavigation.StatementTypeId))
+        );
+
         return query;
     }
     
@@ -182,13 +186,14 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
             query = GetTextSearchQuery(query, text);
         }
         
-        if (filtersId.Remove("Favorites"))
-            query = query.Where(x => x.FavoritesNavigation.Any(y => y.UserId == userId));
+        var filterByFavorites = filtersId.Any(f => string.Equals(f, "Favorites", StringComparison.OrdinalIgnoreCase));
+        
+        var guidFilters = filtersId
+            .Where(f => Guid.TryParse(f, out _))
+            .Select(Guid.Parse)
+            .ToList();
 
-        if (filtersId.Count > 0)
-        {
-            query = GetFilteredSearchQuery(ctx, query, filtersId);
-        }
+        query = ApplyFiltersQuery(ctx, query, guidFilters, filterByFavorites, userId);
 
         if (sortId > 0)
         {
