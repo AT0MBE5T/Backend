@@ -181,6 +181,9 @@ public class AnnouncementRepository(RealEstateContext ctx) : IAnnouncementReposi
         {
             query = GetTextSearchQuery(query, text);
         }
+        
+        if (filtersId.Remove("Favorites"))
+            query = query.Where(x => x.FavoritesNavigation.Any(y => y.UserId == userId));
 
         if (filtersId.Count > 0)
         {
