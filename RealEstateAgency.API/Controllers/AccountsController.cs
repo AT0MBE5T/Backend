@@ -227,7 +227,7 @@ public class AccountsController(
 
         var result = mapper.LoginRequestToResponse(loginRequest);
         result.Id = response.UserId; 
-        //refreshService.SetRefreshToken(response.RefreshToken);
+        refreshService.SetRefreshToken(response.RefreshToken);
         result.AccessToken = response.AccessToken;
         result.RefreshToken = response.RefreshToken;
         
