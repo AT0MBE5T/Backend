@@ -19,7 +19,8 @@ namespace RealEstateAgency.Application.Services
             {
                 new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new(JwtRegisteredClaimNames.Name, user.Name),
-                new("surname", user.Surname)
+                new("surname", user.Surname),
+                new("login", user.UserName ?? string.Empty)
             };
             
             claims.AddRange(userRoles.Select(role => new Claim("roles", role)));
