@@ -205,7 +205,6 @@ public class AccountsController(
         var response = mapper.RegisterRequestToResponse(request);
         response.Id = result.UserId;
         response.AccessToken = result.AccessToken;
-        response.RefreshToken = result.RefreshToken;
     
         return Ok(response);
     }
@@ -229,7 +228,6 @@ public class AccountsController(
         result.Id = response.UserId; 
         refreshService.SetRefreshToken(response.RefreshToken);
         result.AccessToken = response.AccessToken;
-        result.RefreshToken = response.RefreshToken;
         
         return Ok(result);
     }

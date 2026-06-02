@@ -12,9 +12,8 @@ public class RefreshesController(
     public async Task<IActionResult> Refresh()
     {
         var refreshToken = Request.Cookies["refreshToken"];
-        Console.WriteLine($"RefreshToken is {refreshToken}");
         if (string.IsNullOrEmpty(refreshToken)) return BadRequest();
-        var result = await refreshService.RefreshTokenAsync(refreshToken ?? string.Empty);
+        var result = await refreshService.RefreshTokenAsync(refreshToken);
 
         if (result.Error == string.Empty) return Ok(new { token = result.Value });
         Response.Cookies.Delete("refreshToken");
