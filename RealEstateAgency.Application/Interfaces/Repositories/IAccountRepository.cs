@@ -28,7 +28,7 @@ public interface IAccountRepository
     Task<decimal> GetTotalMoneySpentByUserIdDate(Guid userId, DateTime dateTime);
     Task<decimal> GetTotalMoneySpentByUserIdDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo);
     Task<Guid> GetUserIdByLogin(string login);
-    Task<string> GetFavoriteCategoryDate(Guid userId, DateTime dateTime);
-    Task<string> GetFavoriteCategoryDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo);
+    Task<string?> GetFavoriteCategoryDate(Guid userId, DateTime dateTime);
+    Task<string?> GetFavoriteCategoryDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo);
     Task<List<UserGridDto>> GetAllAsync();
 }

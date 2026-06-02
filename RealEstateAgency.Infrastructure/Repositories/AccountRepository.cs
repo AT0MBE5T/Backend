@@ -78,7 +78,7 @@ public class AccountRepository(RealEstateContext ctx) : IAccountRepository
         return query;
     }
     
-    public async Task<string> GetFavoriteCategoryDate(Guid userId, DateTime dateTime)
+    public async Task<string?> GetFavoriteCategoryDate(Guid userId, DateTime dateTime)
     {
         var start = dateTime.ToUniversalTime().AddDays(1).Date;
         var end = start.AddDays(1);
@@ -92,10 +92,10 @@ public class AccountRepository(RealEstateContext ctx) : IAccountRepository
             .Select(g => g.Key)
             .FirstOrDefaultAsync();
         
-        return query ?? "Unknown";
+        return query;
     }
     
-    public async Task<string> GetFavoriteCategoryDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
+    public async Task<string?> GetFavoriteCategoryDateSpan(Guid userId, DateTime dateTimeFrom, DateTime dateTimeTo)
     {
         var start = dateTimeFrom.ToUniversalTime().Date.AddDays(1);
         var end = dateTimeTo.ToUniversalTime().Date.AddDays(2);
@@ -109,7 +109,7 @@ public class AccountRepository(RealEstateContext ctx) : IAccountRepository
             .Select(g => g.Key)
             .FirstOrDefaultAsync();
         
-        return query ?? "Unknown";
+        return query;
     }
     
     public async Task<int> GetSoldPropertyCntByUserIdDate(Guid userId, DateTime dateTime)
