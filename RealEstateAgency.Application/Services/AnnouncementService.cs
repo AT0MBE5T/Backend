@@ -351,7 +351,7 @@ public class AnnouncementService(IAnnouncementRepository announcementRepository,
                     
                     var imageResult = await imageService.UploadImageAsync(file.Content, file.FileName);
 
-                    if (imageResult.Error != null)
+                    if (!string.IsNullOrEmpty(imageResult.Error))
                         throw new Exception(imageResult.Error);
 
                     await imageService.InsertAsync(new ImageDto
