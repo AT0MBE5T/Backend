@@ -12,12 +12,12 @@ namespace RealEstateAgency.Core.Entities
 
         [Required]
         [Column("title")]
-        [StringLength(maximumLength: 100, MinimumLength = 5)]
+        [StringLength(maximumLength: 128, MinimumLength = 5)]
         public required string Title { get; set; }
 
         [Required]
         [Column("content")]
-        [StringLength(maximumLength: 256, MinimumLength = 5)]
+        [StringLength(maximumLength: 1024, MinimumLength = 5)]
         public required string Content { get; set; }
 
         [Required]

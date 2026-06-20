@@ -34,7 +34,7 @@ namespace RealEstateAgency.Core.Entities
 
         [Required]
         [Column("description")]
-        [StringLength(maximumLength: 500, MinimumLength = 5)]
+        [StringLength(maximumLength: 1024, MinimumLength = 5)]
         public required string Description { get; set; }
 
         public ICollection<Image> ImagesNavigation { get; set; } = [];
